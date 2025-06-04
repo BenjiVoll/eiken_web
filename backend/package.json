@@ -12,6 +12,16 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "typeorm": "^0.3.24"
+  },
+  "devDependencies": {
+    "eslint": "^9.28.0",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.5.3"
   }
 }
