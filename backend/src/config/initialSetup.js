@@ -1,6 +1,6 @@
 "use strict";
 
-import User from "../entity/User.entity.js"; 
+import User from "../entity/user.entity.js"; 
 import ProductoViniloSchema from "../entity/productoVinilo.entity.js";
 import { ProveedorSchema } from "../entity/proveedor.entity.js";
 import { ClienteSchema } from "../entity/user.entity.cliente.js";
