@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -11,11 +12,16 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "express-session": "^1.18.1",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "pg": "^8.16.0",
     "typeorm": "^0.3.24"
   },
   "devDependencies": {
