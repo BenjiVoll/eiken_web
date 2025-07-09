@@ -1,68 +1,160 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-export const ProyectoServicioSchema = new EntitySchema({
-  name: "ProyectoServicio",
-  tableName: "proyectos_servicios",
+export const ProjectSchema = new EntitySchema({
+  name: "Project",
+  tableName: "projects",
   columns: {
     id: {
       type: "int",
       primary: true,
       generated: "increment",
-      name: "id_proyecto",
     },
-    clienteId: {
-      type: "int",
-      nullable: false,
-      name: "id_cliente",
-    },
-    nombreProyecto: {
+    title: {
       type: "varchar",
       length: 255,
       nullable: false,
-      name: "nombre_proyecto",
     },
-    tipoServicio: {
+    description: {
+      type: "text",
+      nullable: true,
+    },
+    clientId: {
+      type: "int",
+      nullable: true, // Cambiado a true temporalmente
+      name: "client_id",
+    },
+    division: {
+      type: "enum",
+      enum: ["Design", "Truck Design", "Racing Design"],
+      nullable: false,
+    },
+    category: {
       type: "varchar",
       length: 100,
       nullable: false,
-      name: "tipo_servicio",
     },
-    fechaInicio: {
-      type: "date",
-      nullable: false,
-      name: "fecha_inicio",
-    },
-    fechaFinEstimada: {
-      type: "date",
-      nullable: true,
-      name: "fecha_fin_estimada",
-    },
-    estadoProyecto: {
+    status: {
       type: "enum",
-      enum: ["pendiente", "en_proceso", "completado", "cancelado"],
+      enum: ["pending", "in_progress", "completed", "cancelled", "on_hold"],
+      default: "pending",
       nullable: false,
-      default: "pendiente",
-      name: "estado_proyecto",
     },
-    descripcionProyecto: {
-      type: "text",
+    startDate: {
+      type: "date",
+      nullable: false,
+      name: "start_date",
+    },
+    estimatedEndDate: {
+      type: "date",
       nullable: true,
-      name: "descripcion_proyecto",
+      name: "estimated_end_date",
+    },
+    actualEndDate: {
+      type: "date",
+      nullable: true,
+      name: "actual_end_date",
+    },
+    budgetAmount: {
+      type: "decimal",
+      precision: 10,
+      scale: 2,
+      nullable: true,
+      name: "budget_amount",
+    },
+    actualAmount: {
+      type: "decimal",
+      precision: 10,
+      scale: 2,
+      nullable: true,
+      name: "actual_amount",
+    },
+    year: {
+      type: "int",
+      nullable: false,
+    },
+    month: {
+      type: "varchar",
+      length: 20,
+      nullable: false,
+    },
+    imageUrl: {
+      type: "varchar",
+      length: 500,
+      nullable: true,
+      name: "image_url",
+    },
+    awards: {
+      type: "simple-array",
+      nullable: true,
+    },
+    tags: {
+      type: "simple-array",
+      nullable: true,
+    },
+    isFeatured: {
+      type: "boolean",
+      default: false,
+      nullable: false,
+      name: "is_featured",
+    },
+    isPublic: {
+      type: "boolean",
+      default: false,
+      nullable: false,
+      name: "is_public",
+    },
+    createdAt: {
+      type: "timestamp",
+      createDate: true,
+      nullable: false,
+      name: "created_at",
+    },
+    updatedAt: {
+      type: "timestamp",
+      updateDate: true,
+      nullable: false,
+      name: "updated_at",
     },
   },
-  relations: {
-    cliente: {
-      type: "many-to-one",
-      target: "Cliente",
-      joinColumn: { name: "id_cliente", referencedColumnName: "id" },
-      inverseSide: "proyectos", 
-      nullable: false,
+  indices: [
+    {
+      name: "IDX_PROJECT_STATUS",
+      columns: ["status"],
     },
-    vinilosUtilizados: {
+    {
+      name: "IDX_PROJECT_DIVISION",
+      columns: ["division"],
+    },
+    {
+      name: "IDX_PROJECT_CATEGORY",
+      columns: ["category"],
+    },
+    {
+      name: "IDX_PROJECT_YEAR",
+      columns: ["year"],
+    },
+    {
+      name: "IDX_PROJECT_FEATURED",
+      columns: ["isFeatured"],
+    },
+    {
+      name: "IDX_PROJECT_PUBLIC",
+      columns: ["isPublic"],
+    },
+  ],
+  relations: {
+    client: {
+      type: "many-to-one",
+      target: "Client",
+      joinColumn: { name: "client_id", referencedColumnName: "id" },
+      inverseSide: "projects",
+      nullable: true, // Cambiado a true temporalmente
+    },
+    inventoryUsages: {
       type: "one-to-many",
-      target: "DetalleUsoViniloProyecto",
-      inverseSide: "proyectoServicio",
+      target: "ProjectInventoryUsage",
+      inverseSide: "project",
       cascade: true,
     },
   },
