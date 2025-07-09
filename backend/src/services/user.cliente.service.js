@@ -1,6 +1,6 @@
 "use strict";
 import { AppDataSource } from "../config/configDb.js";
-import { ClienteSchema } from "../entity/user.entity.cliente.js";
+import { ClienteSchema } from "../entity/user.entity.client.js";
 
 const clienteRepository = AppDataSource.getRepository(ClienteSchema);
 

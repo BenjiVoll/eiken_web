@@ -23,27 +23,27 @@ router.use(authenticateJwt);
 // Rutas para gestión de órdenes de compra
 router
   .post("/", 
-    isManagerOrAbove, // Solo Manager+ puede crear órdenes
+    isManagerOrAbove,
     createBodyValidation(orderBodyValidation), 
     createOrder
   )
   .get("/", 
-    isManagerOrAbove, // Solo Manager+ puede ver lista de órdenes
+    isManagerOrAbove,
     createQueryValidation(orderQueryValidation), 
     getOrders
   )
   .get("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede ver detalles de órdenes
+    isManagerOrAbove,
     createQueryValidation(orderQueryValidation), 
     getOrder
   )
   .patch("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede actualizar órdenes
+    isManagerOrAbove,
     createBodyValidation(orderBodyValidation), 
     updateOrder
   )
   .delete("/:id", 
-    isAdmin, // Solo Admin puede eliminar órdenes
+    isAdmin,
     deleteOrder
   );
 

@@ -18,33 +18,32 @@ import {
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
 router.use(authenticateJwt);
 
 // Rutas para gestión de movimientos de inventario
 router
   .post("/", 
-    isDesignerOrAbove, // Designer+ puede crear movimientos (para uso en proyectos)
+    isDesignerOrAbove,
     createBodyValidation(inventoryMovementBodyValidation),
     createInventoryMovement
   )
   .get("/", 
-    isDesignerOrAbove, // Designer+ puede ver lista de movimientos
+    isDesignerOrAbove,
     createQueryValidation(inventoryMovementQueryValidation),
     getInventoryMovements
   )
   .get("/:id", 
-    isDesignerOrAbove, // Designer+ puede ver detalles de movimientos
+    isDesignerOrAbove,
     createQueryValidation(inventoryMovementQueryValidation),
     getInventoryMovement
   )
   .patch("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede actualizar movimientos
+    isManagerOrAbove, 
     createBodyValidation(inventoryMovementBodyValidation),
     updateInventoryMovement
   )
   .delete("/:id", 
-    isAdmin, // Solo Admin puede eliminar movimientos
+    isAdmin,
     deleteInventoryMovement
   );
 

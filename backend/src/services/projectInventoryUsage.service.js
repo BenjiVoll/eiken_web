@@ -1,7 +1,7 @@
 "use strict";
 import { AppDataSource } from "../config/configDb.js";
 import { ProjectInventoryUsage } from "../entity/projectInventoryUsage.entity.js";
-import { Project } from "../entity/proyectosServicios.entity.js";
+import { Project } from "../entity/project.entity.js";
 import { Inventory } from "../entity/inventory.entity.js";
 
 export class ProjectInventoryUsageService {
