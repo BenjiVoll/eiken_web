@@ -18,7 +18,7 @@ async function createInitialData() {
     const projectRepository = AppDataSource.getRepository(ProjectSchema);
     const quoteRepository = AppDataSource.getRepository(QuoteSchema);
 
-    console.log("🚀 Iniciando poblamiento de datos iniciales para Eiken Design Chile...");
+    console.log("Iniciando poblamiento de datos iniciales para Eiken Design Chile...");
 
     const userCount = await userRepository.count();
     if (userCount === 0) {
@@ -64,9 +64,9 @@ async function createInitialData() {
           })
         ),
       ]);
-      console.log("✅ Usuarios creados exitosamente.");
+      console.log("Usuarios creados exitosamente.");
     } else {
-      console.log("ℹ️  Usuarios ya existen, omitiendo creación.");
+      console.log("Usuarios ya existen, omitiendo creación.");
     }
 
     const serviceCount = await serviceRepository.count();
@@ -143,9 +143,9 @@ async function createInitialData() {
           })
         ),
       ]);
-      console.log("✅ Servicios creados exitosamente.");
+      console.log("Servicios creados exitosamente.");
     } else {
-      console.log("ℹ️  Servicios ya existen, omitiendo creación.");
+      console.log("Servicios ya existen, omitiendo creación.");
     }
 
     
@@ -303,9 +303,9 @@ async function createInitialData() {
           })
         ),
       ]);
-      console.log("✅ Inventario creado exitosamente.");
+      console.log("Inventario creado exitosamente.");
     } else {
-      console.log("ℹ️  Inventario ya existe, omitiendo creación.");
+      console.log("Inventario ya existe, omitiendo creación.");
     }
 
     const supplierCount = await supplierRepository.count();
@@ -463,9 +463,9 @@ async function createInitialData() {
           })
         ),
       ]);
-      console.log("✅ Proyectos creados exitosamente.");
+      console.log("Proyectos creados exitosamente.");
     } else {
-      console.log("ℹ️  Proyectos ya existen, omitiendo creación.");
+      console.log("Proyectos ya existen, omitiendo creación.");
     }
 
     const quoteCount = await quoteRepository.count();
@@ -528,14 +528,14 @@ async function createInitialData() {
           })
         ),
       ]);
-      console.log("✅ Cotizaciones creadas exitosamente.");
+      console.log("Cotizaciones creadas exitosamente.");
     } else {
-      console.log("ℹ️  Cotizaciones ya existen, omitiendo creación.");
+      console.log("Cotizaciones ya existen, omitiendo creación.");
     }
 
 
   } catch (error) {
-    console.error("❌ Error al crear datos iniciales:", error);
+    console.error("Error al crear datos iniciales:", error);
     throw error;
   }
 }
