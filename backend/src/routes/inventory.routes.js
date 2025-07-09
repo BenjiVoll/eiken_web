@@ -18,31 +18,30 @@ import {
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
 router.use(authenticateJwt);
 
 // Rutas para gestión de inventario
 router
   .post("/", 
-    isManagerOrAbove, // Solo Manager+ puede crear items de inventario
+    isManagerOrAbove,
     createBodyValidation(inventoryBodyValidation), 
     createInventory
   )
   .get("/", 
-    isDesignerOrAbove, // Designer+ puede ver lista de inventario
+    isDesignerOrAbove,
     getInventories
   )
   .get("/:id", 
-    isDesignerOrAbove, // Designer+ puede ver detalles de inventario
+    isDesignerOrAbove,
     getInventory
   )
   .patch("/:id", 
-    isDesignerOrAbove, // Designer+ puede actualizar inventario (para uso en proyectos)
+    isDesignerOrAbove,
     createBodyValidation(inventoryBodyValidation), 
     updateInventory
   )
   .delete("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede eliminar items de inventario
+    isManagerOrAbove,
     deleteInventory
   );
 

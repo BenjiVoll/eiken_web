@@ -3,8 +3,8 @@
 import User from "../entity/user.entity.js";
 import { ServiceSchema } from "../entity/service.entity.js";
 import { InventorySchema } from "../entity/inventory.entity.js";
-import { SupplierSchema } from "../entity/proveedor.entity.js";
-import { ProjectSchema } from "../entity/proyectosServicios.entity.js";
+import { SupplierSchema } from "../entity/supplier.entity.js";
+import { ProjectSchema } from "../entity/project.entity.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { AppDataSource } from "./configDb.js";
 import { encryptPassword } from "../helpers/bcrypt.helper.js";

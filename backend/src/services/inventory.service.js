@@ -1,7 +1,7 @@
 "use strict";
 import { AppDataSource } from "../config/configDb.js";
 import { InventorySchema } from "../entity/inventory.entity.js";
-import { SupplierSchema } from "../entity/proveedor.entity.js";
+import { SupplierSchema } from "../entity/supplier.entity.js";
 
 const inventoryRepository = AppDataSource.getRepository(InventorySchema);
 const supplierRepository = AppDataSource.getRepository(SupplierSchema);

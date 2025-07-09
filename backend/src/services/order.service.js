@@ -1,7 +1,7 @@
 "use strict";
 import { AppDataSource } from "../config/configDb.js";
 import { OrderSchema, OrderItemSchema } from "../entity/order.entity.js";
-import { ClientSchema } from "../entity/user.entity.cliente.js";
+import { ClientSchema } from "../entity/user.entity.client.js";
 import { ServiceSchema } from "../entity/service.entity.js";
 
 const orderRepository = AppDataSource.getRepository(OrderSchema);
