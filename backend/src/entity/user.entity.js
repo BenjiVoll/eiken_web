@@ -8,64 +8,68 @@ const UserSchema = new EntitySchema({
     id: {
       type: "int",
       primary: true,
-      generated: true,
+      generated: "increment",
     },
-    rut: {
-      type: "varchar",
-      length: 12,
-      nullable: true,
-      unique: true,
-    },
-    nombreCompleto: {
+    name: {
       type: "varchar",
       length: 255,
-      nullable: true,
+      nullable: false,
     },
- 
     email: {
       type: "varchar",
       length: 255,
-      nullable: true,
+      nullable: false,
       unique: true,
     },
-    rol: {
+    passwordHash: {
       type: "varchar",
-      length: 50,
-      nullable: true,
+      length: 255,
+      nullable: false,
+      name: "password_hash",
     },
-    password: {
-      type: "varchar",
-      nullable: true,
+    role: {
+      type: "enum",
+      enum: ["admin", "manager", "designer", "operator"],
+      default: "operator",
+      nullable: false,
+    },
+    isActive: {
+      type: "boolean",
+      default: true,
+      nullable: false,
+      name: "is_active",
     },
     createdAt: {
-      type: "timestamp with time zone",
-      default: () => "CURRENT_TIMESTAMP",
+      type: "timestamp",
+      createDate: true,
       nullable: false,
+      name: "created_at",
     },
     updatedAt: {
-      type: "timestamp with time zone",
-      default: () => "CURRENT_TIMESTAMP",
-      onUpdate: "CURRENT_TIMESTAMP",
+      type: "timestamp",
+      updateDate: true,
       nullable: false,
+      name: "updated_at",
     },
   },
   indices: [
-    {
-      name: "IDX_USER",
-      columns: ["id"],
-      unique: true,
-    },
-    {
-      name: "IDX_RUT",
-      columns: ["rut"],
-      unique: true,
-    },
     {
       name: "IDX_USER_EMAIL",
       columns: ["email"],
       unique: true,
     },
+    {
+      name: "IDX_USER_ROLE",
+      columns: ["role"],
+    },
   ],
+  relations: {
+    inventoryMovements: {
+      type: "one-to-many",
+      target: "InventoryMovement",
+      inverseSide: "createdBy",
+    },
+  },
 });
 
 export default UserSchema;

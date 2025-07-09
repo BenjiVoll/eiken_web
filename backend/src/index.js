@@ -8,7 +8,7 @@ import passport from "passport";
 import express, { json, urlencoded } from "express";
 import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
-import { createInitialData } from "./config/initialSetup.js";
+import { createInitialData } from "./config/initialSetup.modern.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
 
 async function setupServer() {

@@ -1,125 +1,133 @@
 "use strict";
 import {
-  deleteUserService,
-  getUserService,
-  getUsersService,
-  updateUserService,
+    createUserService,
+    getUsersService,
+    getUserService,
+    updateUserService,
+    deleteUserService
 } from "../services/user.service.js";
-import {
-  userBodyValidation,
-  userQueryValidation,
-} from "../validations/user.validation.js";
-import {
-  handleErrorClient,
-  handleErrorServer,
-  handleSuccess,
-} from "../handlers/responseHandlers.js";
 
-export async function getUser(req, res) {
-  try {
-    const { rut, id, email } = req.query;
+// Crear un usuario
+export const createUserController = async (req, res) => {
+    try {
+        const [user, error] = await createUserService(req.body);
+        
+        if (error) {
+            return res.status(400).json({
+                status: "error",
+                message: error
+            });
+        }
 
-    const { error } = userQueryValidation.validate({ rut, id, email });
-
-    if (error) return handleErrorClient(res, 400, error.message);
-
-    const [user, errorUser] = await getUserService({ rut, id, email });
-
-    if (errorUser) return handleErrorClient(res, 404, errorUser);
-
-    handleSuccess(res, 200, "Usuario encontrado", user);
-  } catch (error) {
-    handleErrorServer(res, 500, error.message);
-  }
-}
-
-export async function getUsers(req, res) {
-  try {
-    const [users, errorUsers] = await getUsersService();
-
-    if (errorUsers) return handleErrorClient(res, 404, errorUsers);
-
-    users.length === 0
-      ? handleSuccess(res, 204)
-      : handleSuccess(res, 200, "Usuarios encontrados", users);
-  } catch (error) {
-    handleErrorServer(
-      res,
-      500,
-      error.message,
-    );
-  }
-}
-
-export async function updateUser(req, res) {
-  try {
-    const { rut, id, email } = req.query;
-    const { body } = req;
-
-    const { error: queryError } = userQueryValidation.validate({
-      rut,
-      id,
-      email,
-    });
-
-    if (queryError) {
-      return handleErrorClient(
-        res,
-        400,
-        "Error de validación en la consulta",
-        queryError.message,
-      );
+        res.status(201).json({
+            status: "success",
+            message: "Usuario creado exitosamente",
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: "error",
+            message: "Error interno del servidor"
+        });
     }
+};
 
-    const { error: bodyError } = userBodyValidation.validate(body);
+// Actualizar un usuario
+export const updateUserController = async (req, res) => {
+    try {
+        const [user, error] = await updateUserService({ id: req.params.id }, req.body);
+        
+        if (error) {
+            return res.status(400).json({
+                status: "error",
+                message: error
+            });
+        }
 
-    if (bodyError)
-      return handleErrorClient(
-        res,
-        400,
-        "Error de validación en los datos enviados",
-        bodyError.message,
-      );
-
-    const [user, userError] = await updateUserService({ rut, id, email }, body);
-
-    if (userError) return handleErrorClient(res, 400, "Error modificando al usuario", userError);
-
-    handleSuccess(res, 200, "Usuario modificado correctamente", user);
-  } catch (error) {
-    handleErrorServer(res, 500, error.message);
-  }
-}
-
-export async function deleteUser(req, res) {
-  try {
-    const { rut, id, email } = req.query;
-
-    const { error: queryError } = userQueryValidation.validate({
-      rut,
-      id,
-      email,
-    });
-
-    if (queryError) {
-      return handleErrorClient(
-        res,
-        400,
-        "Error de validación en la consulta",
-        queryError.message,
-      );
+        res.status(200).json({
+            status: "success",
+            message: "Usuario actualizado exitosamente",
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: "error",
+            message: "Error interno del servidor"
+        });
     }
+};
 
-    const [userDelete, errorUserDelete] = await deleteUserService({
-      rut,
-      id,
-      email,
-    });
+// Obtener todos los usuarios
+export const getUsersController = async (req, res) => {
+    try {
+        const [users, error] = await getUsersService();
+        
+        if (error) {
+            return res.status(400).json({
+                status: "error",
+                message: error
+            });
+        }
 
-    if (errorUserDelete) return handleErrorClient(res, 404, "Error eliminado al usuario", errorUserDelete);
+        res.status(200).json({
+            status: "success",
+            message: "Usuarios obtenidos exitosamente",
+            data: users
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: "error",
+            message: "Error interno del servidor"
+        });
+    }
+};
 
-    handleSuccess(res, 200, "Usuario eliminado correctamente", userDelete);
-  } catch (error) {
-    handleErrorServer(res, 500, error.message);
-  }
-}
+// Obtener un usuario por ID
+export const getUserController = async (req, res) => {
+    try {
+        const [user, error] = await getUserService({ id: req.params.id });
+        
+        if (error) {
+            return res.status(404).json({
+                status: "error",
+                message: error
+            });
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Usuario encontrado",
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: "error",
+            message: "Error interno del servidor"
+        });
+    }
+};
+
+// Eliminar un usuario
+export const deleteUserController = async (req, res) => {
+    try {
+        const [user, error] = await deleteUserService({ id: req.params.id });
+        
+        if (error) {
+            return res.status(400).json({
+                status: "error",
+                message: error
+            });
+        }
+
+        res.status(200).json({
+            status: "success",
+            message: "Usuario eliminado exitosamente",
+            data: user
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            status: "error",
+            message: "Error interno del servidor"
+        });
+    }
+};

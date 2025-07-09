@@ -23,24 +23,34 @@ export async function loginService(user) {
       return [null, createErrorMessage("email", "El correo electrónico es incorrecto")];
     }
 
-    const isMatch = await comparePassword(password, userFound.password);
+    const isMatch = await comparePassword(password, userFound.passwordHash);
 
     if (!isMatch) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
     const payload = {
-      nombreCompleto: userFound.nombreCompleto,
+      id: userFound.id,
+      name: userFound.name,
       email: userFound.email,
-      rut: userFound.rut,
-      rol: userFound.rol,
+      role: userFound.role,
     };
 
     const accessToken = jwt.sign(payload, ACCESS_TOKEN_SECRET, {
       expiresIn: "1d",
     });
 
-    return [accessToken, null];
+    // Preparar datos del usuario para enviar al frontend (sin password)
+    const userData = {
+      id: userFound.id,
+      name: userFound.name,
+      email: userFound.email,
+      role: userFound.role,
+      isActive: userFound.isActive,
+    };
+
+    // Devolver tanto el token como los datos del usuario
+    return [{ token: accessToken, user: userData }, null];
   } catch (error) {
     console.error("Error al iniciar sesión:", error);
     return [null, "Error interno del servidor"];
@@ -52,7 +62,7 @@ export async function registerService(user) {
   try {
     const userRepository = AppDataSource.getRepository(User);
 
-    const { nombreCompleto, rut, email } = user;
+    const { name, email, role = "operator" } = user;
 
     const createErrorMessage = (dataInfo, message) => ({
       dataInfo,
@@ -67,25 +77,17 @@ export async function registerService(user) {
     
     if (existingEmailUser) return [null, createErrorMessage("email", "Correo electrónico en uso")];
 
-    const existingRutUser = await userRepository.findOne({
-      where: {
-        rut,
-      },
-    });
-
-    if (existingRutUser) return [null, createErrorMessage("rut", "Rut ya asociado a una cuenta")];
-
     const newUser = userRepository.create({
-      nombreCompleto,
+      name,
       email,
-      rut,
-      password: await encryptPassword(user.password),
-      rol: "usuario",
+      passwordHash: await encryptPassword(user.password),
+      role,
+      isActive: true,
     });
 
     await userRepository.save(newUser);
 
-    const { password, ...dataUser } = newUser;
+    const { passwordHash, ...dataUser } = newUser;
 
     return [dataUser, null];
   } catch (error) {
