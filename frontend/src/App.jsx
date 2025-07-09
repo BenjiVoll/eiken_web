@@ -10,7 +10,6 @@ import Suppliers from './pages/Suppliers';
 import Projects from './pages/Projects';
 import Quotes from './pages/Quotes';
 import Users from './pages/Users';
-import './styles/globals.css';
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({ children, requiredRole = null }) => {

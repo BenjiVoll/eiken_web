@@ -20,7 +20,6 @@ async function createInitialData() {
 
     console.log("🚀 Iniciando poblamiento de datos iniciales para Eiken Design Chile...");
 
-    // --- Crear Usuarios ---
     const userCount = await userRepository.count();
     if (userCount === 0) {
       const adminPassword = await encryptPassword("admin2025");
@@ -70,7 +69,6 @@ async function createInitialData() {
       console.log("ℹ️  Usuarios ya existen, omitiendo creación.");
     }
 
-    // --- Crear Servicios ---
     const serviceCount = await serviceRepository.count();
     if (serviceCount === 0) {
       await Promise.all([
@@ -150,7 +148,7 @@ async function createInitialData() {
       console.log("ℹ️  Servicios ya existen, omitiendo creación.");
     }
 
-    // --- Crear Productos de Inventario ---
+    
     const inventoryCount = await inventoryRepository.count();
     if (inventoryCount === 0) {
       await Promise.all([
@@ -310,7 +308,6 @@ async function createInitialData() {
       console.log("ℹ️  Inventario ya existe, omitiendo creación.");
     }
 
-    // --- Crear Proveedores ---
     const supplierCount = await supplierRepository.count();
     if (supplierCount === 0) {
       await Promise.all([
@@ -364,7 +361,6 @@ async function createInitialData() {
       console.log("ℹ️  Proveedores ya existen, omitiendo creación.");
     }
 
-    // --- Crear Proyectos del Portafolio ---
     const projectCount = await projectRepository.count();
     if (projectCount === 0) {
       await Promise.all([
@@ -472,7 +468,6 @@ async function createInitialData() {
       console.log("ℹ️  Proyectos ya existen, omitiendo creación.");
     }
 
-    // --- Crear Cotizaciones de Ejemplo ---
     const quoteCount = await quoteRepository.count();
     if (quoteCount === 0) {
       await Promise.all([
@@ -538,12 +533,6 @@ async function createInitialData() {
       console.log("ℹ️  Cotizaciones ya existen, omitiendo creación.");
     }
 
-    console.log("🎉 Poblamiento de datos iniciales finalizado exitosamente.");
-    console.log("📧 Credenciales de acceso:");
-    console.log("   Admin: admin@eikendesign.cl / admin2025");
-    console.log("   Manager: manager@eikendesign.cl / manager2025");
-    console.log("   Designer: designer@eikendesign.cl / designer2025");
-    console.log("   Operator: operador@eikendesign.cl / operador2025");
 
   } catch (error) {
     console.error("❌ Error al crear datos iniciales:", error);
