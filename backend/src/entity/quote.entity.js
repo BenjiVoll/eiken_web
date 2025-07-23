@@ -58,8 +58,8 @@ export const QuoteSchema = new EntitySchema({
     },
     urgency: {
       type: "enum",
-      enum: ["Baja", "Media", "Alta", "Urgente"],
-      default: "Media",
+      enum: ["baja", "media", "alta", "urgente"],
+      default: "media",
       nullable: false,
     },
     
