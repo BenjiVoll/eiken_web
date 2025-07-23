@@ -7,14 +7,8 @@ const inventoryRepository = AppDataSource.getRepository(InventorySchema);
 const supplierRepository = AppDataSource.getRepository(SupplierSchema);
 
 export const createInventoryItem = async (data) => {
-  const { name, type, color, quantity, unit, width, brand, code, minStock, unitCost, supplierId } = data;
+  const { name, type, color, quantity, unit, width, brand, model, minStock, unitCost, supplierId } = data;
   
-  // Verificar si ya existe un item con el mismo código
-  const existingItem = await inventoryRepository.findOneBy({ code });
-  if (existingItem) {
-    throw new Error("Ya existe un item de inventario con este código");
-  }
-
   // Si se proporciona supplierId, verificar que el proveedor existe
   if (supplierId) {
     const supplier = await supplierRepository.findOneBy({ id: supplierId });
@@ -31,7 +25,7 @@ export const createInventoryItem = async (data) => {
     unit: unit || "metros",
     width,
     brand,
-    code,
+    model,
     minStock: minStock || 5,
     unitCost,
     supplierId,
@@ -46,14 +40,6 @@ export const updateInventoryItem = async (id, data) => {
   const item = await inventoryRepository.findOneBy({ id });
   if (!item) {
     throw new Error("Item de inventario no encontrado");
-  }
-
-  // Si se está actualizando el código, verificar que no exista otro item con ese código
-  if (data.code && data.code !== item.code) {
-    const existingItem = await inventoryRepository.findOneBy({ code: data.code });
-    if (existingItem) {
-      throw new Error("Ya existe un item de inventario con este código");
-    }
   }
 
   // Si se está cambiando el proveedor, verificar que existe

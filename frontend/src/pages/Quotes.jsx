@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { quotesAPI } from '../services/apiService';
-import { Quote, Search } from 'lucide-react';
+import { quotesAPI, servicesAPI } from '../services/apiService';
+import { Quote, Search, Plus, X } from 'lucide-react';
 
 const getServiceTitle = (quote) => {
-  if (quote.service?.title) {
-    return quote.service.title;
+  if (quote.service?.name) {
+    return quote.service.name;
   }
   if (quote.customServiceTitle) {
     return quote.customServiceTitle;
@@ -14,12 +14,36 @@ const getServiceTitle = (quote) => {
 
 const Quotes = () => {
   const [quotes, setQuotes] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    company: '',
+    serviceId: '',
+    customServiceTitle: '',
+    serviceType: 'otro',
+    description: '',
+    urgency: 'Media',
+    notes: ''
+  });
 
   useEffect(() => {
     loadQuotes();
+    loadServices();
   }, []);
+
+  const loadServices = async () => {
+    try {
+      const response = await servicesAPI.getAll();
+      setServices(response.data || []);
+    } catch (error) {
+      console.error('Error loading services:', error);
+    }
+  };
 
   const loadQuotes = async () => {
     try {
@@ -31,6 +55,39 @@ const Quotes = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const quoteData = {
+        ...formData,
+        serviceId: formData.serviceId ? parseInt(formData.serviceId) : null
+      };
+
+      await quotesAPI.create(quoteData);
+      await loadQuotes();
+      resetForm();
+    } catch (error) {
+      console.error('Error creating quote:', error);
+      alert('Error al crear la cotización');
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      clientName: '',
+      clientEmail: '',
+      clientPhone: '',
+      company: '',
+      serviceId: '',
+      customServiceTitle: '',
+      serviceType: 'otro',
+      description: '',
+      urgency: 'Media',
+      notes: ''
+    });
+    setShowModal(false);
   };
 
   const updateQuoteStatus = async (quoteId, newStatus) => {
@@ -175,11 +232,22 @@ const Quotes = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-          <Quote className="h-8 w-8 mr-3 text-pink-600" />
-          Cotizaciones
-        </h1>
-        <p className="mt-2 text-gray-600">Solicitudes de cotización de clientes</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <Quote className="h-8 w-8 mr-3 text-pink-600" />
+              Cotizaciones
+            </h1>
+            <p className="mt-2 text-gray-600">Solicitudes de cotización de clientes</p>
+          </div>
+          <button 
+            onClick={() => setShowModal(true)}
+            className="bg-pink-600 text-white px-4 py-2 rounded-md hover:bg-pink-700 transition-colors duration-200 flex items-center"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nueva Cotización
+          </button>
+        </div>
       </div>
 
       <div className="mb-6">
@@ -264,6 +332,202 @@ const Quotes = () => {
           </p>
         </div>
       )}
+
+      {/* Modal para crear cotización */}
+    {showModal && (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-gray-900">
+              Nueva Cotización
+            </h3>
+            <button
+              onClick={resetForm}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Información del Cliente */}
+              <div className="md:col-span-2">
+                <h4 className="text-md font-semibold text-gray-800 mb-2">Información del Cliente</h4>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre del Cliente *
+                </label>
+                <input
+                  type="text"
+                  value={formData.clientName}
+                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email del Cliente *
+                </label>
+                <input
+                  type="email"
+                  value={formData.clientEmail}
+                  onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono del Cliente *
+                </label>
+                <input
+                  type="tel"
+                  value={formData.clientPhone}
+                  onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  placeholder="+56 9 xxxx xxxx"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Empresa (Opcional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.company}
+                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                />
+              </div>
+
+              {/* Información del Servicio */}
+              <div className="md:col-span-2">
+                <h4 className="text-md font-semibold text-gray-800 mb-2 mt-4">Información del Servicio</h4>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo de Servicio *
+                </label>
+                <select
+                  value={formData.serviceType}
+                  onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  required
+                >
+                  <option value="otro">Otro</option>
+                  <option value="identidad-corporativa">Identidad Corporativa</option>
+                  <option value="grafica-competicion">Gráfica de Competición</option>
+                  <option value="wrap-vehicular">Wrap Vehicular</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Urgencia
+                </label>
+                <select
+                  value={formData.urgency}
+                  onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                >
+                  <option value="Baja">Baja</option>
+                  <option value="Media">Media</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Urgente">Urgente</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Servicio del Catálogo
+                </label>
+                <select
+                  value={formData.serviceId}
+                  onChange={(e) => setFormData({ ...formData, serviceId: e.target.value, customServiceTitle: e.target.value ? '' : formData.customServiceTitle })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                >
+                  <option value="">Seleccionar servicio existente</option>
+                  {services.map(service => (
+                    <option key={service.id} value={service.id}>
+                      {service.name} - ${service.price?.toLocaleString('es-CL')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Servicio Personalizado
+                </label>
+                <input
+                  type="text"
+                  value={formData.customServiceTitle}
+                  onChange={(e) => setFormData({ ...formData, customServiceTitle: e.target.value, serviceId: e.target.value ? '' : formData.serviceId })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  placeholder="Título del servicio personalizado"
+                  disabled={!!formData.serviceId}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.serviceId ? 'Desselecciona el servicio del catálogo para usar un servicio personalizado' : 'O especifica un servicio personalizado'}
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Descripción del Proyecto *
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  rows="4"
+                  placeholder="Describe detalladamente lo que necesitas..."
+                  required
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Notas Adicionales
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  rows="2"
+                  placeholder="Información adicional, referencias, etc."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={resetForm}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700"
+              >
+                Crear Cotización
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
     </div>
   );
 };

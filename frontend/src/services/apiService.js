@@ -82,6 +82,13 @@ export const publicAPI = {
       const response = await publicApi.get(`/public/services/category/${category}`);
       return response.data;
     }
+  },
+
+  quotes: {
+    create: async (quoteData) => {
+      const response = await publicApi.post('/quotes/public', quoteData);
+      return response.data;
+    }
   }
 };
 

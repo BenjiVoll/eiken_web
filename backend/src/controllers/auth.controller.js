@@ -1,10 +1,6 @@
 "use strict";
 import { loginService, registerService } from "../services/auth.service.js";
 import {
-  authValidation,
-  registerValidation,
-} from "../validations/auth.validation.js";
-import {
   handleErrorClient,
   handleErrorServer,
   handleSuccess,
@@ -13,12 +9,6 @@ import {
 export async function login(req, res) {
   try {
     const { body } = req;
-
-    const { error } = authValidation.validate(body);
-
-    if (error) {
-      return handleErrorClient(res, 400, "Error de validación", error.message);
-    }
     
     const [loginResult, errorToken] = await loginService(body);
 
@@ -44,11 +34,6 @@ export async function login(req, res) {
 export async function register(req, res) {
   try {
     const { body } = req;
-
-    const { error } = registerValidation.validate(body);
-
-    if (error)
-      return handleErrorClient(res, 400, "Error de validación", error.message);
 
     const [newUser, errorNewUser] = await registerService(body);
 

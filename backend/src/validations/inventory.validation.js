@@ -45,57 +45,84 @@ export const inventoryQueryValidation = Joi.object({
 export const inventoryBodyValidation = Joi.object({
   name: Joi.string()
     .min(2)
-    .max(100)
+    .max(255)
+    .required()
     .messages({
       "string.empty": "El nombre no puede estar vacío.",
       "string.base": "El nombre debe ser de tipo string.",
       "string.min": "El nombre debe tener como mínimo 2 caracteres.",
-      "string.max": "El nombre debe tener como máximo 100 caracteres.",
+      "string.max": "El nombre debe tener como máximo 255 caracteres.",
+      "any.required": "El nombre es obligatorio.",
     }),
-  description: Joi.string()
-    .max(500)
-    .allow("")
+  type: Joi.string()
+    .max(100)
+    .required()
     .messages({
-      "string.base": "La descripción debe ser de tipo string.",
-      "string.max": "La descripción debe tener como máximo 500 caracteres.",
+      "string.empty": "El tipo no puede estar vacío.",
+      "string.base": "El tipo debe ser de tipo string.",
+      "string.max": "El tipo debe tener como máximo 100 caracteres.",
+      "any.required": "El tipo es obligatorio.",
     }),
-  category: Joi.string()
-    .min(2)
+  color: Joi.string()
+    .max(100)
+    .required()
+    .messages({
+      "string.empty": "El color no puede estar vacío.",
+      "string.base": "El color debe ser de tipo string.",
+      "string.max": "El color debe tener como máximo 100 caracteres.",
+      "any.required": "El color es obligatorio.",
+    }),
+  brand: Joi.string()
+    .max(100)
+    .allow(null, '')
+    .messages({
+      "string.base": "La marca debe ser de tipo string.",
+      "string.max": "La marca debe tener como máximo 100 caracteres.",
+    }),
+  model: Joi.string()
+    .max(100)
+    .allow(null, '')
+    .messages({
+      "string.base": "El modelo debe ser de tipo string.",
+      "string.max": "El modelo debe tener como máximo 100 caracteres.",
+    }),
+  width: Joi.string()
     .max(50)
+    .allow(null, '')
     .messages({
-      "string.base": "La categoría debe ser de tipo string.",
-      "string.min": "La categoría debe tener como mínimo 2 caracteres.",
-      "string.max": "La categoría debe tener como máximo 50 caracteres.",
+      "string.base": "El ancho debe ser de tipo string.",
+      "string.max": "El ancho debe tener como máximo 50 caracteres.",
     }),
   unit: Joi.string()
-    .min(1)
-    .max(20)
+    .max(50)
+    .default("metros")
     .messages({
       "string.base": "La unidad debe ser de tipo string.",
-      "string.min": "La unidad debe tener como mínimo 1 caracter.",
-      "string.max": "La unidad debe tener como máximo 20 caracteres.",
+      "string.max": "La unidad debe tener como máximo 50 caracteres.",
     }),
-  currentStock: Joi.number()
+  quantity: Joi.number()
+    .integer()
     .min(0)
+    .required()
     .messages({
-      "number.base": "El stock actual debe ser un número.",
-      "number.min": "El stock actual no puede ser negativo.",
+      "number.base": "La cantidad debe ser un número.",
+      "number.integer": "La cantidad debe ser un número entero.",
+      "number.min": "La cantidad no puede ser negativa.",
+      "any.required": "La cantidad es obligatoria.",
     }),
   minStock: Joi.number()
+    .integer()
     .min(0)
+    .default(5)
     .messages({
       "number.base": "El stock mínimo debe ser un número.",
+      "number.integer": "El stock mínimo debe ser un número entero.",
       "number.min": "El stock mínimo no puede ser negativo.",
-    }),
-  maxStock: Joi.number()
-    .min(0)
-    .messages({
-      "number.base": "El stock máximo debe ser un número.",
-      "number.min": "El stock máximo no puede ser negativo.",
     }),
   unitCost: Joi.number()
     .positive()
     .precision(2)
+    .allow(null)
     .messages({
       "number.base": "El costo unitario debe ser un número.",
       "number.positive": "El costo unitario debe ser un número positivo.",
@@ -103,20 +130,113 @@ export const inventoryBodyValidation = Joi.object({
   supplierId: Joi.number()
     .integer()
     .positive()
+    .allow(null)
     .messages({
       "number.base": "El id del proveedor debe ser un número.",
       "number.integer": "El id del proveedor debe ser un número entero.",
       "number.positive": "El id del proveedor debe ser un número positivo.",
     }),
-  location: Joi.string()
-    .max(100)
-    .allow("")
+  isActive: Joi.boolean()
+    .default(true)
     .messages({
-      "string.base": "La ubicación debe ser de tipo string.",
-      "string.max": "La ubicación debe tener como máximo 100 caracteres.",
+      "boolean.base": "El estado activo debe ser de tipo boolean.",
     }),
 })
-  .or("name", "description", "category", "unit", "currentStock", "minStock", "maxStock", "unitCost", "supplierId", "location")
+  .unknown(false)
+  .messages({
+    "object.unknown": "No se permiten propiedades adicionales.",
+  });
+
+export const inventoryUpdateValidation = Joi.object({
+  name: Joi.string()
+    .min(2)
+    .max(255)
+    .messages({
+      "string.empty": "El nombre no puede estar vacío.",
+      "string.base": "El nombre debe ser de tipo string.",
+      "string.min": "El nombre debe tener como mínimo 2 caracteres.",
+      "string.max": "El nombre debe tener como máximo 255 caracteres.",
+    }),
+  type: Joi.string()
+    .max(100)
+    .messages({
+      "string.empty": "El tipo no puede estar vacío.",
+      "string.base": "El tipo debe ser de tipo string.",
+      "string.max": "El tipo debe tener como máximo 100 caracteres.",
+    }),
+  color: Joi.string()
+    .max(100)
+    .messages({
+      "string.empty": "El color no puede estar vacío.",
+      "string.base": "El color debe ser de tipo string.",
+      "string.max": "El color debe tener como máximo 100 caracteres.",
+    }),
+  brand: Joi.string()
+    .max(100)
+    .allow(null, '')
+    .messages({
+      "string.base": "La marca debe ser de tipo string.",
+      "string.max": "La marca debe tener como máximo 100 caracteres.",
+    }),
+  model: Joi.string()
+    .max(100)
+    .allow(null, '')
+    .messages({
+      "string.base": "El modelo debe ser de tipo string.",
+      "string.max": "El modelo debe tener como máximo 100 caracteres.",
+    }),
+  width: Joi.string()
+    .max(50)
+    .allow(null, '')
+    .messages({
+      "string.base": "El ancho debe ser de tipo string.",
+      "string.max": "El ancho debe tener como máximo 50 caracteres.",
+    }),
+  unit: Joi.string()
+    .max(50)
+    .messages({
+      "string.base": "La unidad debe ser de tipo string.",
+      "string.max": "La unidad debe tener como máximo 50 caracteres.",
+    }),
+  quantity: Joi.number()
+    .integer()
+    .min(0)
+    .messages({
+      "number.base": "La cantidad debe ser un número.",
+      "number.integer": "La cantidad debe ser un número entero.",
+      "number.min": "La cantidad no puede ser negativa.",
+    }),
+  minStock: Joi.number()
+    .integer()
+    .min(0)
+    .messages({
+      "number.base": "El stock mínimo debe ser un número.",
+      "number.integer": "El stock mínimo debe ser un número entero.",
+      "number.min": "El stock mínimo no puede ser negativo.",
+    }),
+  unitCost: Joi.number()
+    .positive()
+    .precision(2)
+    .allow(null)
+    .messages({
+      "number.base": "El costo unitario debe ser un número.",
+      "number.positive": "El costo unitario debe ser un número positivo.",
+    }),
+  supplierId: Joi.number()
+    .integer()
+    .positive()
+    .allow(null)
+    .messages({
+      "number.base": "El id del proveedor debe ser un número.",
+      "number.integer": "El id del proveedor debe ser un número entero.",
+      "number.positive": "El id del proveedor debe ser un número positivo.",
+    }),
+  isActive: Joi.boolean()
+    .messages({
+      "boolean.base": "El estado activo debe ser de tipo boolean.",
+    }),
+})
+  .or("name", "type", "color", "brand", "model", "width", "unit", "quantity", "minStock", "unitCost", "supplierId", "isActive")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",

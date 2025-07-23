@@ -16,6 +16,8 @@ import {
   CheckCircle,
   Calendar,
   Eye,
+  X,
+  Plus,
 } from 'lucide-react';
 import { publicAPI } from '../services/apiService';
 
@@ -25,6 +27,19 @@ const Home = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [formData, setFormData] = useState({
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    company: '',
+    serviceId: '',
+    customServiceTitle: '',
+    serviceType: 'otro',
+    description: '',
+    urgency: 'Media',
+    notes: ''
+  });
 
   useEffect(() => {
     const loadServices = async () => {
@@ -60,6 +75,52 @@ const Home = () => {
 
   const categories = getUniqueCategories();
 
+  const handleSubmitQuote = async (e) => {
+    e.preventDefault();
+    try {
+      if (!formData.serviceId && !formData.customServiceTitle) {
+        alert('Debes seleccionar un servicio o especificar un servicio personalizado');
+        return;
+      }
+
+      await publicAPI.quotes.create(formData);
+      alert('¡Cotización enviada exitosamente! Nos pondremos en contacto contigo pronto.');
+      resetForm();
+    } catch (error) {
+      console.error('Error al crear cotización:', error);
+      alert('Error al enviar la cotización. Por favor intenta nuevamente.');
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      clientName: '',
+      clientEmail: '',
+      clientPhone: '',
+      company: '',
+      serviceId: '',
+      customServiceTitle: '',
+      serviceType: 'otro',
+      description: '',
+      urgency: 'Media',
+      notes: ''
+    });
+    setShowQuoteModal(false);
+  };
+
+  const openQuoteModal = () => {
+    setShowQuoteModal(true);
+  };
+
+  const openQuoteModalWithService = (serviceId) => {
+    setFormData({
+      ...formData,
+      serviceId: serviceId,
+      customServiceTitle: ''
+    });
+    setShowQuoteModal(true);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <section className="bg-gradient-to-br from-eiken-red-50 via-white to-eiken-orange-50 py-20">
@@ -76,7 +137,10 @@ const Home = () => {
               Especialistas en diseño publicitario, gráfica vehicular y competición con más de 20 años de experiencia
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center justify-center">
+              <button 
+                onClick={openQuoteModal}
+                className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center justify-center"
+              >
                 Solicitar Cotización
                 <ArrowRight className="ml-2 h-5 w-5" />
               </button>
@@ -298,7 +362,10 @@ const Home = () => {
                         <div className="text-xs text-gray-500">Desde</div>
                       </div>
                       <div className="flex space-x-2">
-                        <button className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50">
+                        <button 
+                          onClick={() => openQuoteModalWithService(service.id)}
+                          className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50"
+                        >
                           Cotizar
                         </button>
                         <button className="bg-eiken-gradient text-white px-3 py-1 text-sm rounded hover:shadow-lg transition-shadow flex items-center">
@@ -494,7 +561,10 @@ const Home = () => {
           </div>
 
           <div className="text-center mt-12">
-            <button className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto">
+            <button 
+              onClick={openQuoteModal}
+              className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto"
+            >
               Solicitar Cotización Gratuita
               <ArrowRight className="ml-2 h-5 w-5" />
             </button>
@@ -549,6 +619,210 @@ const Home = () => {
           </div>
         </div>
       </footer>
+
+      {/* Modal para solicitar cotización */}
+      {showQuoteModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-gray-900">
+                {formData.serviceId ? 
+                  `Cotizar: ${services.find(s => s.id === formData.serviceId)?.name || 'Servicio'}` : 
+                  'Solicitar Cotización'
+                }
+              </h3>
+              <button
+                onClick={resetForm}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitQuote} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Información del Cliente */}
+                <div className="md:col-span-2">
+                  <h4 className="text-md font-semibold text-gray-800 mb-2">Tus Datos</h4>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tu Nombre *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.clientName}
+                    onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tu Email *
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.clientEmail}
+                    onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tu Teléfono *
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.clientPhone}
+                    onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                    placeholder="+56 9 xxxx xxxx"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Empresa (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                  />
+                </div>
+
+                {/* Información del Servicio */}
+                <div className="md:col-span-2">
+                  <h4 className="text-md font-semibold text-gray-800 mb-2 mt-4">¿Qué Necesitas?</h4>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tipo de Servicio *
+                  </label>
+                  <select
+                    value={formData.serviceType}
+                    onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                    required
+                  >
+                    <option value="otro">Otro</option>
+                    <option value="identidad-corporativa">Identidad Corporativa</option>
+                    <option value="grafica-competicion">Gráfica de Competición</option>
+                    <option value="wrap-vehicular">Wrap Vehicular</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ¿Qué tan urgente es?
+                  </label>
+                  <select
+                    value={formData.urgency}
+                    onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                  >
+                    <option value="Baja">No hay apuro</option>
+                    <option value="Media">En un par de semanas</option>
+                    <option value="Alta">Lo antes posible</option>
+                    <option value="Urgente">¡Es urgente!</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Servicio de Nuestro Catálogo
+                    {formData.serviceId && (
+                      <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                        Preseleccionado
+                      </span>
+                    )}
+                  </label>
+                  <select
+                    value={formData.serviceId}
+                    onChange={(e) => setFormData({ ...formData, serviceId: e.target.value, customServiceTitle: e.target.value ? '' : formData.customServiceTitle })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                  >
+                    <option value="">Seleccionar servicio</option>
+                    {services.map(service => (
+                      <option key={service.id} value={service.id}>
+                        {service.name} - ${service.price?.toLocaleString('es-CL')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    O Descríbenos tu Servicio
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.customServiceTitle}
+                    onChange={(e) => setFormData({ ...formData, customServiceTitle: e.target.value, serviceId: e.target.value ? '' : formData.serviceId })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                    placeholder="Ej: Diseño de logos, rotulado de vehículo..."
+                    disabled={!!formData.serviceId}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.serviceId ? 'Deselecciona el servicio del catálogo para describir tu propio servicio' : 'O selecciona un servicio de nuestro catálogo arriba'}
+                  </p>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cuéntanos más sobre tu proyecto *
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                    rows="4"
+                    placeholder="Describe tu proyecto, qué necesitas, colores preferidos, tamaño del vehículo si aplica, etc."
+                    required
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Información Adicional
+                  </label>
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                    rows="2"
+                    placeholder="Referencias, inspiraciones, presupuesto aproximado, fechas importantes..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-4">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-eiken-gradient text-white rounded-md hover:shadow-lg transition-shadow"
+                >
+                  Enviar Cotización
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
