@@ -19,17 +19,23 @@ export async function connectDB() {
     await AppDataSource.initialize();
     console.log("=> Conexión exitosa a la base de datos!");
     
-    // Eliminar enums problemáticos si existen
+    // Eliminar enums y tablas problemáticas si existen
     try {
+      // Primero eliminar las tablas para que TypeORM las recree
+      await AppDataSource.query("DROP TABLE IF EXISTS services CASCADE");
+      await AppDataSource.query("DROP TABLE IF EXISTS projects CASCADE");
+      await AppDataSource.query("DROP TABLE IF EXISTS quotes CASCADE");
+      
+      // Luego eliminar los enums
       await AppDataSource.query("DROP TYPE IF EXISTS services_division_enum CASCADE");
       await AppDataSource.query("DROP TYPE IF EXISTS projects_division_enum CASCADE");
       await AppDataSource.query("DROP TYPE IF EXISTS projects_status_enum CASCADE");
       await AppDataSource.query("DROP TYPE IF EXISTS projects_priority_enum CASCADE");
       await AppDataSource.query("DROP TYPE IF EXISTS quotes_urgency_enum CASCADE");
       await AppDataSource.query("DROP TYPE IF EXISTS quotes_status_enum CASCADE");
-      console.log("=> Enums problemáticos eliminados");
+      console.log("=> Tablas y enums problemáticos eliminados");
     } catch (enumError) {
-      console.log("=> Enums no existían o ya se eliminaron");
+      console.log("=> Tablas/enums no existían o ya se eliminaron");
     }
     
   } catch (error) {
