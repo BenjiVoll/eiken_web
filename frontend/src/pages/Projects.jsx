@@ -15,18 +15,22 @@ const Projects = () => {
     try {
       setLoading(true);
       const response = await projectsAPI.getAll();
-      setProjects(response.data || []);
+      // Asegurar que siempre sea un array
+      setProjects(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error loading projects:', error);
+      // En caso de error, establecer array vacío
+      setProjects([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredProjects = projects.filter(project =>
-    project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    project.division.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Proteger el filtro asegurando que projects sea un array
+  const filteredProjects = Array.isArray(projects) ? projects.filter(project =>
+    project.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    project.division?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : [];
 
   const getStatusColor = (status) => {
     switch (status) {

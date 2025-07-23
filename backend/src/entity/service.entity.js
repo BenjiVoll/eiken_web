@@ -26,7 +26,7 @@ export const ServiceSchema = new EntitySchema({
     },
     division: {
       type: "enum",
-      enum: ["Design", "Truck Design", "Racing Design"],
+      enum: ["design", "truck-design", "racing-design"],
       nullable: false,
     },
     price: {
