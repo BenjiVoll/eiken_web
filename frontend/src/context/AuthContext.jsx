@@ -61,7 +61,6 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(email, password);
       
       console.log('Respuesta del login:', response); // Para debug
-      console.log('response.data:', response.data); // Debug adicional
       
       // El backend devuelve: { status: "Success", message: "...", data: { token, user } }
       if (response.status === 'Success') {
@@ -95,7 +94,22 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error en login:', error);
-      const errorMessage = error.response?.data?.message || 'Error de conexión';
+      console.error('Error response:', error.response); // Debug adicional
+      console.error('Error message:', error.message); // Debug adicional
+      
+      let errorMessage = 'Error de conexión';
+      
+      if (error.response) {
+        // El servidor respondió con un código de error
+        errorMessage = error.response.data?.message || `Error ${error.response.status}: ${error.response.statusText}`;
+      } else if (error.request) {
+        // La petición se hizo pero no hubo respuesta
+        errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+      } else {
+        // Algo más pasó
+        errorMessage = error.message || 'Error desconocido';
+      }
+      
       return { 
         success: false, 
         error: errorMessage
