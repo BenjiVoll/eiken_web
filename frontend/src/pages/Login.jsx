@@ -67,7 +67,6 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Header */}
         <div>
           <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
             <LogIn className="h-6 w-6 text-blue-600" />
@@ -80,10 +79,8 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Formulario */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Correo Electrónico
@@ -105,7 +102,6 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Contraseña
@@ -139,14 +135,12 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <div className="text-sm text-red-700">{error}</div>
             </div>
           )}
 
-          {/* Submit button */}
           <div>
             <button
               type="submit"
@@ -168,7 +162,6 @@ const Login = () => {
           </div>
         </form>
 
-        {/* Credenciales de prueba */}
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

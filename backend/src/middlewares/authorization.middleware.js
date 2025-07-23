@@ -5,7 +5,6 @@ handleErrorClient,
 handleErrorServer,
 } from "../handlers/responseHandlers.js";
 
-// Middleware para verificar si el usuario es administrador
 export async function isAdmin(req, res, next) {
 try {
     const userRepository = AppDataSource.getRepository(User);
@@ -40,7 +39,6 @@ try {
 }
 }
 
-// Middleware para verificar si el usuario es manager o superior
 export async function isManagerOrAbove(req, res, next) {
 try {
     const userRepository = AppDataSource.getRepository(User);
@@ -76,7 +74,6 @@ try {
 }
 }
 
-// Middleware para verificar si el usuario es designer o superior
 export async function isDesignerOrAbove(req, res, next) {
 try {
     const userRepository = AppDataSource.getRepository(User);
@@ -112,7 +109,6 @@ try {
 }
 }
 
-// Middleware para verificar si el usuario puede acceder a sus propios recursos o es manager+
 export async function isOwnerOrManagerAbove(req, res, next) {
 try {
     const userRepository = AppDataSource.getRepository(User);

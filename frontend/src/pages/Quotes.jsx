@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { quotesAPI } from '../services/apiService';
 import { Quote, Search } from 'lucide-react';
 
+const getServiceTitle = (quote) => {
+  if (quote.service?.title) {
+    return quote.service.title;
+  }
+  if (quote.customServiceTitle) {
+    return quote.customServiceTitle;
+  }
+  return 'Sin servicio especificado';
+};
+
 const Quotes = () => {
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,29 +26,45 @@ const Quotes = () => {
       setLoading(true);
       const response = await quotesAPI.getAll();
       setQuotes(response.data || []);
-    } catch (error) {
-      console.error('Error loading quotes:', error);
+    } catch {
+      // Error al cargar cotizaciones
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredQuotes = quotes.filter(quote =>
-    quote.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quote.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quote.serviceType.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const updateQuoteStatus = async (quoteId, newStatus) => {
+    try {
+      await quotesAPI.updateStatus(quoteId, newStatus);
+      setQuotes(quotes.map(quote => 
+        quote.id === quoteId 
+          ? { ...quote, status: newStatus }
+          : quote
+      ));
+    } catch { /* empty */ }
+  };
+
+  const filteredQuotes = quotes.filter(quote => {
+    const searchLower = searchTerm.toLowerCase();
+    const serviceTitle = getServiceTitle(quote);
+    
+    return quote.clientName.toLowerCase().includes(searchLower) ||
+           (quote.company && quote.company.toLowerCase().includes(searchLower)) ||
+           serviceTitle.toLowerCase().includes(searchLower);
+  });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved':
+      case 'Aprobado':
         return 'bg-green-100 text-green-800';
-      case 'pending':
+      case 'Pendiente':
         return 'bg-yellow-100 text-yellow-800';
-      case 'rejected':
+      case 'Rechazado':
         return 'bg-red-100 text-red-800';
-      case 'in_process':
+      case 'Revisando':
         return 'bg-blue-100 text-blue-800';
+      case 'Cotizado':
+        return 'bg-purple-100 text-purple-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -46,14 +72,16 @@ const Quotes = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'approved':
-        return 'Aprobada';
-      case 'pending':
+      case 'Aprobado':
+        return 'Aprobado';
+      case 'Pendiente':
         return 'Pendiente';
-      case 'rejected':
-        return 'Rechazada';
-      case 'in_process':
-        return 'En Proceso';
+      case 'Rechazado':
+        return 'Rechazado';
+      case 'Revisando':
+        return 'Revisando';
+      case 'Cotizado':
+        return 'Cotizado';
       default:
         return status;
     }
@@ -61,13 +89,13 @@ const Quotes = () => {
 
   const getUrgencyColor = (urgency) => {
     switch (urgency) {
-      case 'urgent':
+      case 'Urgente':
         return 'text-red-600';
-      case 'high':
+      case 'Alta':
         return 'text-orange-600';
-      case 'medium':
+      case 'Media':
         return 'text-yellow-600';
-      case 'low':
+      case 'Baja':
         return 'text-green-600';
       default:
         return 'text-gray-600';
@@ -76,17 +104,64 @@ const Quotes = () => {
 
   const getUrgencyLabel = (urgency) => {
     switch (urgency) {
-      case 'urgent':
+      case 'Urgente':
         return 'Urgente';
-      case 'high':
+      case 'Alta':
         return 'Alta';
-      case 'medium':
+      case 'Media':
         return 'Media';
-      case 'low':
+      case 'Baja':
         return 'Baja';
       default:
         return urgency;
     }
+  };
+
+  const StatusSelector = ({ quote }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedStatus, setSelectedStatus] = useState(quote.status);
+
+    const statusOptions = [
+      'Pendiente',
+      'Revisando',
+      'Cotizado',
+      'Aprobado',
+      'Rechazado'
+    ];
+
+    const handleStatusChange = async (newStatus) => {
+      if (newStatus !== quote.status) {
+        await updateQuoteStatus(quote.id, newStatus);
+        setSelectedStatus(newStatus);
+      }
+      setIsEditing(false);
+    };
+
+    if (isEditing) {
+      return (
+        <select
+          value={selectedStatus}
+          onChange={(e) => handleStatusChange(e.target.value)}
+          onBlur={() => setIsEditing(false)}
+          className="text-xs font-medium border border-gray-300 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          autoFocus
+        >
+          {statusOptions.map(status => (
+            <option key={status} value={status}>{status}</option>
+          ))}
+        </select>
+      );
+    }
+
+    return (
+      <span 
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-blue-300 transition-all duration-200 ${getStatusColor(selectedStatus)}`}
+        onClick={() => setIsEditing(true)}
+        title="Click para cambiar estado"
+      >
+        {getStatusLabel(selectedStatus)} ✏️
+      </span>
+    );
   };
 
   if (loading) {
@@ -135,13 +210,11 @@ const Quotes = () => {
                           {quote.clientName} - {quote.company}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {quote.serviceType} • {quote.clientEmail}
+                          {getServiceTitle(quote)} • {quote.clientEmail}
                         </p>
                       </div>
                       <div className="ml-2 flex-shrink-0 flex items-center space-x-2">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(quote.status)}`}>
-                          {getStatusLabel(quote.status)}
-                        </span>
+                        <StatusSelector quote={quote} />
                         <span className={`text-xs font-medium ${getUrgencyColor(quote.urgency)}`}>
                           {getUrgencyLabel(quote.urgency)}
                         </span>
@@ -158,12 +231,12 @@ const Quotes = () => {
                           <span className="text-sm text-gray-600">
                             Tel: {quote.clientPhone}
                           </span>
-                          {quote.estimatedAmount && (
+                          {quote.quotedAmount && (
                             <span className="text-sm font-bold text-green-600">
                               {new Intl.NumberFormat('es-CL', {
                                 style: 'currency',
                                 currency: 'CLP'
-                              }).format(quote.estimatedAmount)}
+                              }).format(quote.quotedAmount)}
                             </span>
                           )}
                         </div>

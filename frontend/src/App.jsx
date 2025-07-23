@@ -2,7 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import ClientNavbar from './components/ClientNavbar';
 import Login from './pages/Login';
+import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Services from './pages/Services';
 import Inventory from './pages/Inventory';
@@ -11,11 +13,10 @@ import Projects from './pages/Projects';
 import Quotes from './pages/Quotes';
 import Users from './pages/Users';
 
-// Componente para rutas protegidas
 const ProtectedRoute = ({ children, requiredRole = null }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, loggingOut } = useAuth();
 
-  if (loading) {
+  if (loading || loggingOut) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -34,7 +35,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   return children;
 };
 
-// Layout principal con Navbar
+// Layout principal con Navbar para admin
 const AppLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -46,22 +47,45 @@ const AppLayout = ({ children }) => {
   );
 };
 
-// Componente principal de la aplicación
+// Layout para cliente con ClientNavbar
+const ClientLayout = ({ children }) => {
+  return (
+    <div className="min-h-screen bg-white">
+      <ClientNavbar />
+      <main>
+        {children}
+      </main>
+    </div>
+  );
+};
+
 function AppContent() {
   const { user } = useAuth();
 
   return (
     <Router>
       <Routes>
-        {/* Ruta de login */}
         <Route 
-          path="/login" 
-          element={user ? <Navigate to="/dashboard" /> : <Login />} 
+          path="/" 
+          element={
+            <ClientLayout>
+              <Home />
+            </ClientLayout>
+          } 
         />
         
-        {/* Rutas protegidas */}
         <Route 
-          path="/dashboard" 
+          path="/login" 
+          element={user ? <Navigate to="/intranet/dashboard" /> : <Login />} 
+        />
+        
+        <Route 
+          path="/intranet" 
+          element={<Navigate to="/intranet/dashboard" replace />} 
+        />
+        
+        <Route 
+          path="/intranet/dashboard" 
           element={
             <ProtectedRoute>
               <AppLayout>
@@ -72,7 +96,7 @@ function AppContent() {
         />
         
         <Route 
-          path="/services" 
+          path="/intranet/services" 
           element={
             <ProtectedRoute>
               <AppLayout>
@@ -83,7 +107,7 @@ function AppContent() {
         />
         
         <Route 
-          path="/inventory" 
+          path="/intranet/inventory" 
           element={
             <ProtectedRoute>
               <AppLayout>
@@ -94,7 +118,7 @@ function AppContent() {
         />
         
         <Route 
-          path="/suppliers" 
+          path="/intranet/suppliers" 
           element={
             <ProtectedRoute>
               <AppLayout>
@@ -105,7 +129,7 @@ function AppContent() {
         />
         
         <Route 
-          path="/projects" 
+          path="/intranet/projects" 
           element={
             <ProtectedRoute>
               <AppLayout>
@@ -116,7 +140,7 @@ function AppContent() {
         />
         
         <Route 
-          path="/quotes" 
+          path="/intranet/quotes" 
           element={
             <ProtectedRoute>
               <AppLayout>
@@ -127,7 +151,7 @@ function AppContent() {
         />
         
         <Route 
-          path="/users" 
+          path="/intranet/users" 
           element={
             <ProtectedRoute requiredRole="admin">
               <AppLayout>
@@ -137,10 +161,17 @@ function AppContent() {
           } 
         />
         
-        {/* Redirección por defecto */}
-        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/dashboard" element={<Navigate to="/intranet/dashboard" />} />
+        <Route path="/services" element={<Navigate to="/intranet/services" />} />
+        <Route path="/inventory" element={<Navigate to="/intranet/inventory" />} />
+        <Route path="/suppliers" element={<Navigate to="/intranet/suppliers" />} />
+        <Route path="/projects" element={<Navigate to="/intranet/projects" />} />
+        <Route path="/quotes" element={<Navigate to="/intranet/quotes" />} />
+        <Route path="/users" element={<Navigate to="/intranet/users" />} />
         
-        {/* Ruta 404 */}
+        <Route path="/admin/*" element={<Navigate to="/intranet" />} />
+        <Route path="/gestion/*" element={<Navigate to="/intranet" />} />
+        
         <Route 
           path="*" 
           element={

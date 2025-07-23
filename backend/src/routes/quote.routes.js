@@ -7,7 +7,7 @@ import {
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation } from "../middlewares/validations.middleware.js";
-import { quoteBodyValidation } from "../validations/quote.validation.js";
+import { quoteBodyValidation, quoteUpdateValidation } from "../validations/quote.validation.js";
 import {
   createQuote,
   deleteQuote,
@@ -38,7 +38,7 @@ router
   )
   .patch("/:id", 
     isDesignerOrAbove, // Designer+ puede actualizar cotizaciones
-    createBodyValidation(quoteBodyValidation), 
+    createBodyValidation(quoteUpdateValidation), 
     updateQuote
   )
   .delete("/:id", 

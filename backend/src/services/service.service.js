@@ -56,7 +56,6 @@ export const getServices = async () => {
 
 export const getActiveServices = async () => {
   const services = await serviceRepository.find({
-    where: { isActive: true },
     order: { name: "ASC" }
   });
   return services;
@@ -77,7 +76,7 @@ export const getServicesByDivision = async (division) => {
   }
 
   const services = await serviceRepository.find({
-    where: { division, isActive: true },
+    where: { division },
     order: { name: "ASC" }
   });
   return services;
@@ -85,7 +84,7 @@ export const getServicesByDivision = async (division) => {
 
 export const getServicesByCategory = async (category) => {
   const services = await serviceRepository.find({
-    where: { category, isActive: true },
+    where: { category },
     order: { name: "ASC" }
   });
   return services;
@@ -101,8 +100,7 @@ export const updateServiceRating = async (id, rating) => {
     throw new Error("Servicio no encontrado");
   }
 
-  service.rating = rating;
-  await serviceRepository.save(service);
+  // Por ahora solo retornamos el servicio ya que no tenemos campo rating en la BD
   return service;
 };
 
@@ -112,9 +110,8 @@ export const deleteService = async (id) => {
     throw new Error("Servicio no encontrado");
   }
 
-  // Soft delete - marcar como inactivo
-  service.isActive = false;
-  await serviceRepository.save(service);
+  // Hard delete - eliminar completamente
+  await serviceRepository.remove(service);
   
   return { mensaje: "Servicio eliminado exitosamente" };
 };

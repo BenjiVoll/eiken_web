@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   Home, 
@@ -17,56 +17,58 @@ import {
 const Navbar = () => {
   const { user, logout, isAdmin, isManager } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = () => {
+    // Limpiar primero
     logout();
-    navigate('/login');
+    
+    // Redirección inmediata que reemplaza la entrada actual del historial
+    window.location.replace('/');
   };
 
   const navigationItems = [
     { 
       name: 'Dashboard', 
-      href: '/dashboard', 
+      href: '/intranet/dashboard', 
       icon: Home,
-      requiresRole: null // Todos pueden acceder
+      requiresRole: null
     },
     { 
       name: 'Servicios', 
-      href: '/services', 
+      href: '/intranet/services', 
       icon: Settings,
       requiresRole: null
     },
     { 
       name: 'Inventario', 
-      href: '/inventory', 
+      href: '/intranet/inventory', 
       icon: Package,
       requiresRole: null
     },
     { 
       name: 'Proveedores', 
-      href: '/suppliers', 
+      href: '/intranet/suppliers', 
       icon: Briefcase,
       requiresRole: null
     },
     { 
       name: 'Proyectos', 
-      href: '/projects', 
+      href: '/intranet/projects', 
       icon: FileText,
       requiresRole: null
     },
     { 
       name: 'Cotizaciones', 
-      href: '/quotes', 
+      href: '/intranet/quotes', 
       icon: Quote,
       requiresRole: null
     },
     { 
       name: 'Usuarios', 
-      href: '/users', 
+      href: '/intranet/users', 
       icon: Users,
-      requiresRole: 'admin' // Solo admins
+      requiresRole: 'admin'
     }
   ];
 

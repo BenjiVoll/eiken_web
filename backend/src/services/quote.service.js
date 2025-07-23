@@ -2,32 +2,26 @@
 import { AppDataSource } from "../config/configDb.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
+import { ServiceSchema } from "../entity/service.entity.js";
 
 const quoteRepository = AppDataSource.getRepository(QuoteSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createQuote = async (data) => {
-  const { clientId, clientName, clientEmail, clientPhone, company, serviceType, description, urgency, estimatedAmount, notes } = data;
+  const { clientName, clientEmail, clientPhone, company, serviceId, customServiceTitle, serviceType, description, urgency, quotedAmount, notes } = data;
   
-  // Si se proporciona clientId, verificar que el cliente existe
-  if (clientId) {
-    const client = await clientRepository.findOneBy({ id: clientId });
-    if (!client) {
-      throw new Error("Cliente no encontrado");
-    }
-  }
-
   const quote = quoteRepository.create({
-    clientId,
     clientName,
     clientEmail,
     clientPhone,
     company,
+    serviceId: serviceId || null,
+    customServiceTitle: customServiceTitle || null,
     serviceType,
     description,
-    urgency: urgency || "medium",
-    status: "pending",
-    estimatedAmount,
+    urgency: urgency || "Media",
+    status: "Pendiente",
+    quotedAmount,
     notes
   });
 
@@ -41,14 +35,6 @@ export const updateQuote = async (id, data) => {
     throw new Error("Cotización no encontrada");
   }
 
-  // Si se está cambiando el cliente, verificar que existe
-  if (data.clientId && data.clientId !== quote.clientId) {
-    const client = await clientRepository.findOneBy({ id: data.clientId });
-    if (!client) {
-      throw new Error("Cliente no encontrado");
-    }
-  }
-
   Object.assign(quote, data);
   await quoteRepository.save(quote);
   return quote;
@@ -56,7 +42,7 @@ export const updateQuote = async (id, data) => {
 
 export const getQuotes = async () => {
   const quotes = await quoteRepository.find({
-    relations: ["client"],
+    relations: ["service"],
     order: { createdAt: "DESC" }
   });
   return quotes;
@@ -65,50 +51,41 @@ export const getQuotes = async () => {
 export const getQuoteById = async (id) => {
   const quote = await quoteRepository.findOne({
     where: { id },
-    relations: ["client"]
+    relations: ["service"]
   });
   return quote;
 };
 
 export const getQuotesByStatus = async (status) => {
-  const validStatuses = ["pending", "approved", "rejected", "in_process", "completed"];
+  const validStatuses = ["Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado"];
   if (!validStatuses.includes(status)) {
     throw new Error("Estado de cotización no válido");
   }
 
   const quotes = await quoteRepository.find({
     where: { status },
-    relations: ["client"],
+    relations: ["service"],
     order: { createdAt: "DESC" }
   });
   return quotes;
 };
 
 export const getQuotesByUrgency = async (urgency) => {
-  const validUrgencies = ["low", "medium", "high", "urgent"];
+  const validUrgencies = ["Baja", "Media", "Alta", "Urgente"];
   if (!validUrgencies.includes(urgency)) {
     throw new Error("Nivel de urgencia no válido");
   }
 
   const quotes = await quoteRepository.find({
     where: { urgency },
-    relations: ["client"],
-    order: { createdAt: "DESC" }
-  });
-  return quotes;
-};
-
-export const getQuotesByClient = async (clientId) => {
-  const quotes = await quoteRepository.find({
-    where: { clientId },
-    relations: ["client"],
+    relations: ["service"],
     order: { createdAt: "DESC" }
   });
   return quotes;
 };
 
 export const updateQuoteStatus = async (id, newStatus) => {
-  const validStatuses = ["pending", "approved", "rejected", "in_process", "completed"];
+  const validStatuses = ["Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado"];
   if (!validStatuses.includes(newStatus)) {
     throw new Error("Estado de cotización no válido");
   }

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
+import { tokenManager } from '../services/apiService';
 
 const AuthContext = createContext();
 
@@ -15,6 +16,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     // Verificar si hay un token guardado al cargar la aplicación
@@ -25,8 +27,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
-        // Configurar el token para futuras peticiones
-        authService.setAuthToken(token);
+        tokenManager.setAuthToken(token);
       } catch (error) {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('token');
@@ -34,8 +35,24 @@ export const AuthProvider = ({ children }) => {
       }
     }
     
+    // Listener para logout automático cuando el token expira
+    const handleAutoLogout = () => {
+      setUser(null);
+      // Solo redirigir a login si estamos en rutas protegidas
+      if (window.location.pathname.startsWith('/intranet')) {
+        window.location.href = '/login';
+      }
+    };
+
+    window.addEventListener('auth:logout', handleAutoLogout);
+    
     // Importante: siempre terminar el loading
     setLoading(false);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('auth:logout', handleAutoLogout);
+    };
   }, []);
 
   const login = async (email, password) => {
@@ -64,8 +81,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
         
-        // Configurar el token para futuras peticiones
-        authService.setAuthToken(token);
+        tokenManager.setAuthToken(token);
         
         // Actualizar el estado
         setUser(userData);
@@ -88,15 +104,19 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // Limpiar localStorage
+    setLoggingOut(true);
+    
+    // Limpiar localStorage primero
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     
     // Limpiar el token de las peticiones
-    authService.setAuthToken(null);
+    tokenManager.setAuthToken(null);
     
     // Limpiar el estado
     setUser(null);
+    
+    // NO hacer petición al backend para evitar 401
   };
 
   const register = async (userData) => {
@@ -123,6 +143,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    loggingOut,
     login,
     logout,
     register,

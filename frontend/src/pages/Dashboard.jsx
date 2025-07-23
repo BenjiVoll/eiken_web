@@ -180,7 +180,6 @@ const Dashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
           Bienvenido, {user?.name}
@@ -190,7 +189,6 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
         {dashboardCards.map((card, index) => {
           const Icon = card.icon;
@@ -233,9 +231,7 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Activity */}
         <div className="lg:col-span-2">
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -287,7 +283,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="lg:col-span-1">
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -298,7 +293,7 @@ const Dashboard = () => {
             <div className="p-6 space-y-4">
               {isManager && (
                 <a
-                  href="/services"
+                  href="/intranet/services"
                   className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center"
                 >
                   <Settings className="h-4 w-4 mr-2" />
@@ -308,7 +303,7 @@ const Dashboard = () => {
               
               {isManager && (
                 <a
-                  href="/inventory"
+                  href="/intranet/inventory"
                   className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center justify-center"
                 >
                   <Package className="h-4 w-4 mr-2" />
@@ -317,7 +312,7 @@ const Dashboard = () => {
               )}
               
               <a
-                href="/projects"
+                href="/intranet/projects"
                 className="w-full bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center"
               >
                 <FileText className="h-4 w-4 mr-2" />
@@ -325,7 +320,7 @@ const Dashboard = () => {
               </a>
               
               <a
-                href="/quotes"
+                href="/intranet/quotes"
                 className="w-full bg-pink-600 text-white px-4 py-2 rounded-md hover:bg-pink-700 transition-colors duration-200 flex items-center justify-center"
               >
                 <Quote className="h-4 w-4 mr-2" />
@@ -334,7 +329,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* User Info */}
           <div className="mt-6 bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-900">

@@ -30,12 +30,16 @@ const Projects = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed':
+      case 'Completado':
         return 'bg-green-100 text-green-800';
-      case 'in_progress':
+      case 'En Proceso':
         return 'bg-blue-100 text-blue-800';
-      case 'pending':
+      case 'Pendiente':
         return 'bg-yellow-100 text-yellow-800';
+      case 'Aprobada':
+        return 'bg-purple-100 text-purple-800';
+      case 'Cancelado':
+        return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -43,14 +47,33 @@ const Projects = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'completed':
+      case 'Completado':
         return 'Completado';
-      case 'in_progress':
-        return 'En Progreso';
-      case 'pending':
+      case 'En Proceso':
+        return 'En Proceso';
+      case 'Pendiente':
         return 'Pendiente';
+      case 'Aprobada':
+        return 'Aprobada';
+      case 'Cancelado':
+        return 'Cancelado';
       default:
         return status;
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'Urgente':
+        return 'text-red-600';
+      case 'Alta':
+        return 'text-orange-600';
+      case 'Media':
+        return 'text-yellow-600';
+      case 'Baja':
+        return 'text-green-600';
+      default:
+        return 'text-gray-600';
     }
   };
 
@@ -106,12 +129,18 @@ const Projects = () => {
                   <span className="text-sm text-gray-900">{project.division}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-500">Categoría:</span>
-                  <span className="text-sm text-gray-900">{project.category}</span>
+                  <span className="text-sm font-medium text-gray-500">Tipo:</span>
+                  <span className="text-sm text-gray-900">{project.projectType}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-500">Año:</span>
-                  <span className="text-sm text-gray-900">{project.year}</span>
+                  <span className="text-sm font-medium text-gray-500">Prioridad:</span>
+                  <span className={`text-sm font-medium ${getPriorityColor(project.priority)}`}>
+                    {project.priority}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-500">Cliente:</span>
+                  <span className="text-sm text-gray-900">{project.client?.name || 'N/A'}</span>
                 </div>
                 {project.budgetAmount && (
                   <div className="flex justify-between">
@@ -126,15 +155,9 @@ const Projects = () => {
                 )}
               </div>
               
-              {project.tags && project.tags.length > 0 && (
+              {project.notes && (
                 <div className="mt-4">
-                  <div className="flex flex-wrap gap-1">
-                    {project.tags.map((tag, index) => (
-                      <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-sm text-gray-600 italic">{project.notes}</p>
                 </div>
               )}
             </div>

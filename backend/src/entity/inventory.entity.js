@@ -25,10 +25,20 @@ export const InventorySchema = new EntitySchema({
       length: 100,
       nullable: false,
     },
-    quantity: {
-      type: "int",
-      nullable: false,
-      default: 0,
+    brand: {
+      type: "varchar",
+      length: 100,
+      nullable: true,
+    },
+    model: {
+      type: "varchar",
+      length: 100,
+      nullable: true,
+    },
+    width: {
+      type: "varchar",
+      length: 50,
+      nullable: true,
     },
     unit: {
       type: "varchar",
@@ -36,21 +46,10 @@ export const InventorySchema = new EntitySchema({
       default: "metros",
       nullable: false,
     },
-    width: {
-      type: "varchar",
-      length: 50,
-      nullable: true,
-    },
-    brand: {
-      type: "varchar",
-      length: 100,
-      nullable: true,
-    },
-    code: {
-      type: "varchar",
-      length: 100,
+    quantity: {
+      type: "int",
       nullable: false,
-      unique: true,
+      default: 0,
     },
     minStock: {
       type: "int",
@@ -89,15 +88,15 @@ export const InventorySchema = new EntitySchema({
       name: "updated_at",
     },
   },
+  
   indices: [
     {
       name: "IDX_INVENTORY_TYPE",
       columns: ["type"],
     },
     {
-      name: "IDX_INVENTORY_CODE",
-      columns: ["code"],
-      unique: true,
+      name: "IDX_INVENTORY_BRAND",
+      columns: ["brand"],
     },
     {
       name: "IDX_INVENTORY_QUANTITY",
@@ -108,6 +107,7 @@ export const InventorySchema = new EntitySchema({
       columns: ["isActive"],
     },
   ],
+  
   relations: {
     supplier: {
       type: "many-to-one",

@@ -10,11 +10,7 @@ export const QuoteSchema = new EntitySchema({
       primary: true,
       generated: "increment",
     },
-    clientId: {
-      type: "int",
-      nullable: true,
-      name: "client_id",
-    },
+    
     clientName: {
       type: "varchar",
       length: 255,
@@ -30,7 +26,7 @@ export const QuoteSchema = new EntitySchema({
     clientPhone: {
       type: "varchar",
       length: 50,
-      nullable: true,
+      nullable: false,
       name: "client_phone",
     },
     company: {
@@ -38,9 +34,21 @@ export const QuoteSchema = new EntitySchema({
       length: 255,
       nullable: true,
     },
-    serviceType: {
+    
+    serviceId: {
+      type: "int",
+      nullable: true,
+      name: "service_id",
+    },
+    customServiceTitle: {
       type: "varchar",
-      length: 100,
+      length: 255,
+      nullable: true,
+      name: "custom_service_title",
+    },
+    serviceType: {
+      type: "enum",
+      enum: ["otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular"],
       nullable: false,
       name: "service_type",
     },
@@ -50,27 +58,29 @@ export const QuoteSchema = new EntitySchema({
     },
     urgency: {
       type: "enum",
-      enum: ["low", "medium", "high", "urgent"],
-      default: "medium",
+      enum: ["Baja", "Media", "Alta", "Urgente"],
+      default: "Media",
       nullable: false,
     },
+    
     status: {
       type: "enum",
-      enum: ["pending", "approved", "rejected", "in_process", "completed"],
-      default: "pending",
+      enum: ["Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado"],
+      default: "Pendiente",
       nullable: false,
     },
-    estimatedAmount: {
+    quotedAmount: {
       type: "decimal",
       precision: 10,
       scale: 2,
       nullable: true,
-      name: "estimated_amount",
+      name: "quoted_amount",
     },
     notes: {
       type: "text",
       nullable: true,
     },
+    
     createdAt: {
       type: "timestamp",
       createDate: true,
@@ -84,31 +94,35 @@ export const QuoteSchema = new EntitySchema({
       name: "updated_at",
     },
   },
+  
+  relations: {
+    service: {
+      target: "Service",
+      type: "many-to-one",
+      joinColumn: {
+        name: "service_id",
+        referencedColumnName: "id",
+      },
+      nullable: true,
+    },
+  },
+  
   indices: [
     {
       name: "IDX_QUOTE_STATUS",
       columns: ["status"],
     },
     {
-      name: "IDX_QUOTE_URGENCY",
-      columns: ["urgency"],
-    },
-    {
       name: "IDX_QUOTE_EMAIL",
       columns: ["clientEmail"],
     },
     {
-      name: "IDX_QUOTE_CREATED",
-      columns: ["createdAt"],
+      name: "IDX_QUOTE_URGENCY",
+      columns: ["urgency"],
+    },
+    {
+      name: "IDX_QUOTE_SERVICE",
+      columns: ["serviceId"],
     },
   ],
-  relations: {
-    client: {
-      type: "many-to-one",
-      target: "Client",
-      joinColumn: { name: "client_id", referencedColumnName: "id" },
-      inverseSide: "quotes",
-      nullable: true,
-    },
-  },
 });
