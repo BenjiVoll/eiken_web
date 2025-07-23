@@ -30,15 +30,15 @@ const Projects = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Completado':
+      case 'completed':
         return 'bg-green-100 text-green-800';
-      case 'En Proceso':
+      case 'in-progress':
         return 'bg-blue-100 text-blue-800';
-      case 'Pendiente':
+      case 'pending':
         return 'bg-yellow-100 text-yellow-800';
-      case 'Aprobada':
+      case 'approved':
         return 'bg-purple-100 text-purple-800';
-      case 'Cancelado':
+      case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -47,15 +47,15 @@ const Projects = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'Completado':
+      case 'completed':
         return 'Completado';
-      case 'En Proceso':
+      case 'in-progress':
         return 'En Proceso';
-      case 'Pendiente':
+      case 'pending':
         return 'Pendiente';
-      case 'Aprobada':
+      case 'approved':
         return 'Aprobada';
-      case 'Cancelado':
+      case 'cancelled':
         return 'Cancelado';
       default:
         return status;
@@ -64,13 +64,13 @@ const Projects = () => {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'Urgente':
+      case 'urgent':
         return 'text-red-600';
-      case 'Alta':
+      case 'high':
         return 'text-orange-600';
-      case 'Media':
+      case 'medium':
         return 'text-yellow-600';
-      case 'Baja':
+      case 'low':
         return 'text-green-600';
       default:
         return 'text-gray-600';
