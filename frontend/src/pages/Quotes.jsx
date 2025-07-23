@@ -27,7 +27,7 @@ const Quotes = () => {
     customServiceTitle: '',
     serviceType: 'otro',
     description: '',
-    urgency: 'media',
+    urgency: 'medium',
     notes: ''
   });
 
@@ -84,7 +84,7 @@ const Quotes = () => {
       customServiceTitle: '',
       serviceType: 'otro',
       description: '',
-      urgency: 'media',
+      urgency: 'medium',
       notes: ''
     });
     setShowModal(false);
@@ -439,10 +439,10 @@ const Quotes = () => {
                   onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
                 >
-                  <option value="baja">Baja</option>
-                  <option value="media">Media</option>
-                  <option value="alta">Alta</option>
-                  <option value="urgente">Urgente</option>
+                  <option value="low">Baja</option>
+                  <option value="medium">Media</option>
+                  <option value="high">Alta</option>
+                  <option value="urgent">Urgente</option>
                 </select>
               </div>
 

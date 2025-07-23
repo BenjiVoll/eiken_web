@@ -17,16 +17,16 @@ export const quoteQueryValidation = Joi.object({
       "string.email": "El email del cliente debe ser un email válido.",
     }),
   status: Joi.string()
-    .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado")
+    .valid("pending", "reviewing", "quoted", "approved", "rejected")
     .messages({
       "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: Pendiente, Revisando, Cotizado, Aprobado, Rechazado.",
+      "any.only": "El estado debe ser uno de: pending, reviewing, quoted, approved, rejected.",
     }),
   urgency: Joi.string()
-    .valid("baja", "media", "alta", "urgente")
+    .valid("low", "medium", "high", "urgent")
     .messages({
       "string.base": "La urgencia debe ser de tipo string.",
-      "any.only": "La urgencia debe ser uno de: baja, media, alta, urgente.",
+      "any.only": "La urgencia debe ser uno de: low, medium, high, urgent.",
     }),
   serviceType: Joi.string()
     .valid("otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular")
@@ -115,18 +115,18 @@ export const quoteBodyValidation = Joi.object({
       "any.required": "La descripción es obligatoria.",
     }),
   urgency: Joi.string()
-    .valid("baja", "media", "alta", "urgente")
-    .default("media")
+    .valid("low", "medium", "high", "urgent")
+    .default("medium")
     .messages({
       "string.base": "La urgencia debe ser de tipo string.",
-      "any.only": "La urgencia debe ser uno de: baja, media, alta, urgente.",
+      "any.only": "La urgencia debe ser uno de: low, medium, high, urgent.",
     }),
   status: Joi.string()
-    .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado")
-    .default("Pendiente")
+    .valid("pending", "reviewing", "quoted", "approved", "rejected")
+    .default("pending")
     .messages({
       "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: Pendiente, Revisando, Cotizado, Aprobado, Rechazado.",
+      "any.only": "El estado debe ser uno de: pending, reviewing, quoted, approved, rejected.",
     }),
   quotedAmount: Joi.number()
     .positive()
@@ -231,10 +231,10 @@ export const quoteUpdateValidation = Joi.object({
       "string.base": "Las notas deben ser de tipo string.",
     }),
   status: Joi.string()
-    .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado")
+    .valid("pending", "reviewing", "quoted", "approved", "rejected")
     .messages({
       "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: Pendiente, Revisando, Cotizado, Aprobado, Rechazado.",
+      "any.only": "El estado debe ser uno de: pending, reviewing, quoted, approved, rejected.",
     }),
   quotedAmount: Joi.number()
     .positive()
