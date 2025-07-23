@@ -58,15 +58,13 @@ export const QuoteSchema = new EntitySchema({
     },
     urgency: {
       type: "enum",
-      enum: ["baja", "media", "alta", "urgente"],
-      default: "media",
+      enum: ["low", "medium", "high", "urgent"],
       nullable: false,
     },
     
     status: {
       type: "enum",
-      enum: ["Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado"],
-      default: "Pendiente",
+      enum: ["pending", "reviewing", "quoted", "approved", "rejected"],
       nullable: false,
     },
     quotedAmount: {
