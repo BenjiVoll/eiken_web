@@ -61,15 +61,16 @@ const Home = () => {
     loadServices();
   }, []);
 
-  const filteredServices = services.filter((service) => {
+  const filteredServices = Array.isArray(services) ? services.filter((service) => {
     const matchesSearch = service.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
     return matchesSearch && matchesCategory;
-  });
+  }) : [];
 
   const getUniqueCategories = () => {
     const categories = ['all'];
-    const uniqueCategories = [...new Set(services.map(service => service.category))];
+    const uniqueCategories = Array.isArray(services) ? 
+      [...new Set(services.map(service => service.category))] : [];
     return [...categories, ...uniqueCategories];
   };
 
@@ -627,7 +628,7 @@ const Home = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-gray-900">
                 {formData.serviceId ? 
-                  `Cotizar: ${services.find(s => s.id === formData.serviceId)?.name || 'Servicio'}` : 
+                  `Cotizar: ${Array.isArray(services) ? services.find(s => s.id === formData.serviceId)?.name || 'Servicio' : 'Servicio'}` : 
                   'Solicitar Cotización'
                 }
               </h3>

@@ -93,22 +93,22 @@ const Quotes = () => {
   const updateQuoteStatus = async (quoteId, newStatus) => {
     try {
       await quotesAPI.updateStatus(quoteId, newStatus);
-      setQuotes(quotes.map(quote => 
+      setQuotes(Array.isArray(quotes) ? quotes.map(quote => 
         quote.id === quoteId 
           ? { ...quote, status: newStatus }
           : quote
-      ));
+      ) : []);
     } catch { /* empty */ }
   };
 
-  const filteredQuotes = quotes.filter(quote => {
+  const filteredQuotes = Array.isArray(quotes) ? quotes.filter(quote => {
     const searchLower = searchTerm.toLowerCase();
     const serviceTitle = getServiceTitle(quote);
     
-    return quote.clientName.toLowerCase().includes(searchLower) ||
+    return quote.clientName?.toLowerCase().includes(searchLower) ||
            (quote.company && quote.company.toLowerCase().includes(searchLower)) ||
            serviceTitle.toLowerCase().includes(searchLower);
-  });
+  }) : [];
 
   const getStatusColor = (status) => {
     switch (status) {

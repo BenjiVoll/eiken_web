@@ -124,11 +124,11 @@ const Inventory = () => {
     setShowModal(false);
   };
 
-  const filteredInventory = inventory.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredInventory = Array.isArray(inventory) ? inventory.filter(item =>
+    item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : [];
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CL', {
