@@ -14,7 +14,7 @@ const Services = () => {
     name: '',
     description: '',
     category: '',
-    division: 'Design',
+    division: 'design',
     price: ''
   });
 
@@ -42,17 +42,34 @@ const Services = () => {
         price: parseFloat(formData.price)
       };
 
+      console.log('Enviando datos del servicio:', serviceData); // Debug
+
       if (editingService) {
-        await servicesAPI.update(editingService.id, serviceData);
+        const response = await servicesAPI.update(editingService.id, serviceData);
+        console.log('Respuesta de actualización:', response); // Debug
       } else {
-        await servicesAPI.create(serviceData);
+        const response = await servicesAPI.create(serviceData);
+        console.log('Respuesta de creación:', response); // Debug
       }
 
       await loadServices();
       resetForm();
+      alert('Servicio guardado exitosamente');
     } catch (error) {
       console.error('Error saving service:', error);
-      alert('Error al guardar el servicio');
+      console.error('Detalles del error:', error.response?.data); // Debug
+      console.error('Detalles de validación:', error.response?.data?.details); // Debug específico
+      
+      let errorMessage = 'Error al guardar el servicio';
+      if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
+        // Mostrar todos los errores de validación
+        const validationErrors = error.response.data.details.map(detail => detail.message || detail).join(', ');
+        errorMessage = `Errores de validación: ${validationErrors}`;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      alert(errorMessage);
     }
   };
 
@@ -85,7 +102,7 @@ const Services = () => {
       name: '',
       description: '',
       category: '',
-      division: 'Design',
+      division: 'design',
       price: ''
     });
     setEditingService(null);
@@ -107,14 +124,27 @@ const Services = () => {
 
   const getDivisionColor = (division) => {
     switch (division) {
-      case 'Design':
+      case 'design':
         return 'bg-blue-100 text-blue-800';
-      case 'Truck Design':
+      case 'truck-design':
         return 'bg-green-100 text-green-800';
-      case 'Racing Design':
+      case 'racing-design':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getDivisionLabel = (division) => {
+    switch (division) {
+      case 'design':
+        return 'Diseño';
+      case 'truck-design':
+        return 'Diseño de Camiones';
+      case 'racing-design':
+        return 'Diseño de Carreras';
+      default:
+        return division;
     }
   };
 
@@ -201,7 +231,7 @@ const Services = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">División:</span>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDivisionColor(service.division)}`}>
-                    {service.division}
+                    {getDivisionLabel(service.division)}
                   </span>
                 </div>
                 
@@ -293,9 +323,9 @@ const Services = () => {
                     onChange={(e) => setFormData({...formData, division: e.target.value})}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
-                    <option value="Design">Design</option>
-                    <option value="Truck Design">Truck Design</option>
-                    <option value="Racing Design">Racing Design</option>
+                    <option value="design">Diseño</option>
+                    <option value="truck-design">Diseño de Camiones</option>
+                    <option value="racing-design">Diseño de Carreras</option>
                   </select>
                 </div>
 

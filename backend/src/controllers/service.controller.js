@@ -10,14 +10,19 @@ import {
     getActiveServices,
     updateServiceRating
 } from "../services/service.service.js";
+import {
+  handleErrorClient,
+  handleErrorServer,
+  handleSuccess,
+} from "../handlers/responseHandlers.js";
 
 // Crear un servicio
 export const createService = async (req, res) => {
     try {
         const service = await createServiceService(req.body);
-        res.status(201).json(service);
+        handleSuccess(res, 201, "Servicio creado exitosamente", service);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        handleErrorServer(res, 400, error.message);
     }
 };
 
@@ -25,9 +30,9 @@ export const createService = async (req, res) => {
 export const updateService = async (req, res) => {
     try {
         const service = await updateServiceService(req.params.id, req.body);
-        res.status(200).json(service);
+        handleSuccess(res, 200, "Servicio actualizado exitosamente", service);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        handleErrorServer(res, 400, error.message);
     }
 };
 
