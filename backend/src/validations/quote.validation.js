@@ -23,10 +23,10 @@ export const quoteQueryValidation = Joi.object({
       "any.only": "El estado debe ser uno de: Pendiente, Revisando, Cotizado, Aprobado, Rechazado.",
     }),
   urgency: Joi.string()
-    .valid("Baja", "Media", "Alta", "Urgente")
+    .valid("baja", "media", "alta", "urgente")
     .messages({
       "string.base": "La urgencia debe ser de tipo string.",
-      "any.only": "La urgencia debe ser uno de: Baja, Media, Alta, Urgente.",
+      "any.only": "La urgencia debe ser uno de: baja, media, alta, urgente.",
     }),
   serviceType: Joi.string()
     .valid("otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular")
@@ -115,11 +115,11 @@ export const quoteBodyValidation = Joi.object({
       "any.required": "La descripción es obligatoria.",
     }),
   urgency: Joi.string()
-    .valid("Baja", "Media", "Alta", "Urgente")
-    .default("Media")
+    .valid("baja", "media", "alta", "urgente")
+    .default("media")
     .messages({
       "string.base": "La urgencia debe ser de tipo string.",
-      "any.only": "La urgencia debe ser uno de: Baja, Media, Alta, Urgente.",
+      "any.only": "La urgencia debe ser uno de: baja, media, alta, urgente.",
     }),
   status: Joi.string()
     .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado")
@@ -198,10 +198,10 @@ export const quoteUpdateValidation = Joi.object({
       "any.only": "El tipo de servicio debe ser uno de: otro, identidad-corporativa, grafica-competicion, wrap-vehicular.",
     }),
   urgency: Joi.string()
-    .valid("Baja", "Media", "Alta", "Urgente")
+    .valid("baja", "media", "alta", "urgente")
     .messages({
       "string.base": "La urgencia debe ser de tipo string.",
-      "any.only": "La urgencia debe ser uno de: Baja, Media, Alta, Urgente.",
+      "any.only": "La urgencia debe ser uno de: baja, media, alta, urgente.",
     }),
   description: Joi.string()
     .min(10)

@@ -37,7 +37,7 @@ const Home = () => {
     customServiceTitle: '',
     serviceType: 'otro',
     description: '',
-    urgency: 'Media',
+    urgency: 'media',
     notes: ''
   });
 
@@ -102,7 +102,7 @@ const Home = () => {
       customServiceTitle: '',
       serviceType: 'otro',
       description: '',
-      urgency: 'Media',
+      urgency: 'media',
       notes: ''
     });
     setShowQuoteModal(false);
@@ -729,10 +729,10 @@ const Home = () => {
                     onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
                   >
-                    <option value="Baja">No hay apuro</option>
-                    <option value="Media">En un par de semanas</option>
-                    <option value="Alta">Lo antes posible</option>
-                    <option value="Urgente">¡Es urgente!</option>
+                    <option value="baja">No hay apuro</option>
+                    <option value="media">En un par de semanas</option>
+                    <option value="alta">Lo antes posible</option>
+                    <option value="urgente">¡Es urgente!</option>
                   </select>
                 </div>
 
