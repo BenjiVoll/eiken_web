@@ -23,10 +23,10 @@ const Suppliers = () => {
     }
   };
 
-  const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSuppliers = Array.isArray(suppliers) ? suppliers.filter(supplier =>
+    supplier.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.contactPerson?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : [];
 
   if (loading) {
     return (

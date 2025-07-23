@@ -92,11 +92,11 @@ const Services = () => {
     setShowModal(false);
   };
 
-  const filteredServices = services.filter(service =>
-    service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.division.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredServices = Array.isArray(services) ? services.filter(service =>
+    service.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    service.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    service.division?.toLowerCase().includes(searchTerm.toLowerCase())
+  ) : [];
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('es-CL', {
