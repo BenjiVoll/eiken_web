@@ -27,7 +27,7 @@ const Quotes = () => {
     customServiceTitle: '',
     serviceType: 'otro',
     description: '',
-    urgency: 'medium',
+    urgency: 'Media',
     notes: ''
   });
 
@@ -62,7 +62,8 @@ const Quotes = () => {
     try {
       const quoteData = {
         ...formData,
-        serviceId: formData.serviceId ? parseInt(formData.serviceId) : null
+        serviceId: formData.serviceId ? parseInt(formData.serviceId) : null,
+        urgency: getUrgencyValue(formData.urgency) // Convertir urgencia a inglés
       };
 
       await quotesAPI.create(quoteData);
@@ -84,7 +85,7 @@ const Quotes = () => {
       customServiceTitle: '',
       serviceType: 'otro',
       description: '',
-      urgency: 'medium',
+      urgency: 'Media',
       notes: ''
     });
     setShowModal(false);
@@ -93,12 +94,15 @@ const Quotes = () => {
   const updateQuoteStatus = async (quoteId, newStatus) => {
     try {
       await quotesAPI.updateStatus(quoteId, newStatus);
+      
       setQuotes(Array.isArray(quotes) ? quotes.map(quote => 
         quote.id === quoteId 
-          ? { ...quote, status: newStatus }
+          ? { ...quote, status: newStatus } // newStatus ya viene en inglés
           : quote
       ) : []);
-    } catch { /* empty */ }
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+    }
   };
 
   const filteredQuotes = Array.isArray(quotes) ? quotes.filter(quote => {
@@ -112,14 +116,19 @@ const Quotes = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
+      case 'approved':
       case 'Aprobado':
         return 'bg-green-100 text-green-800';
+      case 'pending':
       case 'Pendiente':
         return 'bg-yellow-100 text-yellow-800';
+      case 'rejected':
       case 'Rechazado':
         return 'bg-red-100 text-red-800';
+      case 'reviewing':
       case 'Revisando':
         return 'bg-blue-100 text-blue-800';
+      case 'quoted':
       case 'Cotizado':
         return 'bg-purple-100 text-purple-800';
       default:
@@ -129,6 +138,16 @@ const Quotes = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
+      case 'approved':
+        return 'Aprobado';
+      case 'pending':
+        return 'Pendiente';
+      case 'rejected':
+        return 'Rechazado';
+      case 'reviewing':
+        return 'Revisando';
+      case 'quoted':
+        return 'Cotizado';
       case 'Aprobado':
         return 'Aprobado';
       case 'Pendiente':
@@ -144,14 +163,36 @@ const Quotes = () => {
     }
   };
 
+  // Función para convertir de español a inglés (para enviar al backend)
+  const getStatusValue = (displayStatus) => {
+    switch (displayStatus) {
+      case 'Pendiente':
+        return 'pending';
+      case 'Revisando':
+        return 'reviewing';
+      case 'Cotizado':
+        return 'quoted';
+      case 'Aprobado':
+        return 'approved';
+      case 'Rechazado':
+        return 'rejected';
+      default:
+        return displayStatus;
+    }
+  };
+
   const getUrgencyColor = (urgency) => {
     switch (urgency) {
+      case 'urgent':
       case 'Urgente':
         return 'text-red-600';
+      case 'high':
       case 'Alta':
         return 'text-orange-600';
+      case 'medium':
       case 'Media':
         return 'text-yellow-600';
+      case 'low':
       case 'Baja':
         return 'text-green-600';
       default:
@@ -161,6 +202,14 @@ const Quotes = () => {
 
   const getUrgencyLabel = (urgency) => {
     switch (urgency) {
+      case 'urgent':
+        return 'Urgente';
+      case 'high':
+        return 'Alta';
+      case 'medium':
+        return 'Media';
+      case 'low':
+        return 'Baja';
       case 'Urgente':
         return 'Urgente';
       case 'Alta':
@@ -174,9 +223,25 @@ const Quotes = () => {
     }
   };
 
+  // Función para convertir de español a inglés para urgencia (para el formulario)
+  const getUrgencyValue = (displayUrgency) => {
+    switch (displayUrgency) {
+      case 'Baja':
+        return 'low';
+      case 'Media':
+        return 'medium';
+      case 'Alta':
+        return 'high';
+      case 'Urgente':
+        return 'urgent';
+      default:
+        return displayUrgency;
+    }
+  };
+
   const StatusSelector = ({ quote }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [selectedStatus, setSelectedStatus] = useState(quote.status);
+    const [selectedStatus, setSelectedStatus] = useState(getStatusLabel(quote.status));
 
     const statusOptions = [
       'Pendiente',
@@ -188,7 +253,8 @@ const Quotes = () => {
 
     const handleStatusChange = async (newStatus) => {
       if (newStatus !== quote.status) {
-        await updateQuoteStatus(quote.id, newStatus);
+        const statusValue = getStatusValue(newStatus); // Convertir a inglés
+        await updateQuoteStatus(quote.id, statusValue);
         setSelectedStatus(newStatus);
       }
       setIsEditing(false);
@@ -439,10 +505,10 @@ const Quotes = () => {
                   onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
                 >
-                  <option value="low">Baja</option>
-                  <option value="medium">Media</option>
-                  <option value="high">Alta</option>
-                  <option value="urgent">Urgente</option>
+                  <option value="Baja">Baja</option>
+                  <option value="Media">Media</option>
+                  <option value="Alta">Alta</option>
+                  <option value="Urgente">Urgente</option>
                 </select>
               </div>
 

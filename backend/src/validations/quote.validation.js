@@ -198,10 +198,10 @@ export const quoteUpdateValidation = Joi.object({
       "any.only": "El tipo de servicio debe ser uno de: otro, identidad-corporativa, grafica-competicion, wrap-vehicular.",
     }),
   urgency: Joi.string()
-    .valid("baja", "media", "alta", "urgente")
+    .valid("low", "medium", "high", "urgent")
     .messages({
       "string.base": "La urgencia debe ser de tipo string.",
-      "any.only": "La urgencia debe ser uno de: baja, media, alta, urgente.",
+      "any.only": "La urgencia debe ser uno de: low, medium, high, urgent.",
     }),
   description: Joi.string()
     .min(10)

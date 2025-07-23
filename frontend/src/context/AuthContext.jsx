@@ -57,15 +57,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log('Iniciando login...'); // Debug
       const response = await authService.login(email, password);
-      
-      console.log('Respuesta del login:', response); // Para debug
       
       // El backend devuelve: { status: "Success", message: "...", data: { token, user } }
       if (response.status === 'Success') {
         const { data } = response;
-        console.log('Data extraída:', data); // Debug
         
         if (!data || !data.token || !data.user) {
           console.error('Estructura de datos incorrecta:', data);
@@ -73,8 +69,6 @@ export const AuthProvider = ({ children }) => {
         }
         
         const { token, user: userData } = data;
-        
-        console.log('Login exitoso, guardando datos...', userData); // Debug
         
         // Guardar en localStorage
         localStorage.setItem('token', token);
@@ -85,8 +79,6 @@ export const AuthProvider = ({ children }) => {
         // Actualizar el estado
         setUser(userData);
         
-        console.log('Usuario actualizado en contexto:', userData); // Debug
-        
         return { success: true };
       } else {
         const errorMessage = response.message || 'Error de autenticación';
@@ -94,8 +86,6 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error en login:', error);
-      console.error('Error response:', error.response); // Debug adicional
-      console.error('Error message:', error.message); // Debug adicional
       
       let errorMessage = 'Error de conexión';
       

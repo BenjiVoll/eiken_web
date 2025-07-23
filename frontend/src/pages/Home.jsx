@@ -89,7 +89,21 @@ const Home = () => {
       resetForm();
     } catch (error) {
       console.error('Error al crear cotización:', error);
-      alert('Error al enviar la cotización. Por favor intenta nuevamente.');
+      
+      let errorMessage = 'Error al enviar la cotización. Por favor intenta nuevamente.';
+      if (error.response?.data?.details) {
+        // Si hay detalles de validación, mostrar el primer error
+        const validationErrors = error.response.data.details;
+        if (typeof validationErrors === 'string') {
+          errorMessage = validationErrors;
+        } else if (validationErrors.length > 0) {
+          errorMessage = validationErrors[0].message || validationErrors[0];
+        }
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      alert(errorMessage);
     }
   };
 
