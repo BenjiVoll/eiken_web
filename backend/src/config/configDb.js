@@ -34,6 +34,11 @@ export async function connectDB() {
       await AppDataSource.query("DROP TYPE IF EXISTS quotes_urgency_enum CASCADE");
       await AppDataSource.query("DROP TYPE IF EXISTS quotes_status_enum CASCADE");
       console.log("=> Tablas y enums problemáticos eliminados");
+      
+      // Forzar la sincronización para recrear las tablas
+      await AppDataSource.synchronize();
+      console.log("=> Tablas recreadas con estructura correcta");
+      
     } catch (enumError) {
       console.log("=> Tablas/enums no existían o ya se eliminaron");
     }
