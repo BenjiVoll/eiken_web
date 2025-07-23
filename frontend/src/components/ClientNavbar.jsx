@@ -76,9 +76,6 @@ const ClientNavbar = () => {
             >
               Intranet
             </Link>
-            <button className="border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-              Cotizar Proyecto
-            </button>
             <button className="relative bg-eiken-gradient text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
               <ShoppingCart className="h-4 w-4 mr-2" />
               Carrito

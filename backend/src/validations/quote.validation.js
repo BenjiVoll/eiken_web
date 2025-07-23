@@ -10,13 +10,11 @@ export const quoteQueryValidation = Joi.object({
       "number.integer": "El id debe ser un número entero.",
       "number.positive": "El id debe ser un número positivo.",
     }),
-  clientId: Joi.number()
-    .integer()
-    .positive()
+  clientEmail: Joi.string()
+    .email()
     .messages({
-      "number.base": "El id del cliente debe ser un número.",
-      "number.integer": "El id del cliente debe ser un número entero.",
-      "number.positive": "El id del cliente debe ser un número positivo.",
+      "string.base": "El email del cliente debe ser de tipo string.",
+      "string.email": "El email del cliente debe ser un email válido.",
     }),
   status: Joi.string()
     .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado")
@@ -24,111 +22,57 @@ export const quoteQueryValidation = Joi.object({
       "string.base": "El estado debe ser de tipo string.",
       "any.only": "El estado debe ser uno de: Pendiente, Revisando, Cotizado, Aprobado, Rechazado.",
     }),
+  urgency: Joi.string()
+    .valid("Baja", "Media", "Alta", "Urgente")
+    .messages({
+      "string.base": "La urgencia debe ser de tipo string.",
+      "any.only": "La urgencia debe ser uno de: Baja, Media, Alta, Urgente.",
+    }),
+  serviceType: Joi.string()
+    .valid("otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular")
+    .messages({
+      "string.base": "El tipo de servicio debe ser de tipo string.",
+      "any.only": "El tipo de servicio debe ser uno de: otro, identidad-corporativa, grafica-competicion, wrap-vehicular.",
+    }),
 })
-  .or("id", "clientId", "status")
+  .or("id", "clientEmail", "status", "urgency", "serviceType")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
-    "object.missing": "Debes proporcionar al menos un parámetro: id, clientId o status.",
+    "object.missing": "Debes proporcionar al menos un parámetro: id, clientEmail, status, urgency o serviceType.",
   });
 
 export const quoteBodyValidation = Joi.object({
-  clientId: Joi.number()
-    .integer()
-    .positive()
-    .messages({
-      "number.base": "El id del cliente debe ser un número.",
-      "number.integer": "El id del cliente debe ser un número entero.",
-      "number.positive": "El id del cliente debe ser un número positivo.",
-    }),
-  serviceId: Joi.number()
-    .integer()
-    .positive()
-    .messages({
-      "number.base": "El id del servicio debe ser un número.",
-      "number.integer": "El id del servicio debe ser un número entero.",
-      "number.positive": "El id del servicio debe ser un número positivo.",
-    }),
-  description: Joi.string()
-    .min(10)
-    .max(1000)
-    .messages({
-      "string.base": "La descripción debe ser de tipo string.",
-      "string.min": "La descripción debe tener como mínimo 10 caracteres.",
-      "string.max": "La descripción debe tener como máximo 1000 caracteres.",
-    }),
-  totalAmount: Joi.number()
-    .positive()
-    .precision(2)
-    .messages({
-      "number.base": "El monto total debe ser un número.",
-      "number.positive": "El monto total debe ser un número positivo.",
-    }),
-  discount: Joi.number()
-    .min(0)
-    .max(100)
-    .precision(2)
-    .messages({
-      "number.base": "El descuento debe ser un número.",
-      "number.min": "El descuento no puede ser negativo.",
-      "number.max": "El descuento no puede ser mayor a 100%.",
-    }),
-  validUntil: Joi.date()
-    .greater("now")
-    .messages({
-      "date.base": "La fecha de validez debe ser una fecha válida.",
-      "date.greater": "La fecha de validez debe ser posterior a la fecha actual.",
-    }),
-  status: Joi.string()
-    .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado")
-    .messages({
-      "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: Pendiente, Revisando, Cotizado, Aprobado, Rechazado.",
-    }),
-  notes: Joi.string()
-    .max(500)
-    .allow("")
-    .messages({
-      "string.base": "Las notas deben ser de tipo string.",
-      "string.max": "Las notas deben tener como máximo 500 caracteres.",
-    }),
-})
-  .or("clientId", "serviceId", "description", "totalAmount", "discount", "validUntil", "status", "notes")
-  .custom((value, helpers) => {
-    // Para nuevas cotizaciones, debe haber al menos serviceId o customServiceTitle
-    if (!value.serviceId && !value.customServiceTitle) {
-      return helpers.error('any.custom', { message: 'Debe especificar un servicio del catálogo (serviceId) o un título personalizado (customServiceTitle).' });
-    }
-    return value;
-  })
-  .unknown(false)
-  .messages({
-    "object.unknown": "No se permiten propiedades adicionales.",
-    "object.missing": "Debes proporcionar al menos un campo válido.",
-  });
-
-export const quoteUpdateValidation = Joi.object({
   clientName: Joi.string()
     .min(2)
     .max(255)
+    .required()
     .messages({
+      "string.empty": "El nombre del cliente no puede estar vacío.",
       "string.base": "El nombre del cliente debe ser de tipo string.",
       "string.min": "El nombre del cliente debe tener como mínimo 2 caracteres.",
       "string.max": "El nombre del cliente debe tener como máximo 255 caracteres.",
+      "any.required": "El nombre del cliente es obligatorio.",
     }),
   clientEmail: Joi.string()
     .email()
     .max(255)
+    .required()
     .messages({
+      "string.empty": "El email del cliente no puede estar vacío.",
       "string.base": "El email del cliente debe ser de tipo string.",
       "string.email": "El email del cliente debe ser un email válido.",
       "string.max": "El email del cliente debe tener como máximo 255 caracteres.",
+      "any.required": "El email del cliente es obligatorio.",
     }),
   clientPhone: Joi.string()
     .max(50)
+    .required()
     .messages({
+      "string.empty": "El teléfono del cliente no puede estar vacío.",
       "string.base": "El teléfono del cliente debe ser de tipo string.",
       "string.max": "El teléfono del cliente debe tener como máximo 50 caracteres.",
+      "any.required": "El teléfono del cliente es obligatorio.",
     }),
   company: Joi.string()
     .max(255)
@@ -150,8 +94,102 @@ export const quoteUpdateValidation = Joi.object({
     .max(255)
     .allow(null, '')
     .messages({
-      "string.base": "El título personalizado del servicio debe ser de tipo string.",
-      "string.max": "El título personalizado del servicio debe tener como máximo 255 caracteres.",
+      "string.base": "El título del servicio personalizado debe ser de tipo string.",
+      "string.max": "El título del servicio personalizado debe tener como máximo 255 caracteres.",
+    }),
+  serviceType: Joi.string()
+    .valid("otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular")
+    .required()
+    .messages({
+      "string.base": "El tipo de servicio debe ser de tipo string.",
+      "any.only": "El tipo de servicio debe ser uno de: otro, identidad-corporativa, grafica-competicion, wrap-vehicular.",
+      "any.required": "El tipo de servicio es obligatorio.",
+    }),
+  description: Joi.string()
+    .min(10)
+    .required()
+    .messages({
+      "string.empty": "La descripción no puede estar vacía.",
+      "string.base": "La descripción debe ser de tipo string.",
+      "string.min": "La descripción debe tener como mínimo 10 caracteres.",
+      "any.required": "La descripción es obligatoria.",
+    }),
+  urgency: Joi.string()
+    .valid("Baja", "Media", "Alta", "Urgente")
+    .default("Media")
+    .messages({
+      "string.base": "La urgencia debe ser de tipo string.",
+      "any.only": "La urgencia debe ser uno de: Baja, Media, Alta, Urgente.",
+    }),
+  status: Joi.string()
+    .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado")
+    .default("Pendiente")
+    .messages({
+      "string.base": "El estado debe ser de tipo string.",
+      "any.only": "El estado debe ser uno de: Pendiente, Revisando, Cotizado, Aprobado, Rechazado.",
+    }),
+  quotedAmount: Joi.number()
+    .positive()
+    .precision(2)
+    .allow(null)
+    .messages({
+      "number.base": "El monto cotizado debe ser un número.",
+      "number.positive": "El monto cotizado debe ser un número positivo.",
+    }),
+  notes: Joi.string()
+    .allow('', null)
+    .messages({
+      "string.base": "Las notas deben ser de tipo string.",
+    }),
+})
+  .custom((value, helpers) => {
+    // Debe tener serviceId o customServiceTitle
+    if (!value.serviceId && !value.customServiceTitle) {
+      return helpers.error('any.custom', { 
+        message: 'Debe especificar un servicio del catálogo (serviceId) o un título personalizado (customServiceTitle).' 
+      });
+    }
+    return value;
+  })
+  .unknown(false)
+  .messages({
+    "object.unknown": "No se permiten propiedades adicionales.",
+  });
+
+export const quoteUpdateValidation = Joi.object({
+  clientName: Joi.string()
+    .min(1)
+    .max(255)
+    .trim()
+    .messages({
+      "string.base": "El nombre del cliente debe ser de tipo string.",
+      "string.min": "El nombre del cliente debe tener al menos 1 carácter.",
+      "string.max": "El nombre del cliente no puede tener más de 255 caracteres.",
+    }),
+  clientEmail: Joi.string()
+    .email()
+    .max(255)
+    .trim()
+    .messages({
+      "string.base": "El email del cliente debe ser de tipo string.",
+      "string.email": "El email del cliente debe ser un email válido.",
+      "string.max": "El email del cliente no puede tener más de 255 caracteres.",
+    }),
+  clientPhone: Joi.string()
+    .max(50)
+    .trim()
+    .allow("")
+    .messages({
+      "string.base": "El teléfono del cliente debe ser de tipo string.",
+      "string.max": "El teléfono del cliente no puede tener más de 50 caracteres.",
+    }),
+  company: Joi.string()
+    .max(255)
+    .trim()
+    .allow("")
+    .messages({
+      "string.base": "La empresa debe ser de tipo string.",
+      "string.max": "La empresa no puede tener más de 255 caracteres.",
     }),
   serviceType: Joi.string()
     .valid("otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular")
@@ -159,17 +197,38 @@ export const quoteUpdateValidation = Joi.object({
       "string.base": "El tipo de servicio debe ser de tipo string.",
       "any.only": "El tipo de servicio debe ser uno de: otro, identidad-corporativa, grafica-competicion, wrap-vehicular.",
     }),
-  description: Joi.string()
-    .max(1000)
-    .messages({
-      "string.base": "La descripción debe ser de tipo string.",
-      "string.max": "La descripción debe tener como máximo 1000 caracteres.",
-    }),
   urgency: Joi.string()
     .valid("Baja", "Media", "Alta", "Urgente")
     .messages({
       "string.base": "La urgencia debe ser de tipo string.",
       "any.only": "La urgencia debe ser uno de: Baja, Media, Alta, Urgente.",
+    }),
+  description: Joi.string()
+    .min(10)
+    .messages({
+      "string.base": "La descripción debe ser de tipo string.",
+      "string.min": "La descripción debe tener al menos 10 caracteres.",
+    }),
+  serviceId: Joi.number()
+    .integer()
+    .positive()
+    .allow(null)
+    .messages({
+      "number.base": "El id del servicio debe ser un número.",
+      "number.integer": "El id del servicio debe ser un número entero.",
+      "number.positive": "El id del servicio debe ser un número positivo.",
+    }),
+  customServiceTitle: Joi.string()
+    .max(255)
+    .allow(null, '')
+    .messages({
+      "string.base": "El título del servicio personalizado debe ser de tipo string.",
+      "string.max": "El título del servicio personalizado debe tener como máximo 255 caracteres.",
+    }),
+  notes: Joi.string()
+    .allow('', null)
+    .messages({
+      "string.base": "Las notas deben ser de tipo string.",
     }),
   status: Joi.string()
     .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado")
@@ -184,13 +243,7 @@ export const quoteUpdateValidation = Joi.object({
     .messages({
       "number.base": "El monto cotizado debe ser un número.",
       "number.positive": "El monto cotizado debe ser un número positivo.",
-    }),
-  notes: Joi.string()
-    .max(500)
-    .allow('')
-    .messages({
-      "string.base": "Las notas deben ser de tipo string.",
-      "string.max": "Las notas deben tener como máximo 500 caracteres.",
+      "number.precision": "El monto cotizado debe tener máximo 2 decimales.",
     }),
 })
   .min(1)

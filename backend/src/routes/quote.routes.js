@@ -18,7 +18,13 @@ import {
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
+// Ruta pública para crear cotizaciones (para clientes)
+router.post("/public", 
+  createBodyValidation(quoteBodyValidation), 
+  createQuote
+);
+
+// Todas las demás rutas requieren autenticación
 router.use(authenticateJwt);
 
 // Rutas para gestión de cotizaciones
