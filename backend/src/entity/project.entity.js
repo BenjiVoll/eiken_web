@@ -35,20 +35,18 @@ export const ProjectSchema = new EntitySchema({
     },
     division: {
       type: "enum",
-      enum: ["Design", "Truck Design", "Racing Design"],
+      enum: ["design", "truck-design", "racing-design"],
       nullable: false,
     },
     
     status: {
       type: "enum",
-      enum: ["Pendiente", "En Proceso", "Aprobada", "Completado", "Cancelado"],
-      default: "Pendiente",
+      enum: ["pending", "in-progress", "approved", "completed", "cancelled"],
       nullable: false,
     },
     priority: {
       type: "enum",
-      enum: ["Baja", "Media", "Alta", "Urgente"],
-      default: "Media",
+      enum: ["low", "medium", "high", "urgent"],
       nullable: false,
     },
     
