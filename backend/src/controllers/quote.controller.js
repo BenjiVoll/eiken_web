@@ -9,14 +9,19 @@ import {
     getQuotesByUrgency as getQuotesByUrgencyService,
     updateQuoteStatus as updateQuoteStatusService
 } from "../services/quote.service.js";
+import {
+  handleErrorClient,
+  handleErrorServer,
+  handleSuccess,
+} from "../handlers/responseHandlers.js";
 
 // Crear una cotización
 export const createQuote = async (req, res) => {
     try {
         const quote = await createQuoteService(req.body);
-        res.status(201).json(quote);
+        handleSuccess(res, 201, "Cotización creada exitosamente", quote);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        handleErrorServer(res, 400, error.message);
     }
 };
 
@@ -24,9 +29,9 @@ export const createQuote = async (req, res) => {
 export const updateQuote = async (req, res) => {
     try {
         const quote = await updateQuoteService(req.params.id, req.body);
-        res.status(200).json(quote);
+        handleSuccess(res, 200, "Cotización actualizada exitosamente", quote);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        handleErrorServer(res, 400, error.message);
     }
 };
 

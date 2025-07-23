@@ -19,8 +19,8 @@ export const createQuote = async (data) => {
     customServiceTitle: customServiceTitle || null,
     serviceType,
     description,
-    urgency: urgency || "Media",
-    status: "Pendiente",
+    urgency: urgency || "medium",
+    status: "pending",
     quotedAmount,
     notes
   });
