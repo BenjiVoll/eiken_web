@@ -122,7 +122,7 @@ const UsersPage = () => {
                     <div className="mt-2 sm:flex sm:justify-between">
                       <div className="sm:flex">
                         <p className="flex items-center text-sm text-gray-500">
-                          ID: {user.id} • Creado: {new Date(user.createdAt).toLocaleDateString('es-CL')}
+                          Creado: {new Date(user.createdAt).toLocaleDateString('es-CL')}
                         </p>
                       </div>
                     </div>
