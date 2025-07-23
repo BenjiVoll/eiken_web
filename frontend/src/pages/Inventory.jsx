@@ -57,7 +57,6 @@ const Inventory = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
       <div className="mb-8">
         <div className="flex justify-between items-center">
           <div>
@@ -78,7 +77,6 @@ const Inventory = () => {
         </div>
       </div>
 
-      {/* Search */}
       <div className="mb-6">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -94,7 +92,6 @@ const Inventory = () => {
         </div>
       </div>
 
-      {/* Inventory Table */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
           {filteredInventory.map((item) => {

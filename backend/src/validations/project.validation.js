@@ -19,16 +19,16 @@ export const projectQueryValidation = Joi.object({
       "number.positive": "El id del cliente debe ser un número positivo.",
     }),
   status: Joi.string()
-    .valid("planning", "in_progress", "on_hold", "completed", "cancelled")
+    .valid("Pendiente", "En Proceso", "Aprobada", "Completado", "Cancelado")
     .messages({
       "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: planning, in_progress, on_hold, completed, cancelled.",
+      "any.only": "El estado debe ser uno de: Pendiente, En Proceso, Aprobada, Completado, Cancelado.",
     }),
   priority: Joi.string()
-    .valid("low", "medium", "high", "urgent")
+    .valid("Baja", "Media", "Alta", "Urgente")
     .messages({
       "string.base": "La prioridad debe ser de tipo string.",
-      "any.only": "La prioridad debe ser una de: low, medium, high, urgent.",
+      "any.only": "La prioridad debe ser una de: Baja, Media, Alta, Urgente.",
     }),
 })
   .or("id", "clientId", "status", "priority")
@@ -39,14 +39,16 @@ export const projectQueryValidation = Joi.object({
   });
 
 export const projectBodyValidation = Joi.object({
-  name: Joi.string()
+  title: Joi.string()
     .min(2)
-    .max(200)
+    .max(255)
+    .required()
     .messages({
-      "string.empty": "El nombre no puede estar vacío.",
-      "string.base": "El nombre debe ser de tipo string.",
-      "string.min": "El nombre debe tener como mínimo 2 caracteres.",
-      "string.max": "El nombre debe tener como máximo 200 caracteres.",
+      "string.empty": "El título no puede estar vacío.",
+      "string.base": "El título debe ser de tipo string.",
+      "string.min": "El título debe tener como mínimo 2 caracteres.",
+      "string.max": "El título debe tener como máximo 255 caracteres.",
+      "any.required": "El título es obligatorio.",
     }),
   description: Joi.string()
     .max(1000)
@@ -58,66 +60,49 @@ export const projectBodyValidation = Joi.object({
   clientId: Joi.number()
     .integer()
     .positive()
+    .required()
     .messages({
       "number.base": "El id del cliente debe ser un número.",
       "number.integer": "El id del cliente debe ser un número entero.",
       "number.positive": "El id del cliente debe ser un número positivo.",
+      "any.required": "El id del cliente es obligatorio.",
     }),
-  serviceId: Joi.number()
-    .integer()
-    .positive()
+  projectType: Joi.string()
+    .valid("otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular")
+    .required()
     .messages({
-      "number.base": "El id del servicio debe ser un número.",
-      "number.integer": "El id del servicio debe ser un número entero.",
-      "number.positive": "El id del servicio debe ser un número positivo.",
+      "string.base": "El tipo de proyecto debe ser de tipo string.",
+      "any.only": "El tipo de proyecto debe ser uno de: otro, identidad-corporativa, grafica-competicion, wrap-vehicular.",
+      "any.required": "El tipo de proyecto es obligatorio.",
     }),
-  startDate: Joi.date()
+  division: Joi.string()
+    .valid("Design", "Truck Design", "Racing Design")
+    .required()
     .messages({
-      "date.base": "La fecha de inicio debe ser una fecha válida.",
+      "string.base": "La división debe ser de tipo string.",
+      "any.only": "La división debe ser una de: Design, Truck Design, Racing Design.",
+      "any.required": "La división es obligatoria.",
     }),
-  endDate: Joi.date()
-    .greater(Joi.ref("startDate"))
+  status: Joi.string()
+    .valid("Pendiente", "En Proceso", "Aprobada", "Completado", "Cancelado")
     .messages({
-      "date.base": "La fecha de fin debe ser una fecha válida.",
-      "date.greater": "La fecha de fin debe ser posterior a la fecha de inicio.",
+      "string.base": "El estado debe ser de tipo string.",
+      "any.only": "El estado debe ser uno de: Pendiente, En Proceso, Aprobada, Completado, Cancelado.",
     }),
-  estimatedHours: Joi.number()
-    .positive()
+  priority: Joi.string()
+    .valid("Baja", "Media", "Alta", "Urgente")
     .messages({
-      "number.base": "Las horas estimadas deben ser un número.",
-      "number.positive": "Las horas estimadas deben ser un número positivo.",
-    }),
-  actualHours: Joi.number()
-    .min(0)
-    .messages({
-      "number.base": "Las horas reales deben ser un número.",
-      "number.min": "Las horas reales no pueden ser negativas.",
+      "string.base": "La prioridad debe ser de tipo string.",
+      "any.only": "La prioridad debe ser una de: Baja, Media, Alta, Urgente.",
     }),
   budgetAmount: Joi.number()
     .positive()
     .precision(2)
+    .required()
     .messages({
-      "number.base": "El presupuesto debe ser un número.",
-      "number.positive": "El presupuesto debe ser un número positivo.",
-    }),
-  actualCost: Joi.number()
-    .min(0)
-    .precision(2)
-    .messages({
-      "number.base": "El costo real debe ser un número.",
-      "number.min": "El costo real no puede ser negativo.",
-    }),
-  status: Joi.string()
-    .valid("planning", "in_progress", "on_hold", "completed", "cancelled")
-    .messages({
-      "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: planning, in_progress, on_hold, completed, cancelled.",
-    }),
-  priority: Joi.string()
-    .valid("low", "medium", "high", "urgent")
-    .messages({
-      "string.base": "La prioridad debe ser de tipo string.",
-      "any.only": "La prioridad debe ser una de: low, medium, high, urgent.",
+      "number.base": "El monto del presupuesto debe ser un número.",
+      "number.positive": "El monto del presupuesto debe ser un número positivo.",
+      "any.required": "El monto del presupuesto es obligatorio.",
     }),
   notes: Joi.string()
     .max(1000)
@@ -127,9 +112,7 @@ export const projectBodyValidation = Joi.object({
       "string.max": "Las notas deben tener como máximo 1000 caracteres.",
     }),
 })
-  .or("name", "description", "clientId", "serviceId", "startDate", "endDate", "estimatedHours", "actualHours", "budgetAmount", "actualCost", "status", "priority", "notes")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
-    "object.missing": "Debes proporcionar al menos un campo válido.",
   });

@@ -7,7 +7,7 @@ const projectRepository = AppDataSource.getRepository(ProjectSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
-  const { title, description, clientId, division, category, startDate, estimatedEndDate, budgetAmount, year, month, imageUrl, awards, tags, isFeatured, isPublic } = data;
+  const { title, description, clientId, projectType, division, priority, budgetAmount, notes } = data;
   
   // Verificar que el cliente existe
   const client = await clientRepository.findOneBy({ id: clientId });
@@ -28,19 +28,12 @@ export const createProject = async (data) => {
     title,
     description,
     clientId,
-    division,
-    category,
-    status: "pending",
-    startDate,
-    estimatedEndDate,
+    projectType: projectType || "otro",
+    division: division || "Design",
+    status: "Pendiente",
+    priority: priority || "Media",
     budgetAmount,
-    year: year || new Date().getFullYear(),
-    month: month || new Date().toLocaleString('es-ES', { month: 'long' }),
-    imageUrl,
-    awards: awards || [],
-    tags: tags || [],
-    isFeatured: isFeatured || false,
-    isPublic: isPublic || false
+    notes
   });
 
   await projectRepository.save(project);
@@ -81,7 +74,7 @@ export const updateProject = async (id, data) => {
 export const getProjects = async () => {
   const projects = await projectRepository.find({
     relations: ["client"],
-    order: { startDate: "DESC" }
+    order: { createdAt: "DESC" }
   });
   return projects;
 };
@@ -89,7 +82,7 @@ export const getProjects = async () => {
 export const getProjectById = async (id) => {
   const project = await projectRepository.findOne({
     where: { id },
-    relations: ["client", "inventoryUsages"]
+    relations: ["client"]
   });
   return project;
 };
@@ -103,13 +96,13 @@ export const getProjectsByDivision = async (division) => {
   const projects = await projectRepository.find({
     where: { division },
     relations: ["client"],
-    order: { startDate: "DESC" }
+    order: { createdAt: "DESC" }
   });
   return projects;
 };
 
 export const getProjectsByStatus = async (status) => {
-  const validStatuses = ["pending", "in_progress", "completed", "cancelled", "on_hold"];
+  const validStatuses = ["Pendiente", "En Proceso", "Aprobada", "Completado", "Cancelado"];
   if (!validStatuses.includes(status)) {
     throw new Error("Estado de proyecto no válido");
   }
@@ -117,7 +110,7 @@ export const getProjectsByStatus = async (status) => {
   const projects = await projectRepository.find({
     where: { status },
     relations: ["client"],
-    order: { startDate: "DESC" }
+    order: { createdAt: "DESC" }
   });
   return projects;
 };
@@ -126,49 +119,9 @@ export const getProjectsByClient = async (clientId) => {
   const projects = await projectRepository.find({
     where: { clientId },
     relations: ["client"],
-    order: { startDate: "DESC" }
+    order: { createdAt: "DESC" }
   });
   return projects;
-};
-
-export const getFeaturedProjects = async () => {
-  const projects = await projectRepository.find({
-    where: { isFeatured: true },
-    relations: ["client"],
-    order: { startDate: "DESC" }
-  });
-  return projects;
-};
-
-export const getPublicProjects = async () => {
-  const projects = await projectRepository.find({
-    where: { isPublic: true },
-    relations: ["client"],
-    order: { startDate: "DESC" }
-  });
-  return projects;
-};
-
-export const updateProjectStatus = async (id, newStatus) => {
-  const validStatuses = ["pending", "in_progress", "completed", "cancelled", "on_hold"];
-  if (!validStatuses.includes(newStatus)) {
-    throw new Error("Estado de proyecto no válido");
-  }
-
-  const project = await projectRepository.findOneBy({ id });
-  if (!project) {
-    throw new Error("Proyecto no encontrado");
-  }
-
-  project.status = newStatus;
-  
-  // Si se marca como completado, establecer fecha actual de finalización
-  if (newStatus === "completed" && !project.actualEndDate) {
-    project.actualEndDate = new Date();
-  }
-
-  await projectRepository.save(project);
-  return project;
 };
 
 export const deleteProject = async (id) => {

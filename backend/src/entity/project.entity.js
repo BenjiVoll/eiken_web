@@ -10,6 +10,7 @@ export const ProjectSchema = new EntitySchema({
       primary: true,
       generated: "increment",
     },
+    
     title: {
       type: "varchar",
       length: 255,
@@ -19,91 +20,51 @@ export const ProjectSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
+    
     clientId: {
       type: "int",
-      nullable: true, // Cambiado a true temporalmente
+      nullable: false,
       name: "client_id",
+    },
+    
+    projectType: {
+      type: "enum",
+      enum: ["otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular"],
+      nullable: false,
+      name: "project_type",
     },
     division: {
       type: "enum",
       enum: ["Design", "Truck Design", "Racing Design"],
       nullable: false,
     },
-    category: {
-      type: "varchar",
-      length: 100,
-      nullable: false,
-    },
+    
     status: {
       type: "enum",
-      enum: ["pending", "in_progress", "completed", "cancelled", "on_hold"],
-      default: "pending",
+      enum: ["Pendiente", "En Proceso", "Aprobada", "Completado", "Cancelado"],
+      default: "Pendiente",
       nullable: false,
     },
-    startDate: {
-      type: "date",
+    priority: {
+      type: "enum",
+      enum: ["Baja", "Media", "Alta", "Urgente"],
+      default: "Media",
       nullable: false,
-      name: "start_date",
     },
-    estimatedEndDate: {
-      type: "date",
-      nullable: true,
-      name: "estimated_end_date",
-    },
-    actualEndDate: {
-      type: "date",
-      nullable: true,
-      name: "actual_end_date",
-    },
+    
     budgetAmount: {
       type: "decimal",
       precision: 10,
       scale: 2,
-      nullable: true,
+      nullable: false,
       name: "budget_amount",
     },
-    actualAmount: {
-      type: "decimal",
-      precision: 10,
-      scale: 2,
-      nullable: true,
-      name: "actual_amount",
-    },
-    year: {
-      type: "int",
-      nullable: false,
-    },
-    month: {
-      type: "varchar",
-      length: 20,
-      nullable: false,
-    },
-    imageUrl: {
-      type: "varchar",
-      length: 500,
-      nullable: true,
-      name: "image_url",
-    },
-    awards: {
-      type: "simple-array",
+    
+    notes: {
+      type: "text",
       nullable: true,
     },
-    tags: {
-      type: "simple-array",
-      nullable: true,
-    },
-    isFeatured: {
-      type: "boolean",
-      default: false,
-      nullable: false,
-      name: "is_featured",
-    },
-    isPublic: {
-      type: "boolean",
-      default: false,
-      nullable: false,
-      name: "is_public",
-    },
+    
     createdAt: {
       type: "timestamp",
       createDate: true,
@@ -117,45 +78,33 @@ export const ProjectSchema = new EntitySchema({
       name: "updated_at",
     },
   },
+  
   indices: [
+    {
+      name: "IDX_PROJECT_CLIENT",
+      columns: ["clientId"],
+    },
     {
       name: "IDX_PROJECT_STATUS",
       columns: ["status"],
     },
     {
+      name: "IDX_PROJECT_PRIORITY", 
+      columns: ["priority"],
+    },
+    {
       name: "IDX_PROJECT_DIVISION",
       columns: ["division"],
     },
-    {
-      name: "IDX_PROJECT_CATEGORY",
-      columns: ["category"],
-    },
-    {
-      name: "IDX_PROJECT_YEAR",
-      columns: ["year"],
-    },
-    {
-      name: "IDX_PROJECT_FEATURED",
-      columns: ["isFeatured"],
-    },
-    {
-      name: "IDX_PROJECT_PUBLIC",
-      columns: ["isPublic"],
-    },
   ],
+  
   relations: {
     client: {
       type: "many-to-one",
       target: "Client",
       joinColumn: { name: "client_id", referencedColumnName: "id" },
       inverseSide: "projects",
-      nullable: true, // Cambiado a true temporalmente
-    },
-    inventoryUsages: {
-      type: "one-to-many",
-      target: "ProjectInventoryUsage",
-      inverseSide: "project",
-      cascade: true,
+      nullable: false,
     },
   },
 });

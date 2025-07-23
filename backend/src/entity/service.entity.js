@@ -35,25 +35,6 @@ export const ServiceSchema = new EntitySchema({
       scale: 2,
       nullable: false,
     },
-    imageUrl: {
-      type: "varchar",
-      length: 500,
-      nullable: true,
-      name: "image_url",
-    },
-    rating: {
-      type: "decimal",
-      precision: 2,
-      scale: 1,
-      default: 0,
-      nullable: false,
-    },
-    isActive: {
-      type: "boolean",
-      default: true,
-      nullable: false,
-      name: "is_active",
-    },
     createdAt: {
       type: "timestamp",
       createDate: true,
@@ -75,10 +56,6 @@ export const ServiceSchema = new EntitySchema({
     {
       name: "IDX_SERVICE_DIVISION",
       columns: ["division"],
-    },
-    {
-      name: "IDX_SERVICE_ACTIVE",
-      columns: ["isActive"],
     },
   ],
   relations: {

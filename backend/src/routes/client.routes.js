@@ -18,10 +18,8 @@ import {
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
 router.use(authenticateJwt);
 
-// Rutas para gestión de clientes
 router
   .post("/", 
     isDesignerOrAbove, // Designer+ puede crear clientes

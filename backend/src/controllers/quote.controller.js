@@ -7,7 +7,6 @@ import {
     deleteQuote as deleteQuoteService,
     getQuotesByStatus as getQuotesByStatusService,
     getQuotesByUrgency as getQuotesByUrgencyService,
-    getQuotesByClient as getQuotesByClientService,
     updateQuoteStatus as updateQuoteStatusService
 } from "../services/quote.service.js";
 
@@ -81,15 +80,15 @@ export const getQuotesByUrgency = async (req, res) => {
     }
 };
 
-// Obtener cotizaciones por cliente
-export const getQuotesByClient = async (req, res) => {
-    try {
-        const quotes = await getQuotesByClientService(req.params.clientId);
-        res.status(200).json(quotes);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
+// Obtener cotizaciones por cliente - DESHABILITADO (las quotes no tienen relación directa con clientes)
+// export const getQuotesByClient = async (req, res) => {
+//     try {
+//         const quotes = await getQuotesByClientService(req.params.clientId);
+//         res.status(200).json(quotes);
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// };
 
 // Actualizar estado de cotización
 export const updateQuoteStatus = async (req, res) => {

@@ -6,6 +6,7 @@ import { InventorySchema } from "../entity/inventory.entity.js";
 import { SupplierSchema } from "../entity/supplier.entity.js";
 import { ProjectSchema } from "../entity/project.entity.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
+import { ClientSchema } from "../entity/user.entity.client.js";
 import { AppDataSource } from "./configDb.js";
 import { encryptPassword } from "../helpers/bcrypt.helper.js";
 
@@ -17,6 +18,7 @@ async function createInitialData() {
     const supplierRepository = AppDataSource.getRepository(SupplierSchema);
     const projectRepository = AppDataSource.getRepository(ProjectSchema);
     const quoteRepository = AppDataSource.getRepository(QuoteSchema);
+    const clientRepository = AppDataSource.getRepository(ClientSchema);
 
     console.log("Iniciando poblamiento de datos iniciales para Eiken Design Chile...");
 
@@ -79,7 +81,6 @@ async function createInitialData() {
             category: "Vehicular",
             division: "Truck Design",
             price: 450000.00,
-            isActive: true,
           })
         ),
         serviceRepository.save(
@@ -89,7 +90,6 @@ async function createInitialData() {
             category: "Racing",
             division: "Racing Design",
             price: 850000.00,
-            isActive: true,
           })
         ),
         serviceRepository.save(
@@ -99,7 +99,6 @@ async function createInitialData() {
             category: "Corporativo",
             division: "Design",
             price: 250000.00,
-            isActive: true,
           })
         ),
         serviceRepository.save(
@@ -109,7 +108,6 @@ async function createInitialData() {
             category: "Vehicular",
             division: "Truck Design",
             price: 380000.00,
-            isActive: true,
           })
         ),
         serviceRepository.save(
@@ -119,7 +117,6 @@ async function createInitialData() {
             category: "Racing",
             division: "Racing Design",
             price: 720000.00,
-            isActive: true,
           })
         ),
         serviceRepository.save(
@@ -129,7 +126,6 @@ async function createInitialData() {
             category: "Textil",
             division: "Design",
             price: 45000.00,
-            isActive: true,
           })
         ),
         serviceRepository.save(
@@ -139,7 +135,6 @@ async function createInitialData() {
             category: "Racing",
             division: "Racing Design",
             price: 95000.00,
-            isActive: true,
           })
         ),
       ]);
@@ -157,14 +152,13 @@ async function createInitialData() {
             name: "Vinilo Metalizado Plata",
             type: "Metalizado de Poliéster",
             color: "Plata",
-            quantity: 15,
-            unit: "metros",
-            width: "1.22m",
             brand: "3M",
-            code: "MP-001",
-            unitCost: 12500.00,
+            model: "Scotchcal",
+            width: "1.22m",
+            unit: "metros",
+            quantity: 15,
             minStock: 5,
-            isActive: true,
+            unitCost: 12500.00,
           })
         ),
         inventoryRepository.save(
@@ -172,14 +166,13 @@ async function createInitialData() {
             name: "Vinilo Metalizado Oro",
             type: "Metalizado de Poliéster",
             color: "Oro",
-            quantity: 6,
-            unit: "metros",
-            width: "1.22m",
             brand: "3M",
-            code: "MP-002",
-            unitCost: 13200.00,
+            model: "Scotchcal",
+            width: "1.22m",
+            unit: "metros",
+            quantity: 6,
             minStock: 3,
-            isActive: true,
+            unitCost: 13200.00,
           })
         ),
         inventoryRepository.save(
@@ -187,14 +180,13 @@ async function createInitialData() {
             name: "Vinilo Metalizado Negro",
             type: "Metalizado de Poliéster",
             color: "Negro",
-            quantity: 12,
-            unit: "metros",
-            width: "1.22m",
             brand: "3M",
-            code: "MP-003",
-            unitCost: 12800.00,
+            model: "Scotchcal",
+            width: "1.22m",
+            unit: "metros",
+            quantity: 12,
             minStock: 4,
-            isActive: true,
+            unitCost: 12800.00,
           })
         ),
         inventoryRepository.save(
@@ -202,14 +194,13 @@ async function createInitialData() {
             name: "Avery Dennison Rojo",
             type: "Avery T-7500",
             color: "Rojo",
-            quantity: 8,
-            unit: "metros",
-            width: "1.37m",
             brand: "Avery Dennison",
-            code: "AD-T7500-R",
-            unitCost: 9800.00,
+            model: "T-7500",
+            width: "1.37m",
+            unit: "metros",
+            quantity: 8,
             minStock: 3,
-            isActive: true,
+            unitCost: 9800.00,
           })
         ),
         inventoryRepository.save(
@@ -217,14 +208,13 @@ async function createInitialData() {
             name: "Avery Dennison Azul",
             type: "Avery T-7500",
             color: "Azul",
-            quantity: 10,
-            unit: "metros",
-            width: "1.37m",
             brand: "Avery Dennison",
-            code: "AD-T7500-B",
-            unitCost: 9800.00,
+            model: "T-7500",
+            width: "1.37m",
+            unit: "metros",
+            quantity: 10,
             minStock: 3,
-            isActive: true,
+            unitCost: 9800.00,
           })
         ),
         inventoryRepository.save(
@@ -232,14 +222,13 @@ async function createInitialData() {
             name: "Avery Dennison Blanco",
             type: "Avery T-7500",
             color: "Blanco",
-            quantity: 20,
-            unit: "metros",
-            width: "1.37m",
             brand: "Avery Dennison",
-            code: "AD-T7500-W",
-            unitCost: 8900.00,
+            model: "T-7500",
+            width: "1.37m",
+            unit: "metros",
+            quantity: 20,
             minStock: 5,
-            isActive: true,
+            unitCost: 8900.00,
           })
         ),
         inventoryRepository.save(
@@ -247,14 +236,13 @@ async function createInitialData() {
             name: "Fluor Verde Lima",
             type: "Vinilos Fluor Series",
             color: "Verde Lima",
-            quantity: 12,
-            unit: "metros",
-            width: "1.22m",
             brand: "Oracal",
-            code: "FL-VL-001",
-            unitCost: 15600.00,
+            model: "651",
+            width: "1.22m",
+            unit: "metros",
+            quantity: 12,
             minStock: 3,
-            isActive: true,
+            unitCost: 15600.00,
           })
         ),
         inventoryRepository.save(
@@ -262,14 +250,13 @@ async function createInitialData() {
             name: "Fluor Naranja",
             type: "Vinilos Fluor Series",
             color: "Naranja",
-            quantity: 20,
-            unit: "metros",
-            width: "1.22m",
             brand: "Oracal",
-            code: "FL-NA-001",
-            unitCost: 15600.00,
+            model: "651",
+            width: "1.22m",
+            unit: "metros",
+            quantity: 20,
             minStock: 4,
-            isActive: true,
+            unitCost: 15600.00,
           })
         ),
         inventoryRepository.save(
@@ -277,14 +264,13 @@ async function createInitialData() {
             name: "Fluor Rosa",
             type: "Vinilos Fluor Series",
             color: "Rosa",
-            quantity: 8,
-            unit: "metros",
-            width: "1.22m",
             brand: "Oracal",
-            code: "FL-RS-001",
-            unitCost: 15600.00,
+            model: "651",
+            width: "1.22m",
+            unit: "metros",
+            quantity: 8,
             minStock: 2,
-            isActive: true,
+            unitCost: 15600.00,
           })
         ),
         inventoryRepository.save(
@@ -292,14 +278,13 @@ async function createInitialData() {
             name: "Fluor Amarillo",
             type: "Vinilos Fluor Series",
             color: "Amarillo",
-            quantity: 15,
-            unit: "metros",
-            width: "1.22m",
             brand: "Oracal",
-            code: "FL-AM-001",
-            unitCost: 15600.00,
+            model: "651",
+            width: "1.22m",
+            unit: "metros",
+            quantity: 15,
             minStock: 3,
-            isActive: true,
+            unitCost: 15600.00,
           })
         ),
       ]);
@@ -361,6 +346,64 @@ async function createInitialData() {
       console.log("ℹ️  Proveedores ya existen, omitiendo creación.");
     }
 
+    // Crear clientes
+    const clientCount = await clientRepository.count();
+    if (clientCount === 0) {
+      await Promise.all([
+        clientRepository.save(
+          clientRepository.create({
+            name: "Transportes Bio-Bío S.A.",
+            email: "contacto@transportesbiobio.cl",
+            phone: "+56 41 274-5830",
+            address: "Av. Pedro Aguirre Cerda 1245, Concepción",
+            company: "Transportes Bio-Bío S.A.",
+            rut: "96.789.123-4",
+            clientType: "company",
+            isActive: true,
+          })
+        ),
+        clientRepository.save(
+          clientRepository.create({
+            name: "Team Chile Rally",
+            email: "info@teamchilerally.com",
+            phone: "+56 9 8765-4321",
+            address: "Parque Industrial Los Aromos, Santiago",
+            company: "Team Chile Rally SpA",
+            rut: "77.456.789-0",
+            clientType: "company",
+            isActive: true,
+          })
+        ),
+        clientRepository.save(
+          clientRepository.create({
+            name: "Grupo Arauco",
+            email: "marketing@arauco.cl",
+            phone: "+56 2 2461-7000",
+            address: "Av. El Bosque Norte 0123, Las Condes, Santiago",
+            company: "Empresas Arauco S.A.",
+            rut: "93.458.000-1",
+            clientType: "company",
+            isActive: true,
+          })
+        ),
+        clientRepository.save(
+          clientRepository.create({
+            name: "Cuerpo de Bomberos Concepción",
+            email: "admin@bomberosconcepcion.cl",
+            phone: "+56 41 241-3132",
+            address: "Calle Barros Arana 457, Concepción",
+            company: "Cuerpo de Bomberos de Concepción",
+            rut: "71.234.567-8",
+            clientType: "company",
+            isActive: true,
+          })
+        ),
+      ]);
+      console.log("✅ Clientes creados exitosamente.");
+    } else {
+      console.log("ℹ️  Clientes ya existen, omitiendo creación.");
+    }
+
     const projectCount = await projectRepository.count();
     if (projectCount === 0) {
       await Promise.all([
@@ -368,98 +411,65 @@ async function createInitialData() {
           projectRepository.create({
             title: "Wrap Completo Flota Transportes Bio-Bío",
             description: "Diseño e instalación de wrap completo para 25 camiones de carga",
+            clientId: 1,
+            projectType: "wrap-vehicular",
             division: "Truck Design",
-            category: "Flota Comercial",
-            status: "completed",
-            startDate: new Date("2024-01-15"),
-            estimatedEndDate: new Date("2024-02-28"),
-            actualEndDate: new Date("2024-02-28"),
+            status: "Completado",
+            priority: "Alta",
             budgetAmount: 11250000.00,
-            actualAmount: 11250000.00,
-            year: 2024,
-            month: "Febrero",
-            imageUrl: "wrap-biobio-1.jpg",
-            tags: ["Wrap", "Flota", "Comercial"],
-            isFeatured: true,
-            isPublic: true,
+            notes: "Proyecto completado exitosamente dentro del plazo estimado",
           })
         ),
         projectRepository.save(
           projectRepository.create({
             title: "Gráfica Rally Mobil 2024 - Team Chile",
             description: "Diseño especializado para 3 autos de competición Rally Mobil",
+            clientId: 2,
+            projectType: "grafica-competicion",
             division: "Racing Design",
-            category: "Rally Nacional",
-            status: "completed",
-            startDate: new Date("2023-12-01"),
-            estimatedEndDate: new Date("2024-01-10"),
-            actualEndDate: new Date("2024-01-10"),
+            status: "Completado",
+            priority: "Urgente",
             budgetAmount: 2160000.00,
-            actualAmount: 2160000.00,
-            year: 2024,
-            month: "Enero",
-            imageUrl: "rally-mobil-1.jpg",
-            tags: ["Rally", "Competición", "Nacional"],
-            isFeatured: true,
-            isPublic: true,
+            notes: "Entregado para temporada 2024 de Rally Mobil",
           })
         ),
         projectRepository.save(
           projectRepository.create({
             title: "Identidad Corporativa Grupo Arauco",
             description: "Desarrollo completo de identidad visual y aplicaciones vehiculares",
+            clientId: 3,
+            projectType: "identidad-corporativa",
             division: "Design",
-            category: "Corporativo",
-            status: "completed",
-            startDate: new Date("2023-11-01"),
-            estimatedEndDate: new Date("2023-12-15"),
-            actualEndDate: new Date("2023-12-15"),
+            status: "Completado",
+            priority: "Media",
             budgetAmount: 890000.00,
-            actualAmount: 890000.00,
-            year: 2023,
-            month: "Diciembre",
-            imageUrl: "arauco-1.jpg",
-            tags: ["Identidad", "Corporativo", "Forestal"],
-            isFeatured: false,
-            isPublic: true,
+            notes: "Incluye manual de identidad y aplicaciones vehiculares",
           })
         ),
         projectRepository.save(
           projectRepository.create({
             title: "Cuerpo de Bomberos Concepción - Equipamiento Gráfico",
             description: "Diseño e instalación de gráficas para carros bomba y equipamiento",
+            clientId: 4,
+            projectType: "otro",
             division: "Design",
-            category: "Servicio Público",
-            status: "completed",
-            startDate: new Date("2023-09-15"),
-            estimatedEndDate: new Date("2023-10-30"),
-            actualEndDate: new Date("2023-10-30"),
+            status: "Completado",
+            priority: "Alta",
             budgetAmount: 1350000.00,
-            actualAmount: 1350000.00,
-            year: 2023,
-            month: "Octubre",
-            imageUrl: "bomberos-1.jpg",
-            tags: ["Bomberos", "Servicio", "Público"],
-            isFeatured: true,
-            isPublic: true,
+            notes: "Gráficas para 3 carros bomba y equipamiento auxiliar",
           })
         ),
         projectRepository.save(
           projectRepository.create({
             title: "Flota Express Chilexpress",
             description: "Wrap completo para 40 vehículos de reparto",
+            clientId: 1,
+            projectType: "wrap-vehicular",
             division: "Truck Design",
-            category: "Logística",
-            status: "in_progress",
-            startDate: new Date("2024-02-01"),
-            estimatedEndDate: new Date("2024-04-30"),
+            status: "En Proceso",
+            priority: "Alta",
             budgetAmount: 18000000.00,
-            year: 2024,
-            month: "En Progreso",
-            imageUrl: "chilexpress-1.jpg",
-            tags: ["Logística", "Reparto", "Flota"],
-            isFeatured: false,
-            isPublic: false,
+            notes: "Proyecto en ejecución - Fase 1 de 3 completada",
           })
         ),
       ]);
@@ -477,11 +487,12 @@ async function createInitialData() {
             clientEmail: "juan.perez@transportesabc.cl",
             clientPhone: "+56 9 8765 4321",
             company: "Transportes ABC",
+            customServiceTitle: "Wrap para Flota de Camiones",
             serviceType: "wrap-vehicular",
             description: "Necesitamos wrap completo para 10 camiones de nuestra flota",
-            urgency: "medium",
-            status: "pending",
-            estimatedAmount: 4500000.00,
+            urgency: "Media",
+            status: "Pendiente",
+            quotedAmount: 4500000.00,
             notes: "Cliente interesado en descuento por volumen",
           })
         ),
@@ -491,11 +502,12 @@ async function createInitialData() {
             clientEmail: "maria@racingteamchile.cl",
             clientPhone: "+56 9 1234 5678",
             company: "Racing Team Chile",
+            customServiceTitle: "Gráfica para Autos de Competición",
             serviceType: "grafica-competicion",
             description: "Gráfica para 2 autos de competición temporada 2024",
-            urgency: "high",
-            status: "approved",
-            estimatedAmount: 1700000.00,
+            urgency: "Alta",
+            status: "Aprobado",
+            quotedAmount: 1700000.00,
             notes: "Aprobado para iniciar inmediatamente",
           })
         ),
@@ -505,11 +517,12 @@ async function createInitialData() {
             clientEmail: "carlos@empresadef.cl",
             clientPhone: "+56 2 2555 1234",
             company: "Empresa DEF",
+            customServiceTitle: "Desarrollo de Identidad Corporativa",
             serviceType: "identidad-corporativa",
             description: "Desarrollo de identidad corporativa completa incluyendo logo y aplicaciones",
-            urgency: "low",
-            status: "in_process",
-            estimatedAmount: 960000.00,
+            urgency: "Baja",
+            status: "Revisando",
+            quotedAmount: 960000.00,
             notes: "En proceso de revisión de propuestas",
           })
         ),
@@ -519,11 +532,12 @@ async function createInitialData() {
             clientEmail: "ana@bomberosconcepcion.cl",
             clientPhone: "+56 41 254 9999",
             company: "Bomberos Concepción",
+            customServiceTitle: "Gráfica para Carros Bomba",
             serviceType: "otro",
             description: "Gráfica para 3 carros bomba nuevos",
-            urgency: "urgent",
-            status: "pending",
-            estimatedAmount: 1350000.00,
+            urgency: "Urgente",
+            status: "Pendiente",
+            quotedAmount: 1350000.00,
             notes: "Requiere aprobación urgente del directorio",
           })
         ),

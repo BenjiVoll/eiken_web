@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_BASE_URL;
 
-// Crear instancia de axios con configuración base
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -10,7 +9,13 @@ const api = axios.create({
   },
 });
 
-// Interceptor para agregar el token automáticamente
+const publicApi = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -24,19 +29,61 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para manejar errores de autenticación
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expirado o inválido
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Emitir un evento personalizado para que el AuthContext maneje la redirección
+      window.dispatchEvent(new CustomEvent('auth:logout'));
     }
     return Promise.reject(error);
   }
 );
+
+export const tokenManager = {
+  setAuthToken: (token) => {
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete api.defaults.headers.common['Authorization'];
+    }
+  },
+
+  removeAuthToken: () => {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
+
+export const publicAPI = {
+  services: {
+    getActive: async () => {
+      const response = await publicApi.get('/public/services/active');
+      return response.data;
+    },
+
+    getAll: async () => {
+      const response = await publicApi.get('/public/services');
+      return response.data;
+    },
+
+    getById: async (id) => {
+      const response = await publicApi.get(`/public/services/${id}`);
+      return response.data;
+    },
+
+    getByDivision: async (division) => {
+      const response = await publicApi.get(`/public/services/division/${division}`);
+      return response.data;
+    },
+
+    getByCategory: async (category) => {
+      const response = await publicApi.get(`/public/services/category/${category}`);
+      return response.data;
+    }
+  }
+};
 
 export const servicesAPI = {
   // Obtener todos los servicios
@@ -169,6 +216,11 @@ export const quotesAPI = {
 
   update: async (id, quoteData) => {
     const response = await api.patch(`/quotes/${id}`, quoteData);
+    return response.data;
+  },
+
+  updateStatus: async (id, status) => {
+    const response = await api.patch(`/quotes/${id}`, { status });
     return response.data;
   },
 
