@@ -54,13 +54,19 @@ export const ProjectSchema = new EntitySchema({
       type: "decimal",
       precision: 10,
       scale: 2,
-      nullable: false,
+      nullable: true,
       name: "budget_amount",
     },
     
     notes: {
       type: "text",
       nullable: true,
+    },
+    
+    quoteId: {
+      type: "int",
+      nullable: true,
+      name: "quote_id",
     },
     
     createdAt: {

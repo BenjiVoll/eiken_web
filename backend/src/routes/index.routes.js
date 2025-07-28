@@ -1,8 +1,7 @@
-"use strict";
 import { Router } from "express";
 import userRoutes from "./user.routes.js";
 import authRoutes from "./auth.routes.js";
-// import clientRoutes from "./client.routes.js";
+import clientRoutes from "./client.routes.js";
 import serviceRoutes from "./service.routes.js";
 import publicServiceRoutes from "./public.service.routes.js";
 import quoteRoutes from "./quote.routes.js";
@@ -18,7 +17,7 @@ const router = Router();
 router
     .use("/auth", authRoutes)
     .use("/users", userRoutes)
-    // .use("/clients", clientRoutes)
+    .use("/clients", clientRoutes)
     .use("/services", serviceRoutes)
     .use("/public/services", publicServiceRoutes) // Rutas públicas para servicios
     .use("/quotes", quoteRoutes)

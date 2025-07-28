@@ -7,7 +7,8 @@ const projectRepository = AppDataSource.getRepository(ProjectSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
-  const { title, description, clientId, projectType, division, priority, budgetAmount, notes } = data;
+  console.log('Creating project with data:', data);
+  const { title, description, clientId, projectType, division, status, priority, budgetAmount, notes, quoteId } = data;
   
   // Verificar que el cliente existe
   const client = await clientRepository.findOneBy({ id: clientId });
@@ -29,11 +30,12 @@ export const createProject = async (data) => {
     description,
     clientId,
     projectType: projectType || "otro",
-    division: division || "Design",
-    status: "Pendiente",
-    priority: priority || "Media",
+    division: division || "design",
+    status: data.status || "pending",
+    priority: priority || "medium",
     budgetAmount,
-    notes
+    notes,
+    quoteId
   });
 
   await projectRepository.save(project);

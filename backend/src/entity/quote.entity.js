@@ -64,7 +64,7 @@ export const QuoteSchema = new EntitySchema({
     
     status: {
       type: "enum",
-      enum: ["pending", "reviewing", "quoted", "approved", "rejected"],
+      enum: ["pending", "reviewing", "quoted", "approved", "rejected", "converted"],
       nullable: false,
     },
     quotedAmount: {
