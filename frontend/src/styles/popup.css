@@ -1,0 +1,126 @@
+/* Estilos para modales y popups */
+.popup-overlay {
+  @apply fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50;
+}
+
+.popup-container {
+  @apply relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white;
+}
+
+.popup-header {
+  @apply flex justify-between items-center pb-3;
+}
+
+.popup-title {
+  @apply text-lg font-bold text-gray-900;
+}
+
+.popup-close {
+  @apply text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center;
+}
+
+.popup-body {
+  @apply py-4;
+}
+
+.popup-content {
+  @apply text-sm text-gray-600;
+}
+
+.popup-footer {
+  @apply flex justify-end space-x-2 pt-3 border-t;
+}
+
+.popup-button {
+  @apply px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+}
+
+.popup-button-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.popup-button-secondary {
+  @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500;
+}
+
+.popup-button-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500;
+}
+
+/* Modal para confirmación */
+.confirm-modal {
+  @apply fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center;
+}
+
+.confirm-modal-content {
+  @apply bg-white rounded-lg shadow-xl p-6 m-4 max-w-sm w-full;
+}
+
+.confirm-modal-icon {
+  @apply mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4;
+}
+
+.confirm-modal-title {
+  @apply text-lg font-medium text-gray-900 text-center mb-2;
+}
+
+.confirm-modal-message {
+  @apply text-sm text-gray-500 text-center mb-6;
+}
+
+.confirm-modal-actions {
+  @apply flex space-x-3;
+}
+
+/* Toast notifications */
+.toast-container {
+  @apply fixed top-4 right-4 z-50 space-y-2;
+}
+
+.toast {
+  @apply max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden;
+}
+
+.toast-success {
+  @apply border-l-4 border-green-400;
+}
+
+.toast-error {
+  @apply border-l-4 border-red-400;
+}
+
+.toast-warning {
+  @apply border-l-4 border-yellow-400;
+}
+
+.toast-info {
+  @apply border-l-4 border-blue-400;
+}
+
+.toast-content {
+  @apply p-4;
+}
+
+.toast-header {
+  @apply flex items-start;
+}
+
+.toast-icon {
+  @apply flex-shrink-0;
+}
+
+.toast-body {
+  @apply ml-3 w-0 flex-1 pt-0.5;
+}
+
+.toast-title {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.toast-message {
+  @apply mt-1 text-sm text-gray-500;
+}
+
+.toast-close {
+  @apply ml-4 flex-shrink-0 flex;
+}

@@ -23,10 +23,10 @@ export const serviceQueryValidation = Joi.object({
       "string.base": "La categoría debe ser de tipo string.",
     }),
   division: Joi.string()
-    .valid("Design", "Truck Design", "Racing Design")
+    .valid("design", "truck-design", "racing-design")
     .messages({
       "string.base": "La división debe ser de tipo string.",
-      "any.only": "La división debe ser una de: Design, Truck Design, Racing Design.",
+      "any.only": "La división debe ser una de: design, truck-design, racing-design.",
     }),
 })
   .unknown(false)
@@ -67,13 +67,13 @@ export const serviceBodyValidation = Joi.object({
       "string.max": "La categoría debe tener como máximo 100 caracteres.",
     }),
   division: Joi.string()
-    .valid("Design", "Truck Design", "Racing Design")
+    .valid("design", "truck-design", "racing-design")
     .required()
     .messages({
       "string.empty": "La división no puede estar vacía.",
       "any.required": "La división es obligatoria.",
       "string.base": "La división debe ser de tipo string.",
-      "any.only": "La división debe ser una de: Design, Truck Design, Racing Design.",
+      "any.only": "La división debe ser una de: design, truck-design, racing-design.",
     }),
   price: Joi.number()
     .positive()

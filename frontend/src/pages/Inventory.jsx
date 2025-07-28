@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { inventoryAPI, suppliersAPI } from '../services/apiService';
 import { Plus, Edit, Trash2, Search, Package, AlertTriangle, X } from 'lucide-react';
+import { 
+  deleteDataAlert, 
+  showSuccessAlert, 
+  showErrorAlert,
+  createDataAlert,
+  updateDataAlert 
+} from '../helpers';
 
 const Inventory = () => {
   const { isManager } = useAuth();
@@ -53,7 +60,15 @@ const Inventory = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
+      // Confirmar la acción
+      const confirmed = editingItem 
+        ? await updateDataAlert('material')
+        : await createDataAlert('material');
+      
+      if (!confirmed.isConfirmed) return;
+
       const inventoryData = {
         ...formData,
         quantity: parseInt(formData.quantity),
@@ -64,15 +79,17 @@ const Inventory = () => {
 
       if (editingItem) {
         await inventoryAPI.update(editingItem.id, inventoryData);
+        showSuccessAlert('¡Material actualizado!', 'El material se ha actualizado correctamente');
       } else {
         await inventoryAPI.create(inventoryData);
+        showSuccessAlert('¡Material creado!', 'El material se ha creado correctamente');
       }
 
       await loadInventory();
       resetForm();
     } catch (error) {
       console.error('Error saving inventory item:', error);
-      alert('Error al guardar el material');
+      showErrorAlert('Error', 'No se pudo guardar el material. Inténtalo de nuevo.');
     }
   };
 
@@ -95,14 +112,17 @@ const Inventory = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este material?')) {
-      try {
+    try {
+      const result = await deleteDataAlert();
+      
+      if (result.isConfirmed) {
         await inventoryAPI.delete(id);
         await loadInventory();
-      } catch (error) {
-        console.error('Error deleting inventory item:', error);
-        alert('Error al eliminar el material');
+        showSuccessAlert('¡Material eliminado!', 'El material se ha eliminado correctamente');
       }
+    } catch (error) {
+      console.error('Error deleting inventory item:', error);
+      showErrorAlert('Error', 'No se pudo eliminar el material. Inténtalo de nuevo.');
     }
   };
 
