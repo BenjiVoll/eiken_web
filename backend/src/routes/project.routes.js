@@ -7,7 +7,7 @@ import {
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation } from "../middlewares/validations.middleware.js";
-import { projectBodyValidation } from "../validations/project.validation.js";
+import { projectBodyValidation, projectUpdateValidation } from "../validations/project.validation.js";
 import {
   createProject,
   deleteProject,
@@ -38,7 +38,7 @@ router
   )
   .patch("/:id", 
     isDesignerOrAbove, // Designer+ puede actualizar proyectos
-    createBodyValidation(projectBodyValidation), 
+    createBodyValidation(projectUpdateValidation), 
     updateProject
   )
   .delete("/:id", 

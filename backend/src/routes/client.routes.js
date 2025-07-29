@@ -28,8 +28,7 @@ router
   )
   .get("/", 
     isDesignerOrAbove, // Designer+ puede ver lista de clientes
-    createQueryValidation(clientQueryValidation), 
-    getClients
+    getClients // Removemos la validación de query para obtener todos los clientes
   )
   .get("/:id", 
     isDesignerOrAbove, // Designer+ puede ver detalles de clientes

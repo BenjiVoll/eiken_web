@@ -190,13 +190,33 @@ export const projectsAPI = {
   },
 
   create: async (projectData) => {
-    const response = await api.post('/projects', projectData);
-    return response.data;
+    try {
+      console.log('Creating project with data:', projectData);
+      const response = await api.post('/projects', projectData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating project:', error.response?.data || error.message);
+      if (error.response?.data?.details) {
+        console.error('Validation details:', error.response.data.details);
+      }
+      console.error('Full error:', error.response || error);
+      throw error;
+    }
   },
 
   update: async (id, projectData) => {
-    const response = await api.patch(`/projects/${id}`, projectData);
-    return response.data;
+    try {
+      console.log('Updating project with data:', { id, projectData });
+      const response = await api.patch(`/projects/${id}`, projectData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating project:', error.response?.data || error.message);
+      if (error.response?.data?.details) {
+        console.error('Validation details:', error.response.data.details);
+      }
+      console.error('Full error:', error.response || error);
+      throw error;
+    }
   },
 
   delete: async (id) => {
@@ -233,6 +253,38 @@ export const quotesAPI = {
 
   delete: async (id) => {
     const response = await api.delete(`/quotes/${id}`);
+    return response.data;
+  }
+};
+
+export const clientsAPI = {
+  getAll: async () => {
+    try {
+      const response = await api.get('/clients');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching clients:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  getById: async (id) => {
+    const response = await api.get(`/clients/${id}`);
+    return response.data;
+  },
+
+  create: async (clientData) => {
+    const response = await api.post('/clients', clientData);
+    return response.data;
+  },
+
+  update: async (id, clientData) => {
+    const response = await api.patch(`/clients/${id}`, clientData);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/clients/${id}`);
     return response.data;
   }
 };

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { quotesAPI, servicesAPI } from '../services/apiService';
-import { Quote, Search, Plus, X } from 'lucide-react';
+import { quotesAPI, projectsAPI, clientsAPI } from '../services/apiService';
+import { Quote, Search, Plus, X, ArrowRight, FolderPlus, FolderCheck } from 'lucide-react';
+import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
+import Swal from 'sweetalert2';
 
 const getServiceTitle = (quote) => {
   if (quote.service?.name) {
@@ -13,37 +15,36 @@ const getServiceTitle = (quote) => {
 };
 
 const Quotes = () => {
+  // Eliminar cotización
+  const handleDeleteQuote = async (id) => {
+    const result = await Swal.fire({
+      title: '¿Eliminar cotización?',
+      text: 'Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+    });
+    if (result.isConfirmed) {
+      try {
+        await quotesAPI.delete(id);
+        await loadQuotes();
+        Swal.fire('Eliminado', 'Cotización eliminada correctamente', 'success');
+      } catch {
+        Swal.fire('Error', 'No se pudo eliminar la cotización', 'error');
+      }
+    }
+  };
   const [quotes, setQuotes] = useState([]);
-  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    clientName: '',
-    clientEmail: '',
-    clientPhone: '',
-    company: '',
-    serviceId: '',
-    customServiceTitle: '',
-    serviceType: 'otro',
-    description: '',
-    urgency: 'Media',
-    notes: ''
-  });
 
   useEffect(() => {
     loadQuotes();
-    loadServices();
   }, []);
 
-  const loadServices = async () => {
-    try {
-      const response = await servicesAPI.getAll();
-      setServices(response.data || []);
-    } catch (error) {
-      console.error('Error loading services:', error);
-    }
-  };
 
   const loadQuotes = async () => {
     try {
@@ -57,39 +58,8 @@ const Quotes = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const quoteData = {
-        ...formData,
-        serviceId: formData.serviceId ? parseInt(formData.serviceId) : null,
-        urgency: getUrgencyValue(formData.urgency) // Convertir urgencia a inglés
-      };
 
-      await quotesAPI.create(quoteData);
-      await loadQuotes();
-      resetForm();
-    } catch (error) {
-      console.error('Error creating quote:', error);
-      alert('Error al crear la cotización');
-    }
-  };
 
-  const resetForm = () => {
-    setFormData({
-      clientName: '',
-      clientEmail: '',
-      clientPhone: '',
-      company: '',
-      serviceId: '',
-      customServiceTitle: '',
-      serviceType: 'otro',
-      description: '',
-      urgency: 'Media',
-      notes: ''
-    });
-    setShowModal(false);
-  };
 
   const updateQuoteStatus = async (quoteId, newStatus) => {
     try {
@@ -102,6 +72,83 @@ const Quotes = () => {
       ) : []);
     } catch (error) {
       console.error('Error al actualizar estado:', error);
+    }
+  };
+
+  const convertQuoteToProject = async (quote) => {
+    try {
+      const confirmed = await confirmAlert(
+        'Convertir a Proyecto',
+        '¿Deseas convertir esta cotización aprobada en un proyecto?'
+      );
+
+      if (!confirmed.isConfirmed) return;
+
+      // Obtener información del cliente o crear uno nuevo
+      let clientId = null;
+
+      // Intentar buscar cliente existente por email o nombre
+      try {
+        const clientsResponse = await clientsAPI.getAll();
+        const clients = Array.isArray(clientsResponse) ? clientsResponse : [];
+        
+        const existingClient = clients.find(client => 
+          client.email === quote.clientEmail || 
+          client.name === quote.clientName ||
+          client.company === quote.company
+        );
+
+        if (existingClient) {
+          clientId = existingClient.id;
+        } else {
+          // Crear nuevo cliente
+          const newClientData = {
+            name: quote.clientName,
+            email: quote.clientEmail,
+            phone: quote.clientPhone,
+            company: quote.company || '',
+            clientType: quote.company ? 'company' : 'individual'
+          };
+
+          const newClientResponse = await clientsAPI.create(newClientData);
+          clientId = newClientResponse.id;
+        }
+      } catch (error) {
+        console.error('Error managing client:', error);
+        showErrorAlert('Error', 'No se pudo gestionar la información del cliente');
+        return;
+      }
+
+      // Crear el proyecto basado en la cotización
+      const projectData = {
+        title: `Proyecto: ${getServiceTitle(quote)}`,
+        description: quote.description,
+        clientId: clientId,
+        projectType: quote.serviceType || 'otro',
+        division: 'design', // valor por defecto
+        status: 'approved',
+        priority: quote.urgency === 'Urgente' ? 'urgent' : 
+                 quote.urgency === 'Alta' ? 'high' : 
+                 quote.urgency === 'Media' ? 'medium' : 'low',
+        budgetAmount: quote.quotedAmount || null,
+        notes: quote.notes || ''
+      };
+
+      await projectsAPI.create(projectData);
+
+      showSuccessAlert(
+        '¡Proyecto Creado!', 
+        'La cotización ha sido convertida exitosamente en un proyecto'
+      );
+
+      // Actualizar estado de la cotización para marcarla como convertida
+      await updateQuoteStatus(quote.id, 'converted');
+
+      loadQuotes(); // Recargar cotizaciones
+
+    } catch (error) {
+      console.error('Error converting quote to project:', error);
+      showErrorAlert('Error', 'No se pudo convertir la cotización en proyecto');
     }
   };
 
@@ -119,6 +166,9 @@ const Quotes = () => {
       case 'approved':
       case 'Aprobado':
         return 'bg-green-100 text-green-800';
+      case 'converted':
+      case 'Convertido':
+        return 'bg-indigo-100 text-indigo-800';
       case 'pending':
       case 'Pendiente':
         return 'bg-yellow-100 text-yellow-800';
@@ -140,6 +190,8 @@ const Quotes = () => {
     switch (status) {
       case 'approved':
         return 'Aprobado';
+      case 'converted':
+        return 'Convertido';
       case 'pending':
         return 'Pendiente';
       case 'rejected':
@@ -150,6 +202,8 @@ const Quotes = () => {
         return 'Cotizado';
       case 'Aprobado':
         return 'Aprobado';
+      case 'Convertido':
+        return 'Convertido';
       case 'Pendiente':
         return 'Pendiente';
       case 'Rechazado':
@@ -174,6 +228,8 @@ const Quotes = () => {
         return 'quoted';
       case 'Aprobado':
         return 'approved';
+      case 'Convertido':
+        return 'converted';
       case 'Rechazado':
         return 'rejected';
       default:
@@ -223,21 +279,6 @@ const Quotes = () => {
     }
   };
 
-  // Función para convertir de español a inglés para urgencia (para el formulario)
-  const getUrgencyValue = (displayUrgency) => {
-    switch (displayUrgency) {
-      case 'Baja':
-        return 'low';
-      case 'Media':
-        return 'medium';
-      case 'Alta':
-        return 'high';
-      case 'Urgente':
-        return 'urgent';
-      default:
-        return displayUrgency;
-    }
-  };
 
   const StatusSelector = ({ quote }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -306,13 +347,7 @@ const Quotes = () => {
             </h1>
             <p className="mt-2 text-gray-600">Solicitudes de cotización de clientes</p>
           </div>
-          <button 
-            onClick={() => setShowModal(true)}
-            className="bg-pink-600 text-white px-4 py-2 rounded-md hover:bg-pink-700 transition-colors duration-200 flex items-center"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Cotización
-          </button>
+          {/* Botón de nueva cotización deshabilitado en intranet */}
         </div>
       </div>
 
@@ -352,6 +387,30 @@ const Quotes = () => {
                         <span className={`text-xs font-medium ${getUrgencyColor(quote.urgency)}`}>
                           {getUrgencyLabel(quote.urgency)}
                         </span>
+                        {quote.status === 'approved' && quote.status !== 'converted' && (
+                          <button
+                            onClick={() => convertQuoteToProject(quote)}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                            title="Convertir a Proyecto"
+                          >
+                            <FolderPlus className="h-3 w-3 mr-1" />
+                            Proyecto
+                          </button>
+                        )}
+                        {quote.status === 'converted' && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                            <FolderCheck className="h-3 w-3 mr-1" />
+                            Convertido
+                          </span>
+                        )}
+                        {/* Botón eliminar cotización */}
+                        <button
+                          onClick={() => handleDeleteQuote(quote.id)}
+                          className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                          title="Eliminar cotización"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                     <div className="mt-2 sm:flex sm:justify-between">
@@ -399,201 +458,7 @@ const Quotes = () => {
         </div>
       )}
 
-      {/* Modal para crear cotización */}
-    {showModal && (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-gray-900">
-              Nueva Cotización
-            </h3>
-            <button
-              onClick={resetForm}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Información del Cliente */}
-              <div className="md:col-span-2">
-                <h4 className="text-md font-semibold text-gray-800 mb-2">Información del Cliente</h4>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre del Cliente *
-                </label>
-                <input
-                  type="text"
-                  value={formData.clientName}
-                  onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email del Cliente *
-                </label>
-                <input
-                  type="email"
-                  value={formData.clientEmail}
-                  onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Teléfono del Cliente *
-                </label>
-                <input
-                  type="tel"
-                  value={formData.clientPhone}
-                  onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  placeholder="+56 9 xxxx xxxx"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Empresa (Opcional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-
-              {/* Información del Servicio */}
-              <div className="md:col-span-2">
-                <h4 className="text-md font-semibold text-gray-800 mb-2 mt-4">Información del Servicio</h4>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo de Servicio *
-                </label>
-                <select
-                  value={formData.serviceType}
-                  onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  required
-                >
-                  <option value="otro">Otro</option>
-                  <option value="identidad-corporativa">Identidad Corporativa</option>
-                  <option value="grafica-competicion">Gráfica de Competición</option>
-                  <option value="wrap-vehicular">Wrap Vehicular</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Urgencia
-                </label>
-                <select
-                  value={formData.urgency}
-                  onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                >
-                  <option value="Baja">Baja</option>
-                  <option value="Media">Media</option>
-                  <option value="Alta">Alta</option>
-                  <option value="Urgente">Urgente</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Servicio del Catálogo
-                </label>
-                <select
-                  value={formData.serviceId}
-                  onChange={(e) => setFormData({ ...formData, serviceId: e.target.value, customServiceTitle: e.target.value ? '' : formData.customServiceTitle })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                >
-                  <option value="">Seleccionar servicio existente</option>
-                  {services.map(service => (
-                    <option key={service.id} value={service.id}>
-                      {service.name} - ${service.price?.toLocaleString('es-CL')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Servicio Personalizado
-                </label>
-                <input
-                  type="text"
-                  value={formData.customServiceTitle}
-                  onChange={(e) => setFormData({ ...formData, customServiceTitle: e.target.value, serviceId: e.target.value ? '' : formData.serviceId })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  placeholder="Título del servicio personalizado"
-                  disabled={!!formData.serviceId}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {formData.serviceId ? 'Desselecciona el servicio del catálogo para usar un servicio personalizado' : 'O especifica un servicio personalizado'}
-                </p>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Descripción del Proyecto *
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  rows="4"
-                  placeholder="Describe detalladamente lo que necesitas..."
-                  required
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notas Adicionales
-                </label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  rows="2"
-                  placeholder="Información adicional, referencias, etc."
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700"
-              >
-                Crear Cotización
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )}
+      {/* Modal de creación de cotización deshabilitado en intranet */}
     </div>
   );
 };
