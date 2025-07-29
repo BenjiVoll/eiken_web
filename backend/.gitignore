@@ -6,6 +6,10 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
+# Carpeta archivos de subida
+uploads/*
+!uploads/.gitkeep
+
 # Environment files
 .env
 .env.*

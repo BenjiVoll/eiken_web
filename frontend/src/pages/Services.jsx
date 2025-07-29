@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { showSuccessAlert, showErrorAlert } from '../helpers/sweetAlert';
+import ImageModal from '../components/forms/ImageModal';
 import { useAuth } from '../context/AuthContext';
 import { servicesAPI } from '../services/apiService';
 import { Plus, Edit, Trash2, Search, Settings, DollarSign } from 'lucide-react';
+import { getImageUrl } from '../helpers/getImageUrl';
+import ServiceModal from '../components/forms/ServiceModal';
 
 const Services = () => {
+  // Estado para el modal de imagen
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState('');
   const { isManager } = useAuth();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    category: '',
-    division: 'design',
-    price: ''
-  });
+  const [modalLoading, setModalLoading] = useState(false);
 
   useEffect(() => {
     loadServices();
@@ -34,54 +35,59 @@ const Services = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Guardar servicio y subir imagen
+  const handleSaveService = async (formData, imageFile) => {
     try {
+      setModalLoading(true);
       const serviceData = {
         ...formData,
         price: parseFloat(formData.price)
       };
-
-      console.log('Enviando datos del servicio:', serviceData); // Debug
-
+      let savedService;
       if (editingService) {
         const response = await servicesAPI.update(editingService.id, serviceData);
-        console.log('Respuesta de actualización:', response); // Debug
+        savedService = response.data;
+        showSuccessAlert('¡Actualizado!', 'El servicio ha sido actualizado correctamente');
       } else {
         const response = await servicesAPI.create(serviceData);
-        console.log('Respuesta de creación:', response); // Debug
+        savedService = response.data;
+        showSuccessAlert('¡Creado!', 'El servicio ha sido creado correctamente');
       }
-
+      // Subir imagen si existe y el servicio se guardó correctamente
+      if (imageFile && savedService && savedService.id) {
+        const formDataImg = new FormData();
+        formDataImg.append('image', imageFile);
+        const baseUrl = import.meta.env.VITE_BASE_URL;
+        const token = localStorage.getItem('token');
+        await fetch(`${baseUrl}/services/${savedService.id}/image`, {
+          method: 'POST',
+          body: formDataImg,
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      }
       await loadServices();
-      resetForm();
-      alert('Servicio guardado exitosamente');
+      setShowModal(false);
+      setEditingService(null);
     } catch (error) {
       console.error('Error saving service:', error);
-      console.error('Detalles del error:', error.response?.data); // Debug
-      console.error('Detalles de validación:', error.response?.data?.details); // Debug específico
-      
       let errorMessage = 'Error al guardar el servicio';
       if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
-        // Mostrar todos los errores de validación
         const validationErrors = error.response.data.details.map(detail => detail.message || detail).join(', ');
         errorMessage = `Errores de validación: ${validationErrors}`;
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
-      
-      alert(errorMessage);
+      showErrorAlert('Error', errorMessage);
+    } finally {
+      setModalLoading(false);
     }
   };
 
   const handleEdit = (service) => {
     setEditingService(service);
-    setFormData({
-      name: service.name,
-      description: service.description || '',
-      category: service.category,
-      division: service.division,
-      price: service.price.toString()
-    });
     setShowModal(true);
   };
 
@@ -90,21 +96,15 @@ const Services = () => {
       try {
         await servicesAPI.delete(id);
         await loadServices();
+        showSuccessAlert('¡Eliminado!', 'El servicio ha sido eliminado correctamente');
       } catch (error) {
         console.error('Error deleting service:', error);
-        alert('Error al eliminar el servicio');
+        showErrorAlert('Error', 'No se pudo eliminar el servicio');
       }
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      category: '',
-      division: 'design',
-      price: ''
-    });
+  const handleCloseModal = () => {
     setEditingService(null);
     setShowModal(false);
   };
@@ -202,6 +202,26 @@ const Services = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredServices.map((service) => (
           <div key={service.id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <div className="w-full h-48 bg-gray-100 flex items-center justify-center" style={{ borderBottom: '1px solid #eee' }}>
+              {service.image ? (
+                <img
+                  src={getImageUrl(service.image)}
+                  alt={service.name}
+                  className="w-full h-48 object-cover cursor-pointer"
+                  onClick={() => {
+                    setModalImageUrl(getImageUrl(service.image));
+                    setShowImageModal(true);
+                  }}
+                />
+              ) : (
+                <span className="text-gray-400 text-sm">Sin imagen</span>
+              )}
+            </div>
+            <ImageModal
+              isOpen={showImageModal}
+              imageUrl={modalImageUrl}
+              onClose={() => setShowImageModal(false)}
+            />
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
@@ -222,11 +242,9 @@ const Services = () => {
                   </div>
                 )}
               </div>
-              
               <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                 {service.description}
               </p>
-              
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">División:</span>
@@ -234,12 +252,10 @@ const Services = () => {
                     {getDivisionLabel(service.division)}
                   </span>
                 </div>
-                
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">Categoría:</span>
                   <span className="text-sm text-gray-900">{service.category}</span>
                 </div>
-                
                 <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                   <span className="text-sm font-medium text-gray-500 flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
@@ -266,104 +282,13 @@ const Services = () => {
       )}
 
       {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingService ? 'Editar Servicio' : 'Nuevo Servicio'}
-              </h3>
-              
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Descripción
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    rows={3}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Categoría *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    División *
-                  </label>
-                  <select
-                    required
-                    value={formData.division}
-                    onChange={(e) => setFormData({...formData, division: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  >
-                    <option value="design">Diseño</option>
-                    <option value="truck-design">Diseño de Camiones</option>
-                    <option value="racing-design">Diseño de Carreras</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio (CLP) *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    {editingService ? 'Actualizar' : 'Crear'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      <ServiceModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        onSave={handleSaveService}
+        service={editingService}
+        loading={modalLoading}
+      />
     </div>
   );
 };

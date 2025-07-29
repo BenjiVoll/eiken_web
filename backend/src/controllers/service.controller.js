@@ -5,6 +5,7 @@ import {
     getServices as getServicesService,
     getServiceById as getServiceByIdService,
     deleteService as deleteServiceService,
+    deleteServiceImage as deleteServiceImageService,
     getServicesByDivision,
     getServicesByCategory,
     getActiveServices,
@@ -16,14 +17,31 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 
+
 // Crear un servicio
 export const createService = async (req, res) => {
-    try {
-        const service = await createServiceService(req.body);
-        handleSuccess(res, 201, "Servicio creado exitosamente", service);
-    } catch (error) {
-        handleErrorServer(res, 400, error.message);
+  try {
+    const service = await createServiceService(req.body);
+    handleSuccess(res, 201, "Servicio creado exitosamente", service);
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
+};
+
+// Subir imagen de servicio
+export const uploadServiceImage = async (req, res) => {
+  try {
+    const serviceId = req.params.id;
+    if (!req.file) {
+      return res.status(400).json({ error: "No se subió ningún archivo" });
     }
+    // Actualizar el campo image en la entidad Service
+    const imageName = req.file.filename;
+    const updated = await updateServiceService(serviceId, { image: imageName });
+    res.status(200).json({ message: "Imagen subida correctamente", image: imageName, service: updated });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
 
 // Actualizar un servicio
@@ -114,4 +132,13 @@ export const deleteService = async (req, res) => {
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
+};
+
+export const deleteServiceImage = async (req, res) => {
+  try {
+    await deleteServiceImageService(req.params.id);
+    res.status(200).json({ message: "Imagen eliminada correctamente" });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };

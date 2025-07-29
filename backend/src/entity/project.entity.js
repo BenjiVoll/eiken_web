@@ -57,6 +57,11 @@ export const ProjectSchema = new EntitySchema({
       nullable: true,
       name: "budget_amount",
     },
+    image: {
+      type: "varchar",
+      length: 500,
+      nullable: true,
+    },
     
     notes: {
       type: "text",

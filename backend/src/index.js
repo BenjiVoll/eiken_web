@@ -1,3 +1,4 @@
+
 "use strict";
 import cors from "cors";
 import morgan from "morgan";
@@ -6,6 +7,7 @@ import indexRoutes from "./routes/index.routes.js";
 import session from "express-session";
 import passport from "passport";
 import express, { json, urlencoded } from "express";
+import path from "path";
 import { cookieKey, HOST, PORT } from "./config/configEnv.js";
 import { connectDB } from "./config/configDb.js";
 import { createInitialData } from "./config/initialSetup.js";
@@ -57,12 +59,16 @@ async function setupServer() {
     app.use(passport.initialize());
     app.use(passport.session());
 
+    // Servir archivos estáticos de la carpeta uploads
+    app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
     passportJwtSetup();
 
     app.use("/api", indexRoutes);
 
     app.listen(PORT, () => {
       console.log(`=> Servidor corriendo en ${HOST}:${PORT}/api`);
+      console.log(`=> Archivos estáticos en ${HOST}:${PORT}/uploads`);
     });
   } catch (error) {
     console.log("Error en index.js -> setupServer(), el error es: ", error);

@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import ImageModal from '../components/forms/ImageModal';
 import { projectsAPI, clientsAPI } from '../services/apiService';
 import { FileText, Search, Plus, Edit, Trash2, User, Calendar, DollarSign, Clock, Tag, Building } from 'lucide-react';
 import ProjectModal from '../components/forms/ProjectModal';
 import { deleteDataAlert, showSuccessAlert, showErrorAlert } from '../helpers/sweetAlert';
+import { getImageUrl } from '../helpers/getImageUrl';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -12,6 +14,8 @@ const Projects = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState('');
 
   useEffect(() => {
     loadData();
@@ -64,22 +68,55 @@ const Projects = () => {
   const handleSaveProject = async (formData) => {
     try {
       setModalLoading(true);
-      
+      let savedProject;
       if (editingProject) {
-        await projectsAPI.update(editingProject.id, formData);
+        const response = await projectsAPI.update(editingProject.id, formData);
+        savedProject = response?.data;
         showSuccessAlert('¡Actualizado!', 'El proyecto ha sido actualizado correctamente');
       } else {
-        await projectsAPI.create(formData);
+        const response = await projectsAPI.create(formData);
+        savedProject = response?.data;
         showSuccessAlert('¡Creado!', 'El proyecto ha sido creado correctamente');
       }
-      
       setIsModalOpen(false);
       loadData();
+      return savedProject;
     } catch (error) {
       console.error('Error saving project:', error);
       showErrorAlert('Error', error.response?.data?.message || 'No se pudo guardar el proyecto');
+      return undefined;
     } finally {
       setModalLoading(false);
+    }
+  };
+
+  // Subir imagen de proyecto y refrescar lista (igual que services)
+  const handleProjectImageUpload = async (projectId, imageFile) => {
+    if (!imageFile || !projectId) {
+      console.log('No hay imagen o projectId para subir');
+      return;
+    }
+    try {
+      const formDataImg = new FormData();
+      formDataImg.append('image', imageFile);
+      console.log('FormData para imagen:', formDataImg.get('image'));
+      const baseUrl = import.meta.env.VITE_BASE_URL;
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${baseUrl}/projects/${projectId}/image`, {
+        method: 'POST',
+        body: formDataImg,
+        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      console.log('Respuesta backend subida imagen:', result);
+      await loadData();
+      showSuccessAlert('¡Imagen subida!', 'La imagen del proyecto se ha subido correctamente');
+    } catch (error) {
+      console.error('Error al subir imagen de proyecto:', error);
+      showErrorAlert('Error', 'No se pudo subir la imagen del proyecto');
     }
   };
 
@@ -222,7 +259,27 @@ const Projects = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((project) => (
-            <div key={project.id} className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <div key={project.id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
+              <div className="w-full h-48 bg-gray-100 flex items-center justify-center" style={{ borderBottom: '1px solid #eee' }}>
+                {project.image ? (
+                  <img
+                    src={getImageUrl(project.image)}
+                    alt={project.title}
+                    className="w-full h-48 object-cover cursor-pointer"
+                    onClick={() => {
+                      setModalImageUrl(getImageUrl(project.image));
+                      setShowImageModal(true);
+                    }}
+                  />
+                ) : (
+                  <span className="text-gray-400 text-sm">Sin imagen</span>
+                )}
+              </div>
+              <ImageModal
+                isOpen={showImageModal}
+                imageUrl={modalImageUrl}
+                onClose={() => setShowImageModal(false)}
+              />
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 mr-2">
@@ -321,6 +378,7 @@ const Projects = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveProject}
+        onImageUpload={handleProjectImageUpload}
         project={editingProject}
         loading={modalLoading}
         clients={clients}

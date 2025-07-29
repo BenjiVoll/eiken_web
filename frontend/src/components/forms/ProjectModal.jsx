@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../../helpers/getImageUrl';
+import { showErrorAlert } from '../../helpers/sweetAlert';
 import { X } from 'lucide-react';
 
-const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false, clients = [] }) => {
+const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false, clients = [], onImageUpload }) => {
+  const [imageToDelete, setImageToDelete] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -31,6 +35,8 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
         notes: project.notes || '',
         quoteId: project.quoteId || null
       });
+      setImagePreview(project.image ? getImageUrl(project.image) : null);
+      setImageToDelete(false);
     } else {
       setFormData({
         title: '',
@@ -44,6 +50,8 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
         notes: '',
         quoteId: null
       });
+      setImagePreview(null);
+      setImageToDelete(false);
     }
     setErrors({});
   }, [project, isOpen]);
@@ -68,25 +76,60 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  // Estado para la imagen
+  const [imageFile, setImageFile] = useState(null);
+  const [imageError, setImageError] = useState('');
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      const submitData = {
-        ...formData,
-        budgetAmount: formData.budgetAmount ? parseFloat(formData.budgetAmount) : null
-      };
-      onSave(submitData);
+    if (!validateForm()) return;
+    const submitData = {
+      ...formData,
+      budgetAmount: formData.budgetAmount ? parseFloat(formData.budgetAmount) : null
+    };
+    // Eliminar imagen si está marcada para borrar y existe el proyecto
+    if (imageToDelete && project && project.id) {
+      try {
+        const baseUrl = import.meta.env.VITE_BASE_URL;
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${baseUrl}/projects/${project.id}/image`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          showErrorAlert('Error', result.error || 'No se pudo eliminar la imagen');
+        }
+      } catch {
+        showErrorAlert('Error', 'No se pudo eliminar la imagen');
+      }
+    }
+    // Guardar proyecto
+    const savedProject = await onSave(submitData);
+    // Subir imagen si corresponde
+    if (imageFile && savedProject && savedProject.id && typeof onImageUpload === 'function') {
+      await onImageUpload(savedProject.id, imageFile);
     }
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setImageFile(files[0]);
+      setImageError('');
+      if (files[0]) {
+        setImagePreview(URL.createObjectURL(files[0]));
+        setImageToDelete(false);
+      }
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    
-    // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -337,6 +380,32 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-y"
               disabled={loading}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Imagen del Proyecto</label>
+            {imagePreview && !imageToDelete && (
+              <div className="mb-2 flex items-center space-x-2">
+                <img src={imagePreview} alt="Preview" className="h-20 rounded shadow" />
+                <button
+                  type="button"
+                  onClick={() => { setImageToDelete(true); setImagePreview(null); }}
+                  className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                  disabled={loading}
+                >
+                  Eliminar imagen
+                </button>
+              </div>
+            )}
+            <input
+              type="file"
+              name="image"
+              accept="image/*"
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              disabled={loading}
+            />
+            {imageError && <p className="text-red-600 text-sm mt-1">{imageError}</p>}
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t">

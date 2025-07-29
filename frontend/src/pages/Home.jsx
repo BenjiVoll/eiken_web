@@ -20,6 +20,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { publicAPI } from '../services/apiService';
+import { getImageUrl } from '../helpers/getImageUrl';
 
 const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,13 +41,18 @@ const Home = () => {
     urgency: 'medium',
     notes: ''
   });
+  // Estado y lógica para proyectos
+  const [projects, setProjects] = useState([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+  const [projectsError, setProjectsError] = useState(null);
+  const [projectSearchTerm, setProjectSearchTerm] = useState('');
+  const [selectedProjectCategory, setSelectedProjectCategory] = useState('all');
 
   useEffect(() => {
     const loadServices = async () => {
       try {
         setLoading(true);
         setError(null);
-        
         const servicesData = await publicAPI.services.getAll();
         setServices(servicesData.data || servicesData || []);
       } catch (err) {
@@ -57,13 +63,38 @@ const Home = () => {
         setLoading(false);
       }
     };
-
     loadServices();
+  }, []);
+
+  // Cargar proyectos desde la API
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        setProjectsLoading(true);
+        setProjectsError(null);
+        const projectsData = await publicAPI.projects.getAll();
+        setProjects(projectsData.data || projectsData || []);
+      } catch (err) {
+        console.error('Error al cargar proyectos:', err);
+        setProjectsError('Error al cargar los proyectos desde el servidor');
+        setProjects([]);
+      } finally {
+        setProjectsLoading(false);
+      }
+    };
+    loadProjects();
   }, []);
 
   const filteredServices = Array.isArray(services) ? services.filter((service) => {
     const matchesSearch = service.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  }) : [];
+
+  // Filtrado de proyectos
+  const filteredProjects = Array.isArray(projects) ? projects.filter((project) => {
+    const matchesSearch = project.title?.toLowerCase().includes(projectSearchTerm.toLowerCase());
+    const matchesCategory = selectedProjectCategory === 'all' || project.category === selectedProjectCategory;
     return matchesSearch && matchesCategory;
   }) : [];
 
@@ -73,8 +104,16 @@ const Home = () => {
       [...new Set(services.map(service => service.category))] : [];
     return [...categories, ...uniqueCategories];
   };
-
   const categories = getUniqueCategories();
+
+  // Categorías únicas para proyectos
+  const getUniqueProjectCategories = () => {
+    const categories = ['all'];
+    const uniqueCategories = Array.isArray(projects) ?
+      [...new Set(projects.map(project => project.category))] : [];
+    return [...categories, ...uniqueCategories];
+  };
+  const projectCategories = getUniqueProjectCategories();
 
   const handleSubmitQuote = async (e) => {
     e.preventDefault();
@@ -158,10 +197,6 @@ const Home = () => {
               >
                 Solicitar Cotización
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </button>
-              <button className="border border-gray-300 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
-                Ver Portafolio
-                <Eye className="ml-2 h-5 w-5" />
               </button>
             </div>
           </div>
@@ -317,11 +352,13 @@ const Home = () => {
               <div key={service.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
                 <div className="p-6">
                   <div className="relative mb-4">
-                    <img
-                      src={service.image || "/placeholder.svg?height=300&width=400"}
-                      alt={service.name}
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
+                    {service.image && (
+                      <img
+                        src={getImageUrl(service.image)}
+                        alt={service.name}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    )}
                     {service.popular && (
                       <span className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 text-xs rounded">
                         Popular
@@ -404,85 +441,119 @@ const Home = () => {
             <p className="text-gray-600">Algunos de nuestros trabajos más representativos</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
-              <div className="relative">
-                <img
-                  src="/placeholder.svg?height=300&width=400"
-                  alt="Proyecto Destacado 1"
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4 text-white">
-                  <span className="inline-block bg-white/20 text-white text-xs px-2 py-1 rounded mb-2">
-                    Truck Design
-                  </span>
-                  <h3 className="text-xl font-bold">Proyecto Flota Empresarial</h3>
-                  <p className="text-sm opacity-90">Cliente Corporativo</p>
-                </div>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-600 mb-4">Diseño corporativo unificado para flota de vehículos comerciales</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      2024
-                    </div>
-                    <div className="flex items-center">
-                      <Award className="h-4 w-4 mr-1" />
-                      Flota Comercial
-                    </div>
-                  </div>
-                  <button className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50">
-                    Ver Detalles
-                  </button>
-                </div>
-              </div>
+          {/* Filtros y búsqueda de proyectos */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Buscar proyectos..."
+                value={projectSearchTerm}
+                onChange={(e) => setProjectSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
-
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
-              <div className="relative">
-                <img
-                  src="/placeholder.svg?height=300&width=400"
-                  alt="Proyecto Destacado 2"
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4 text-white">
-                  <span className="inline-block bg-white/20 text-white text-xs px-2 py-1 rounded mb-2">
-                    Racing Design
-                  </span>
-                  <h3 className="text-xl font-bold">Competición Automovilística</h3>
-                  <p className="text-sm opacity-90">Equipo Racing</p>
-                </div>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-600 mb-4">Gráfica especializada para vehículos de competición</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      2024
-                    </div>
-                    <div className="flex items-center">
-                      <Award className="h-4 w-4 mr-1" />
-                      Automovilismo
-                    </div>
-                  </div>
-                  <button className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50">
-                    Ver Detalles
-                  </button>
-                </div>
-              </div>
+            <div className="flex space-x-2">
+              {projectCategories.map((category, idx) => (
+                <button
+                  key={`project-cat-${category}-${idx}`}
+                  onClick={() => setSelectedProjectCategory(category)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    selectedProjectCategory === category
+                      ? 'bg-eiken-orange-500 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {category === 'all' ? 'Todos' : category}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="text-center mt-12">
-            <button className="border border-gray-300 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center mx-auto">
-              Ver Todos los Proyectos
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </button>
+          {/* Estado de carga, error o sin proyectos */}
+          {projectsLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+              <span className="ml-3 text-gray-600">Cargando proyectos...</span>
+            </div>
+          ) : projectsError ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{projectsError}</p>
+              <p className="text-gray-600">Por favor, inténtalo de nuevo más tarde.</p>
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No hay proyectos disponibles en este momento.</p>
+            </div>
+          ) : null}
+
+          {/* Grilla de proyectos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProjects.map((project, idx) => (
+              <div key={project.id || idx} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
+                <div className="p-6">
+                  <div className="relative mb-4">
+                    {project.image && (
+                      <img
+                        src={getImageUrl(project.image)}
+                        alt={project.title}
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    )}
+                  </div>
+                  <div className="mb-4">
+                    <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mb-2">
+                      {project.division}
+                    </span>
+                    <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
+                    <p className="text-gray-600 text-sm mb-3">{project.description}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <span className="font-medium">Cliente:</span>
+                      <span className="ml-2 truncate">{project.client?.name || project.client || 'Corporativo'}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <span className="font-medium">División:</span>
+                      <span className="ml-2">{project.division}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <span className="font-medium">Tipo:</span>
+                      <span className="ml-2">{project.projectType}</span>
+                    </div>
+                    {project.budgetAmount && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <span className="font-medium">Presupuesto:</span>
+                        <span className="ml-2 font-bold text-green-600">
+                          {new Intl.NumberFormat('es-CL', {
+                            style: 'currency',
+                            currency: 'CLP'
+                          }).format(project.budgetAmount)}
+                        </span>
+                      </div>
+                    )}
+                    {project.createdAt && (
+                      <div className="flex items-center text-sm text-gray-500">
+                        <span>Creado:</span>
+                        <span className="ml-2">
+                          {new Date(project.createdAt).toLocaleDateString('es-CL')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {project.notes && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <p className="text-sm text-gray-600 italic line-clamp-2">{project.notes}</p>
+                    </div>
+                  )}
+                  <div className="flex justify-end pt-4">
+                    <button className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50">
+                      Ver Detalles
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

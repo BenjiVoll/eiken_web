@@ -35,6 +35,11 @@ export const ServiceSchema = new EntitySchema({
       scale: 2,
       nullable: false,
     },
+    image: {
+      type: "varchar",
+      length: 500,
+      nullable: true,
+    },
     createdAt: {
       type: "timestamp",
       createDate: true,

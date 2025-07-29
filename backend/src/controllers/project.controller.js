@@ -4,23 +4,23 @@ import {
     updateProject as updateProjectService,
     getProjects as getProjectsService,
     getProjectById as getProjectByIdService,
-    deleteProject as deleteProjectService
+    deleteProject as deleteProjectService,
+    deleteProjectImage as deleteProjectImageService,
+    uploadProjectImage as uploadProjectImageService
 } from "../services/project.service.js";
+import {
+  handleErrorClient,
+  handleErrorServer,
+  handleSuccess,
+} from "../handlers/responseHandlers.js";
 
 // Crear un proyecto
 export const createProject = async (req, res) => {
     try {
         const project = await createProjectService(req.body);
-        res.status(201).json({
-            status: "success",
-            message: "Proyecto creado exitosamente",
-            data: project
-        });
+        handleSuccess(res, 201, "Proyecto creado exitosamente", project);
     } catch (error) {
-        res.status(400).json({ 
-            status: "error",
-            message: error.message 
-        });
+        handleErrorServer(res, 400, error.message);
     }
 };
 
@@ -28,16 +28,9 @@ export const createProject = async (req, res) => {
 export const updateProject = async (req, res) => {
     try {
         const project = await updateProjectService(req.params.id, req.body);
-        res.status(200).json({
-            status: "success",
-            message: "Proyecto actualizado exitosamente",
-            data: project
-        });
+        handleSuccess(res, 200, "Proyecto actualizado exitosamente", project);
     } catch (error) {
-        res.status(400).json({ 
-            status: "error",
-            message: error.message 
-        });
+        handleErrorServer(res, 400, error.message);
     }
 };
 
@@ -45,16 +38,9 @@ export const updateProject = async (req, res) => {
 export const getProjects = async (req, res) => {
     try {
         const projects = await getProjectsService(req.query);
-        res.status(200).json({
-            status: "success",
-            message: "Proyectos obtenidos exitosamente",
-            data: projects
-        });
+        handleSuccess(res, 200, "Proyectos obtenidos exitosamente", projects);
     } catch (error) {
-        res.status(400).json({ 
-            status: "error",
-            message: error.message 
-        });
+        handleErrorServer(res, 400, error.message);
     }
 };
 
@@ -63,21 +49,11 @@ export const getProject = async (req, res) => {
     try {
         const project = await getProjectByIdService(req.params.id);
         if (!project) {
-            return res.status(404).json({ 
-                status: "error",
-                message: "Proyecto no encontrado" 
-            });
+            return handleErrorClient(res, 404, "Proyecto no encontrado");
         }
-        res.status(200).json({
-            status: "success",
-            message: "Proyecto encontrado",
-            data: project
-        });
+        handleSuccess(res, 200, "Proyecto encontrado", project);
     } catch (error) {
-        res.status(400).json({ 
-            status: "error",
-            message: error.message 
-        });
+        handleErrorServer(res, 400, error.message);
     }
 };
 
@@ -85,14 +61,29 @@ export const getProject = async (req, res) => {
 export const deleteProject = async (req, res) => {
     try {
         await deleteProjectService(req.params.id);
-        res.status(200).json({
-            status: "success",
-            message: "Proyecto eliminado exitosamente"
-        });
+        handleSuccess(res, 200, "Proyecto eliminado exitosamente");
     } catch (error) {
-        res.status(400).json({ 
-            status: "error",
-            message: error.message 
-        });
+        handleErrorServer(res, 400, error.message);
     }
+};
+
+// Subir imagen de proyecto
+export const uploadProjectImage = async (req, res) => {
+  try {
+    const projectId = req.params.id;
+    const result = await uploadProjectImageService(projectId, req.file);
+    handleSuccess(res, 200, "Imagen subida correctamente", result);
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
+};
+
+// Eliminar imagen de proyecto
+export const deleteProjectImage = async (req, res) => {
+  try {
+    const result = await deleteProjectImageService(req.params.id);
+    handleSuccess(res, 200, result.mensaje);
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
 };
