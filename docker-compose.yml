@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:14.18-bullseye
+    container_name: eiken_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: eiken_db
+      POSTGRES_USER: eiken_user
+      POSTGRES_PASSWORD: eiken_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./eiken_web/backend
+      dockerfile: Dockerfile
+    container_name: eiken_backend
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: eiken_user
+      DB_PASSWORD: eiken_pass
+      DB_NAME: eiken_db
+      NODE_ENV: production
+    working_dir: /usr/src/app
+    tty: true
+    stdin_open: true
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: ./eiken_web/frontend
+      dockerfile: Dockerfile
+    container_name: eiken_frontend
+    depends_on:
+      - backend
+    working_dir: /usr/src/app
+    tty: true
+    stdin_open: true
+    ports:
+      - "443:443"   # Cambia si usas otro puerto en Vite
+
+volumes:
+  pgdata:
