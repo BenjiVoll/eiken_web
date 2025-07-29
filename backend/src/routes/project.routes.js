@@ -14,7 +14,10 @@ import {
   getProject,
   getProjects,
   updateProject,
+  uploadProjectImage,
+  deleteProjectImage
 } from "../controllers/project.controller.js";
+import upload from "../helpers/multer.helper.js";
 
 const router = Router();
 
@@ -44,6 +47,15 @@ router
   .delete("/:id", 
     isManagerOrAbove, // Solo Manager+ puede eliminar proyectos
     deleteProject
+  )
+  .post("/:id/image",
+    isDesignerOrAbove,
+    upload.single("image"),
+    uploadProjectImage
   );
+  router.delete("/:id/image",
+  isManagerOrAbove,
+  deleteProjectImage
+);
 
 export default router;

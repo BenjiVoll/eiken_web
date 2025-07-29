@@ -1,6 +1,8 @@
+import { deleteServiceImage } from "../controllers/service.controller.js";
 "use strict";
 import { Router } from "express";
-import { 
+import upload from "../helpers/multer.helper.js";
+import {
   isAdmin, 
   isManagerOrAbove, 
   isDesignerOrAbove 
@@ -14,15 +16,22 @@ import {
   getService,
   getServices,
   updateService,
+  uploadServiceImage
 } from "../controllers/service.controller.js";
 
 const router = Router();
+// Eliminar imagen de servicio
+router.delete("/:id/image", deleteServiceImage);
 
 // Todas las rutas requieren autenticación
 router.use(authenticateJwt);
 
 // Rutas para gestión de servicios
 router
+  .post("/:id/image",
+    upload.single("image"),
+    uploadServiceImage
+  )
   .post("/", 
     isManagerOrAbove, // Solo Manager+ puede crear servicios
     createBodyValidation(serviceBodyValidation), 

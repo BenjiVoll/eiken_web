@@ -89,6 +89,13 @@ export const publicAPI = {
       const response = await publicApi.post('/quotes/public', quoteData);
       return response.data;
     }
+  },
+
+  projects: {
+    getAll: async () => {
+      const response = await publicApi.get('/public/projects');
+      return response.data;
+    }
   }
 };
 
@@ -221,6 +228,15 @@ export const projectsAPI = {
 
   delete: async (id) => {
     const response = await api.delete(`/projects/${id}`);
+    return response.data;
+  },
+
+  uploadImage: async (id, formData) => {
+    const response = await api.post(`/projects/${id}/image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   }
 };

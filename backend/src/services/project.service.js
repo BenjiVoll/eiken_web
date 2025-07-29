@@ -1,4 +1,6 @@
 "use strict";
+import fs from "fs";
+import path from "path";
 import { AppDataSource } from "../config/configDb.js";
 import { ProjectSchema } from "../entity/project.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
@@ -134,4 +136,34 @@ export const deleteProject = async (id) => {
 
   await projectRepository.remove(project);
   return { mensaje: "Proyecto eliminado exitosamente" };
+};
+
+// --- Funciones de imagen ---
+export const deleteProjectImage = async (id) => {
+  const project = await projectRepository.findOneBy({ id });
+  if (!project) throw new Error("Proyecto no encontrado");
+  if (!project.image) return { mensaje: "El proyecto no tiene imagen" };
+  const imagePath = path.join(process.cwd(), "uploads", project.image);
+  if (fs.existsSync(imagePath)) {
+    fs.unlinkSync(imagePath);
+  }
+  project.image = null;
+  await projectRepository.save(project);
+  return { mensaje: "Imagen eliminada correctamente" };
+};
+export const uploadProjectImage = async (id, file) => {
+  if (!file) throw new Error("No se subió ningún archivo");
+  const project = await projectRepository.findOneBy({ id });
+  if (!project) throw new Error("Proyecto no encontrado");
+  // Eliminar imagen anterior si existe
+  if (project.image) {
+    const oldImagePath = path.join(process.cwd(), "uploads", project.image);
+    if (fs.existsSync(oldImagePath)) {
+      fs.unlinkSync(oldImagePath);
+    }
+  }
+  // Guardar nueva imagen
+  project.image = file.filename;
+  await projectRepository.save(project);
+  return { image: file.filename, project };
 };
