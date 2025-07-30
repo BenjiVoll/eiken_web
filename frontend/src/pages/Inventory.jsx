@@ -204,67 +204,44 @@ const Inventory = () => {
       </div>
 
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-6">
           {filteredInventory.map((item) => {
             const stockStatus = getStockStatus(item);
-            
             return (
-              <li key={item.id}>
-                <div className="px-4 py-4 sm:px-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-indigo-600 truncate">
-                            {item.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {item.type} • {item.brand} • {item.code}
-                          </p>
-                        </div>
-                        <div className="ml-2 flex-shrink-0 flex">
-                          {stockStatus.status === 'low' && (
-                            <AlertTriangle className="h-5 w-5 text-red-500" />
-                          )}
-                        </div>
-                      </div>
-                      <div className="mt-2 sm:flex sm:justify-between">
-                        <div className="sm:flex">
-                          <p className="flex items-center text-sm text-gray-500">
-                          Color: {item.color}
-                          </p>
-                        </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          <div className="flex items-center space-x-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stockStatus.bg} ${stockStatus.color}`}>
-                              {item.quantity} {item.unit}
-                            </span>
-                            {isManager && (
-                              <div className="flex space-x-2">
-                                <button 
-                                  onClick={() => handleEdit(item)}
-                                  className="text-blue-600 hover:text-blue-800"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </button>
-                                <button 
-                                  onClick={() => handleDelete(item.id)}
-                                  className="text-red-600 hover:text-red-800"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+              <div key={item.id} className="bg-white border rounded-lg shadow p-4 flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-bold text-indigo-700 truncate">{item.name}</h2>
+                    {stockStatus.status === 'low' && <AlertTriangle className="h-5 w-5 text-red-500" />}
                   </div>
+                  <p className="text-sm text-gray-500 mb-1">{item.type} • {item.brand} • {item.code}</p>
+                  <p className="text-sm text-gray-500 mb-1">Color: {item.color}</p>
+                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${stockStatus.bg} ${stockStatus.color} mb-2`}>
+                    {item.quantity} {item.unit}
+                  </span>
                 </div>
-              </li>
+                {isManager && (
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <button 
+                      onClick={() => handleEdit(item)}
+                      className="text-blue-600 hover:text-blue-800"
+                      title="Editar"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(item.id)}
+                      className="text-red-600 hover:text-red-800"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
+              </div>
             );
           })}
-        </ul>
+        </div>
       </div>
 
       {filteredInventory.length === 0 && (

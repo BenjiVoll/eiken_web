@@ -56,6 +56,8 @@ const UserModal = ({ isOpen, onClose, onSave, user = null, loading = false }) =>
     if (validateForm()) {
       const submitData = { ...formData };
       if (!submitData.password) delete submitData.password; // No enviar password vacío
+      // Solo enviar isActive si es edición
+      if (!user) delete submitData.isActive;
       onSave(submitData);
     }
   };

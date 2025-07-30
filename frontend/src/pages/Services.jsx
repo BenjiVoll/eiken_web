@@ -93,6 +93,10 @@ const Services = () => {
             Authorization: `Bearer ${token}`
           }
         });
+        // Solo mostrar la alerta si se está editando un servicio existente
+        if (editingService) {
+          showSuccessAlert('¡Imagen subida!', 'La imagen del servicio se ha subido correctamente');
+        }
       }
       await loadServices();
       setShowModal(false);
