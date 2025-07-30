@@ -35,22 +35,17 @@ export const QuoteSchema = new EntitySchema({
       nullable: true,
     },
     
-    serviceId: {
-      type: "int",
-      nullable: true,
-      name: "service_id",
-    },
+    // Eliminado: serviceId. Usar solo la relación service.
     customServiceTitle: {
       type: "varchar",
       length: 255,
       nullable: true,
       name: "custom_service_title",
     },
-    serviceType: {
-      type: "enum",
-      enum: ["otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular"],
-      nullable: false,
-      name: "service_type",
+    categoryId: {
+      type: "int",
+      nullable: true,
+      name: "category_id",
     },
     description: {
       type: "text",
@@ -58,13 +53,13 @@ export const QuoteSchema = new EntitySchema({
     },
     urgency: {
       type: "enum",
-      enum: ["low", "medium", "high", "urgent"],
+      enum: ["Bajo", "Medio", "Alto", "Urgente"],
       nullable: false,
     },
     
     status: {
       type: "enum",
-      enum: ["pending", "reviewing", "quoted", "approved", "rejected", "converted"],
+      enum: ["Pendiente", "En Revisión", "Cotizado", "Aprobado", "Rechazado", "Convertido"],
       nullable: false,
     },
     quotedAmount: {
@@ -103,6 +98,15 @@ export const QuoteSchema = new EntitySchema({
       },
       nullable: true,
     },
+    category: {
+      target: "Category",
+      type: "many-to-one",
+      joinColumn: {
+        name: "category_id",
+        referencedColumnName: "id",
+      },
+      nullable: true,
+    },
   },
   
   indices: [
@@ -118,9 +122,7 @@ export const QuoteSchema = new EntitySchema({
       name: "IDX_QUOTE_URGENCY",
       columns: ["urgency"],
     },
-    {
-      name: "IDX_QUOTE_SERVICE",
-      columns: ["serviceId"],
-    },
+    // Eliminar el índice IDX_QUOTE_SERVICE que hace referencia a la columna serviceId
+    // ya que esa columna fue eliminada y ahora se usa la relación service.
   ],
 });

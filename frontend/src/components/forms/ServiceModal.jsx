@@ -8,20 +8,22 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: '',
+    categoryId: '',
     division: 'design',
     price: ''
   });
   const [imageFile, setImageFile] = useState(null);
   const [imageError, setImageError] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [divisions, setDivisions] = useState([]);
 
   useEffect(() => {
     if (service) {
       setFormData({
         name: service.name || '',
         description: service.description || '',
-        category: service.category || '',
-        division: service.division || 'design',
+        categoryId: service.category?.id || service.categoryId || '',
+        division: service.division || '',
         price: service.price ? service.price.toString() : ''
       });
       setImagePreview(service.image ? getImageUrl(service.image) : null);
@@ -30,8 +32,8 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
       setFormData({
         name: '',
         description: '',
-        category: '',
-        division: 'design',
+        categoryId: '',
+        division: '',
         price: ''
       });
       setImageFile(null);
@@ -40,6 +42,25 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
       setImageToDelete(false);
     }
   }, [service, isOpen]);
+
+  useEffect(() => {
+    const loadApisAndData = async () => {
+      const { categoriesAPI, divisionsAPI } = await import('../../services/apiService');
+      try {
+        const catData = await categoriesAPI.getAll();
+        setCategories(catData.data || catData || []);
+      } catch {
+        setCategories([]);
+      }
+      try {
+        const divData = await divisionsAPI.getAll();
+        setDivisions(divData.data || divData || []);
+      } catch {
+        setDivisions([]);
+      }
+    };
+    loadApisAndData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,7 +83,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.category || !formData.division || !formData.price) {
+    if (!formData.name || !formData.categoryId || !formData.division || !formData.price) {
       setImageError('Completa todos los campos obligatorios');
       return;
     }
@@ -121,14 +142,18 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
-              <input
-                type="text"
-                name="category"
+              <select
+                name="categoryId"
                 required
-                value={formData.category}
+                value={formData.categoryId}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
+              >
+                <option value="">Selecciona una categoría</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">División *</label>
@@ -139,9 +164,10 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <option value="design">Diseño</option>
-                <option value="truck-design">Diseño de Camiones</option>
-                <option value="racing-design">Diseño de Carreras</option>
+                <option value="">Selecciona una división</option>
+                {divisions.map(div => (
+                  <option key={div.id} value={div.id}>{div.name}</option>
+                ))}
               </select>
             </div>
             <div>

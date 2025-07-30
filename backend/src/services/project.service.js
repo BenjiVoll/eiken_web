@@ -10,7 +10,7 @@ const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
   console.log('Creating project with data:', data);
-  const { title, description, clientId, projectType, division, status, priority, budgetAmount, notes, quoteId } = data;
+  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId } = data;
   
   // Verificar que el cliente existe
   const client = await clientRepository.findOneBy({ id: clientId });
@@ -31,10 +31,10 @@ export const createProject = async (data) => {
     title,
     description,
     clientId,
-    projectType: projectType || "otro",
-    division: division || "design",
-    status: data.status || "pending",
-    priority: priority || "medium",
+    projectType: categoryId,
+    division,
+    status,
+    priority,
     budgetAmount,
     notes,
     quoteId
@@ -70,6 +70,12 @@ export const updateProject = async (id, data) => {
     }
   }
 
+  // Si se actualiza categoryId, mapear a projectType
+  if (data.categoryId) {
+    project.projectType = data.categoryId;
+    delete data.categoryId;
+  }
+  // Asignar el resto de campos
   Object.assign(project, data);
   await projectRepository.save(project);
   return project;
@@ -77,7 +83,7 @@ export const updateProject = async (id, data) => {
 
 export const getProjects = async () => {
   const projects = await projectRepository.find({
-    relations: ["client"],
+    relations: ["client", "category", "division"],
     order: { createdAt: "DESC" }
   });
   return projects;
@@ -86,34 +92,31 @@ export const getProjects = async () => {
 export const getProjectById = async (id) => {
   const project = await projectRepository.findOne({
     where: { id },
-    relations: ["client"]
+    relations: ["client", "category", "division"]
   });
   return project;
 };
 
 export const getProjectsByDivision = async (division) => {
-  const validDivisions = ["Design", "Truck Design", "Racing Design"];
-  if (!validDivisions.includes(division)) {
+  if (!division || typeof division !== "number") {
     throw new Error("División no válida");
   }
-
   const projects = await projectRepository.find({
     where: { division },
-    relations: ["client"],
+    relations: ["client", "category", "division"],
     order: { createdAt: "DESC" }
   });
   return projects;
 };
 
 export const getProjectsByStatus = async (status) => {
-  const validStatuses = ["Pendiente", "En Proceso", "Aprobada", "Completado", "Cancelado"];
+  const validStatuses = ["Pendiente", "En Proceso", "Aprobado", "Completado", "Cancelado"];
   if (!validStatuses.includes(status)) {
     throw new Error("Estado de proyecto no válido");
   }
-
   const projects = await projectRepository.find({
     where: { status },
-    relations: ["client"],
+    relations: ["client", "category", "division"],
     order: { createdAt: "DESC" }
   });
   return projects;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { categoriesAPI, divisionsAPI } from '../../services/apiService';
 import { getImageUrl } from '../../helpers/getImageUrl';
 import { showErrorAlert } from '../../helpers/sweetAlert';
 import { X } from 'lucide-react';
@@ -10,14 +11,16 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
     title: '',
     description: '',
     clientId: '',
-    projectType: 'otro',
-    division: 'design',
-    status: 'pending',
-    priority: 'medium',
+    categoryId: '',
+    division: '',
+    status: 'Pendiente',
+    priority: 'Bajo',
     budgetAmount: '',
     notes: '',
-    quoteId: null // Para proyectos creados desde cotización
+    quoteId: null
   });
+  const [categories, setCategories] = useState([]);
+  const [divisions, setDivisions] = useState([]);
 
   const [errors, setErrors] = useState({});
 
@@ -27,10 +30,10 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
         title: project.title || '',
         description: project.description || '',
         clientId: project.clientId || '',
-        projectType: project.projectType || 'otro',
-        division: project.division || 'design',
-        status: project.status || 'pending',
-        priority: project.priority || 'medium',
+        categoryId: project.category?.id || '',
+        division: project.division?.id || '',
+        status: project.status || 'Pendiente',
+        priority: project.priority || 'Bajo',
         budgetAmount: project.budgetAmount || '',
         notes: project.notes || '',
         quoteId: project.quoteId || null
@@ -42,10 +45,10 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
         title: '',
         description: '',
         clientId: '',
-        projectType: 'otro',
-        division: 'design',
-        status: 'pending',
-        priority: 'medium',
+        categoryId: '',
+        division: '',
+        status: 'Pendiente',
+        priority: 'Bajo',
         budgetAmount: '',
         notes: '',
         quoteId: null
@@ -53,6 +56,25 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
       setImagePreview(null);
       setImageToDelete(false);
     }
+    // Cargar categorías y divisiones dinámicamente (siempre)
+    const fetchCategories = async () => {
+      try {
+        const res = await categoriesAPI.getAll();
+        setCategories(res.data || []);
+      } catch {
+        setCategories([]);
+      }
+    };
+    const fetchDivisions = async () => {
+      try {
+        const res = await divisionsAPI.getAll();
+        setDivisions(res.data || []);
+      } catch {
+        setDivisions([]);
+      }
+    };
+    fetchCategories();
+    fetchDivisions();
     setErrors({});
   }, [project, isOpen]);
 
@@ -140,32 +162,21 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
 
   if (!isOpen) return null;
 
-  const projectTypes = [
-    { value: 'otro', label: 'Otro' },
-    { value: 'identidad-corporativa', label: 'Identidad Corporativa' },
-    { value: 'grafica-competicion', label: 'Gráfica de Competición' },
-    { value: 'wrap-vehicular', label: 'Wrap Vehicular' }
-  ];
 
-  const divisions = [
-    { value: 'design', label: 'Diseño' },
-    { value: 'truck-design', label: 'Diseño de Camiones' },
-    { value: 'racing-design', label: 'Diseño de Competición' }
-  ];
 
   const statusOptions = [
-    { value: 'pending', label: 'Pendiente' },
-    { value: 'approved', label: 'Aprobado' },
-    { value: 'in-progress', label: 'En Proceso' },
-    { value: 'completed', label: 'Completado' },
-    { value: 'cancelled', label: 'Cancelado' }
+    { value: 'Pendiente', label: 'Pendiente' },
+    { value: 'En Proceso', label: 'En Proceso' },
+    { value: 'Aprobado', label: 'Aprobado' },
+    { value: 'Completado', label: 'Completado' },
+    { value: 'Cancelado', label: 'Cancelado' }
   ];
 
   const priorityOptions = [
-    { value: 'low', label: 'Baja' },
-    { value: 'medium', label: 'Media' },
-    { value: 'high', label: 'Alta' },
-    { value: 'urgent', label: 'Urgente' }
+    { value: 'Bajo', label: 'Bajo' },
+    { value: 'Medio', label: 'Medio' },
+    { value: 'Alto', label: 'Alto' },
+    { value: 'Urgente', label: 'Urgente' }
   ];
 
   return (
@@ -261,19 +272,19 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tipo de Proyecto
+                Categoría
               </label>
               <select
-                name="projectType"
-                value={formData.projectType}
+                name="categoryId"
+                value={formData.categoryId}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 disabled={loading}
+                required
               >
-                {projectTypes.map(type => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
+                <option value="">Seleccionar categoría</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
@@ -288,11 +299,11 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 disabled={loading}
+                required
               >
-                {divisions.map(division => (
-                  <option key={division.value} value={division.value}>
-                    {division.label}
-                  </option>
+                <option value="">Seleccionar división</option>
+                {divisions.map(div => (
+                  <option key={div.id} value={div.id}>{div.name}</option>
                 ))}
               </select>
             </div>

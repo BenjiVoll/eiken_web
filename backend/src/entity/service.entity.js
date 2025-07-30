@@ -19,14 +19,14 @@ export const ServiceSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
+    // Relación con Category
     category: {
-      type: "varchar",
-      length: 100,
+      type: "int",
       nullable: false,
     },
+    // Relación con Division
     division: {
-      type: "enum",
-      enum: ["design", "truck-design", "racing-design"],
+      type: "int",
       nullable: false,
     },
     price: {
@@ -64,6 +64,20 @@ export const ServiceSchema = new EntitySchema({
     },
   ],
   relations: {
+    category: {
+      type: "many-to-one",
+      target: "Category",
+      joinColumn: true,
+      nullable: false,
+      inverseSide: "services",
+    },
+    division: {
+      type: "many-to-one",
+      target: "Division",
+      joinColumn: true,
+      nullable: false,
+      inverseSide: "services",
+    },
     orderItems: {
       type: "one-to-many",
       target: "OrderItem",

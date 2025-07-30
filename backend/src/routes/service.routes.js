@@ -1,4 +1,3 @@
-import { deleteServiceImage } from "../controllers/service.controller.js";
 "use strict";
 import { Router } from "express";
 import upload from "../helpers/multer.helper.js";
@@ -10,6 +9,7 @@ import {
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";
 import { serviceQueryValidation, serviceBodyValidation } from "../validations/service.validation.js";
+import { deleteServiceImage } from "../controllers/service.controller.js";
 import {
   createService,
   deleteService,

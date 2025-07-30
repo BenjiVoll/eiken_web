@@ -7,6 +7,7 @@ import {
   getServicesByCategoryController,
   getService
 } from "../controllers/service.controller.js";
+import { getCategories } from "../controllers/category.controller.js";
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router
   .get("/active", getActiveServicesController) // Obtener servicios activos
   .get("/division/:division", getServicesByDivisionController) // Servicios por división
   .get("/category/:category", getServicesByCategoryController) // Servicios por categoría
+  .get("/categories", getCategories) // Obtener todas las categorías (público)
   .get("/:id", getService); // Obtener servicio por ID
 
 export default router;

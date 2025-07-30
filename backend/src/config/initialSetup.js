@@ -1,3 +1,4 @@
+
 "use strict";
 
 import User from "../entity/user.entity.js";
@@ -9,11 +10,15 @@ import { QuoteSchema } from "../entity/quote.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
 import { AppDataSource } from "./configDb.js";
 import { encryptPassword } from "../helpers/bcrypt.helper.js";
+import { CategorySchema } from "../entity/category.entity.js";
+import { DivisionSchema } from "../entity/division.entity.js";
 
 async function createInitialData() {
   try {
     const userRepository = AppDataSource.getRepository(User);
     const serviceRepository = AppDataSource.getRepository(ServiceSchema);
+    const categoryRepository = AppDataSource.getRepository(CategorySchema);
+    const divisionRepository = AppDataSource.getRepository(DivisionSchema);
     const inventoryRepository = AppDataSource.getRepository(InventorySchema);
     const supplierRepository = AppDataSource.getRepository(SupplierSchema);
     const projectRepository = AppDataSource.getRepository(ProjectSchema);
@@ -71,6 +76,26 @@ async function createInitialData() {
       console.log("Usuarios ya existen, omitiendo creación.");
     }
 
+    // Obtener o crear categorías
+    let vehicularCategory = await categoryRepository.findOneBy({ name: "Vehicular" });
+    let racingCategory = await categoryRepository.findOneBy({ name: "Racing" });
+    let corporativoCategory = await categoryRepository.findOneBy({ name: "Corporativo" });
+    let textilCategory = await categoryRepository.findOneBy({ name: "Textil" });
+
+    if (!vehicularCategory) vehicularCategory = await categoryRepository.save(categoryRepository.create({ name: "Vehicular" }));
+    if (!racingCategory) racingCategory = await categoryRepository.save(categoryRepository.create({ name: "Racing" }));
+    if (!corporativoCategory) corporativoCategory = await categoryRepository.save(categoryRepository.create({ name: "Corporativo" }));
+    if (!textilCategory) textilCategory = await categoryRepository.save(categoryRepository.create({ name: "Textil" }));
+
+    // Obtener o crear divisiones
+    let truckDivision = await divisionRepository.findOneBy({ name: "Truck design" });
+    let racingDivision = await divisionRepository.findOneBy({ name: "Racing design" });
+    let designDivision = await divisionRepository.findOneBy({ name: "Design" });
+
+    if (!truckDivision) truckDivision = await divisionRepository.save(divisionRepository.create({ name: "Truck design" }));
+    if (!racingDivision) racingDivision = await divisionRepository.save(divisionRepository.create({ name: "Racing design" }));
+    if (!designDivision) designDivision = await divisionRepository.save(divisionRepository.create({ name: "Design" }));
+
     const serviceCount = await serviceRepository.count();
     if (serviceCount === 0) {
       await Promise.all([
@@ -78,8 +103,8 @@ async function createInitialData() {
           serviceRepository.create({
             name: "Wrap Vehicular Completo",
             description: "Diseño e instalación de wrap completo para vehículos comerciales y particulares",
-            category: "Vehicular",
-            division: "truck-design",
+            category: vehicularCategory.id,
+            division: truckDivision.id,
             price: 450000.00,
           })
         ),
@@ -87,8 +112,8 @@ async function createInitialData() {
           serviceRepository.create({
             name: "Gráfica de Competición",
             description: "Diseño especializado para autos de competición y rally",
-            category: "Racing",
-            division: "racing-design",
+            category: racingCategory.id,
+            division: racingDivision.id,
             price: 850000.00,
           })
         ),
@@ -96,8 +121,8 @@ async function createInitialData() {
           serviceRepository.create({
             name: "Identidad Corporativa",
             description: "Diseño completo de identidad visual empresarial",
-            category: "Corporativo",
-            division: "design",
+            category: corporativoCategory.id,
+            division: designDivision.id,
             price: 250000.00,
           })
         ),
@@ -105,8 +130,8 @@ async function createInitialData() {
           serviceRepository.create({
             name: "Rotulado de Flota",
             description: "Diseño y aplicación para flotas empresariales",
-            category: "Vehicular",
-            division: "truck-design",
+            category: vehicularCategory.id,
+            division: truckDivision.id,
             price: 380000.00,
           })
         ),
@@ -114,8 +139,8 @@ async function createInitialData() {
           serviceRepository.create({
             name: "Gráfica Rally Nacional",
             description: "Diseño para vehículos de rally nacional e internacional",
-            category: "Racing",
-            division: "racing-design",
+            category: racingCategory.id,
+            division: racingDivision.id,
             price: 720000.00,
           })
         ),
@@ -123,8 +148,8 @@ async function createInitialData() {
           serviceRepository.create({
             name: "Estampado Textil",
             description: "Estampados corporativos y personalizados",
-            category: "Textil",
-            division: "design",
+            category: textilCategory.id,
+            division: designDivision.id,
             price: 45000.00,
           })
         ),
@@ -132,8 +157,8 @@ async function createInitialData() {
           serviceRepository.create({
             name: "Cascos de Competición",
             description: "Gráfica para cascos de automovilismo y mountain bike",
-            category: "Racing",
-            division: "racing-design",
+            category: racingCategory.id,
+            division: racingDivision.id,
             price: 95000.00,
           })
         ),
@@ -154,11 +179,9 @@ async function createInitialData() {
             color: "Plata",
             brand: "3M",
             model: "Scotchcal",
-            width: "1.22m",
             unit: "metros",
             quantity: 15,
             minStock: 5,
-            unitCost: 12500.00,
           })
         ),
         inventoryRepository.save(
@@ -168,11 +191,9 @@ async function createInitialData() {
             color: "Oro",
             brand: "3M",
             model: "Scotchcal",
-            width: "1.22m",
             unit: "metros",
             quantity: 6,
             minStock: 3,
-            unitCost: 13200.00,
           })
         ),
         inventoryRepository.save(
@@ -182,11 +203,9 @@ async function createInitialData() {
             color: "Negro",
             brand: "3M",
             model: "Scotchcal",
-            width: "1.22m",
             unit: "metros",
             quantity: 12,
             minStock: 4,
-            unitCost: 12800.00,
           })
         ),
         inventoryRepository.save(
@@ -196,11 +215,9 @@ async function createInitialData() {
             color: "Rojo",
             brand: "Avery Dennison",
             model: "T-7500",
-            width: "1.37m",
             unit: "metros",
             quantity: 8,
             minStock: 3,
-            unitCost: 9800.00,
           })
         ),
         inventoryRepository.save(
@@ -210,11 +227,9 @@ async function createInitialData() {
             color: "Azul",
             brand: "Avery Dennison",
             model: "T-7500",
-            width: "1.37m",
             unit: "metros",
             quantity: 10,
             minStock: 3,
-            unitCost: 9800.00,
           })
         ),
         inventoryRepository.save(
@@ -224,11 +239,9 @@ async function createInitialData() {
             color: "Blanco",
             brand: "Avery Dennison",
             model: "T-7500",
-            width: "1.37m",
             unit: "metros",
             quantity: 20,
             minStock: 5,
-            unitCost: 8900.00,
           })
         ),
         inventoryRepository.save(
@@ -238,11 +251,9 @@ async function createInitialData() {
             color: "Verde Lima",
             brand: "Oracal",
             model: "651",
-            width: "1.22m",
             unit: "metros",
             quantity: 12,
             minStock: 3,
-            unitCost: 15600.00,
           })
         ),
         inventoryRepository.save(
@@ -252,11 +263,9 @@ async function createInitialData() {
             color: "Naranja",
             brand: "Oracal",
             model: "651",
-            width: "1.22m",
             unit: "metros",
             quantity: 20,
             minStock: 4,
-            unitCost: 15600.00,
           })
         ),
         inventoryRepository.save(
@@ -266,11 +275,9 @@ async function createInitialData() {
             color: "Rosa",
             brand: "Oracal",
             model: "651",
-            width: "1.22m",
             unit: "metros",
             quantity: 8,
             minStock: 2,
-            unitCost: 15600.00,
           })
         ),
         inventoryRepository.save(
@@ -280,11 +287,9 @@ async function createInitialData() {
             color: "Amarillo",
             brand: "Oracal",
             model: "651",
-            width: "1.22m",
             unit: "metros",
             quantity: 15,
             minStock: 3,
-            unitCost: 15600.00,
           })
         ),
       ]);
@@ -412,10 +417,10 @@ async function createInitialData() {
             title: "Wrap Completo Flota Transportes Bio-Bío",
             description: "Diseño e instalación de wrap completo para 25 camiones de carga",
             clientId: 1,
-            projectType: "wrap-vehicular",
-            division: "truck-design",
-            status: "completed",
-            priority: "high",
+            projectType: vehicularCategory.id,
+            division: truckDivision.id,
+            status: "Completado",
+            priority: "Alto",
             budgetAmount: 11250000.00,
             notes: "Proyecto completado exitosamente dentro del plazo estimado",
           })
@@ -425,10 +430,10 @@ async function createInitialData() {
             title: "Gráfica Rally Mobil 2024 - Team Chile",
             description: "Diseño especializado para 3 autos de competición Rally Mobil",
             clientId: 2,
-            projectType: "grafica-competicion",
-            division: "racing-design",
-            status: "completed",
-            priority: "urgent",
+            projectType: racingCategory.id,
+            division: racingDivision.id,
+            status: "Completado",
+            priority: "Urgente",
             budgetAmount: 2160000.00,
             notes: "Entregado para temporada 2024 de Rally Mobil",
           })
@@ -438,10 +443,10 @@ async function createInitialData() {
             title: "Identidad Corporativa Grupo Arauco",
             description: "Desarrollo completo de identidad visual y aplicaciones vehiculares",
             clientId: 3,
-            projectType: "identidad-corporativa",
-            division: "design",
-            status: "completed",
-            priority: "medium",
+            projectType: corporativoCategory.id,
+            division: designDivision.id,
+            status: "Completado",
+            priority: "Medio",
             budgetAmount: 890000.00,
             notes: "Incluye manual de identidad y aplicaciones vehiculares",
           })
@@ -451,10 +456,10 @@ async function createInitialData() {
             title: "Cuerpo de Bomberos Concepción - Equipamiento Gráfico",
             description: "Diseño e instalación de gráficas para carros bomba y equipamiento",
             clientId: 4,
-            projectType: "otro",
-            division: "design",
-            status: "completed",
-            priority: "high",
+            projectType: vehicularCategory.id,
+            division: designDivision.id,
+            status: "Completado",
+            priority: "Alto",
             budgetAmount: 1350000.00,
             notes: "Gráficas para 3 carros bomba y equipamiento auxiliar",
           })
@@ -464,10 +469,10 @@ async function createInitialData() {
             title: "Flota Express Chilexpress",
             description: "Wrap completo para 40 vehículos de reparto",
             clientId: 1,
-            projectType: "wrap-vehicular",
-            division: "truck-design",
-            status: "in-progress",
-            priority: "high",
+            projectType: vehicularCategory.id,
+            division: truckDivision.id,
+            status: "En Proceso",
+            priority: "Alto",
             budgetAmount: 18000000.00,
             notes: "Proyecto en ejecución - Fase 1 de 3 completada",
           })
@@ -488,10 +493,10 @@ async function createInitialData() {
             clientPhone: "+56 9 8765 4321",
             company: "Transportes ABC",
             customServiceTitle: "Wrap para Flota de Camiones",
-            serviceType: "wrap-vehicular",
+            categoryId: vehicularCategory.id,
             description: "Necesitamos wrap completo para 10 camiones de nuestra flota",
-            urgency: "medium",
-            status: "pending",
+            urgency: "Medio",
+            status: "Pendiente",
             quotedAmount: 4500000.00,
             notes: "Cliente interesado en descuento por volumen",
           })
@@ -503,10 +508,10 @@ async function createInitialData() {
             clientPhone: "+56 9 1234 5678",
             company: "Racing Team Chile",
             customServiceTitle: "Gráfica para Autos de Competición",
-            serviceType: "grafica-competicion",
+            categoryId: racingCategory.id,
             description: "Gráfica para 2 autos de competición temporada 2024",
-            urgency: "high",
-            status: "approved",
+            urgency: "Alto",
+            status: "Aprobado",
             quotedAmount: 1700000.00,
             notes: "Aprobado para iniciar inmediatamente",
           })
@@ -518,10 +523,10 @@ async function createInitialData() {
             clientPhone: "+56 2 2555 1234",
             company: "Empresa DEF",
             customServiceTitle: "Desarrollo de Identidad Corporativa",
-            serviceType: "identidad-corporativa",
+            categoryId: corporativoCategory.id,
             description: "Desarrollo de identidad corporativa completa incluyendo logo y aplicaciones",
-            urgency: "low",
-            status: "reviewing",
+            urgency: "Bajo",
+            status: "En Revisión",
             quotedAmount: 960000.00,
             notes: "En proceso de revisión de propuestas",
           })
@@ -533,10 +538,10 @@ async function createInitialData() {
             clientPhone: "+56 41 254 9999",
             company: "Bomberos Concepción",
             customServiceTitle: "Gráfica para Carros Bomba",
-            serviceType: "otro",
+            categoryId: vehicularCategory.id,
             description: "Gráfica para 3 carros bomba nuevos",
-            urgency: "urgent",
-            status: "pending",
+            urgency: "Urgente",
+            status: "Pendiente",
             quotedAmount: 1350000.00,
             notes: "Requiere aprobación urgente del directorio",
           })
