@@ -32,7 +32,7 @@ services:
     tty: true
     stdin_open: true
     ports:
-      - "3000:3000"
+      - "1663:80"
 
   frontend:
     build:
@@ -45,7 +45,7 @@ services:
     tty: true
     stdin_open: true
     ports:
-      - "443:443"   # Cambia si usas otro puerto en Vite
+      - "1664:443"   # Cambia si usas otro puerto en Vite
 
 volumes:
   pgdata:

@@ -19,6 +19,6 @@ COPY . .
 
 RUN npm run build
 
-EXPOSE 3000
+EXPOSE 443
 
 CMD ["pm2-runtime", "npm", "--", "run", "preview"]
