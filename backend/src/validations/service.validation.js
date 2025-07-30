@@ -22,11 +22,13 @@ export const serviceQueryValidation = Joi.object({
     .messages({
       "string.base": "La categoría debe ser de tipo string.",
     }),
-  division: Joi.string()
-    .valid("design", "truck-design", "racing-design")
+  division: Joi.number()
+    .integer()
+    .positive()
     .messages({
-      "string.base": "La división debe ser de tipo string.",
-      "any.only": "La división debe ser una de: design, truck-design, racing-design.",
+      "number.base": "La división debe ser un número.",
+      "number.integer": "La división debe ser un número entero.",
+      "number.positive": "La división debe ser un número positivo.",
     }),
 })
   .unknown(false)
@@ -55,25 +57,25 @@ export const serviceBodyValidation = Joi.object({
       "string.min": "La descripción debe tener como mínimo 10 caracteres.",
       "string.max": "La descripción debe tener como máximo 1000 caracteres.",
     }),
-  category: Joi.string()
-    .min(2)
-    .max(100)
+  category: Joi.number()
+    .integer()
+    .positive()
     .required()
     .messages({
-      "string.empty": "La categoría no puede estar vacía.",
-      "any.required": "La categoría es obligatoria.",
-      "string.base": "La categoría debe ser de tipo string.",
-      "string.min": "La categoría debe tener como mínimo 2 caracteres.",
-      "string.max": "La categoría debe tener como máximo 100 caracteres.",
+      "number.base": "La categoría debe ser un número.",
+      "number.integer": "La categoría debe ser un número entero.",
+      "number.positive": "La categoría debe ser un número positivo.",
+      "any.required": "La categoría es obligatoria."
     }),
-  division: Joi.string()
-    .valid("design", "truck-design", "racing-design")
+  division: Joi.number()
+    .integer()
+    .positive()
     .required()
     .messages({
-      "string.empty": "La división no puede estar vacía.",
-      "any.required": "La división es obligatoria.",
-      "string.base": "La división debe ser de tipo string.",
-      "any.only": "La división debe ser una de: design, truck-design, racing-design.",
+      "number.base": "La división debe ser un número.",
+      "number.integer": "La división debe ser un número entero.",
+      "number.positive": "La división debe ser un número positivo.",
+      "any.required": "La división es obligatoria."
     }),
   price: Joi.number()
     .positive()

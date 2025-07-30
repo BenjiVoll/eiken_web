@@ -45,7 +45,7 @@ services:
     tty: true
     stdin_open: true
     ports:
-      - "1664:443"   # Cambia si usas otro puerto en Vite
+      - "1664:443"
 
 volumes:
   pgdata:

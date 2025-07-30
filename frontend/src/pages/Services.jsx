@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { showSuccessAlert, showErrorAlert } from '../helpers/sweetAlert';
 import ImageModal from '../components/forms/ImageModal';
 import { useAuth } from '../context/AuthContext';
-import { servicesAPI } from '../services/apiService';
+import { servicesAPI, categoriesAPI, divisionsAPI } from '../services/apiService';
 import { Plus, Edit, Trash2, Search, Settings, DollarSign } from 'lucide-react';
 import { getImageUrl } from '../helpers/getImageUrl';
 import ServiceModal from '../components/forms/ServiceModal';
@@ -13,6 +13,8 @@ const Services = () => {
   const [modalImageUrl, setModalImageUrl] = useState('');
   const { isManager } = useAuth();
   const [services, setServices] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [divisions, setDivisions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -21,6 +23,8 @@ const Services = () => {
 
   useEffect(() => {
     loadServices();
+    loadCategories();
+    loadDivisions();
   }, []);
 
   const loadServices = async () => {
@@ -35,14 +39,36 @@ const Services = () => {
     }
   };
 
+  const loadCategories = async () => {
+    try {
+      const response = await categoriesAPI.getAll();
+      setCategories(response.data || []);
+    } catch {
+      setCategories([]);
+    }
+  };
+
+  const loadDivisions = async () => {
+    try {
+      const response = await divisionsAPI.getAll();
+      setDivisions(response.data || []);
+    } catch {
+      setDivisions([]);
+    }
+  };
+
   // Guardar servicio y subir imagen
   const handleSaveService = async (formData, imageFile) => {
     try {
       setModalLoading(true);
       const serviceData = {
         ...formData,
-        price: parseFloat(formData.price)
+        price: parseFloat(formData.price),
+        category: formData.categoryId,
+        division: formData.division
       };
+      // Eliminar posibles campos extra
+      delete serviceData.categoryId;
       let savedService;
       if (editingService) {
         const response = await servicesAPI.update(editingService.id, serviceData);
@@ -111,7 +137,7 @@ const Services = () => {
 
   const filteredServices = Array.isArray(services) ? services.filter(service =>
     service.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    service.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (service.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
     service.division?.toLowerCase().includes(searchTerm.toLowerCase())
   ) : [];
 
@@ -135,18 +161,6 @@ const Services = () => {
     }
   };
 
-  const getDivisionLabel = (division) => {
-    switch (division) {
-      case 'design':
-        return 'Diseño';
-      case 'truck-design':
-        return 'Diseño de Camiones';
-      case 'racing-design':
-        return 'Diseño de Carreras';
-      default:
-        return division;
-    }
-  };
 
   if (loading) {
     return (
@@ -249,12 +263,12 @@ const Services = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">División:</span>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDivisionColor(service.division)}`}>
-                    {getDivisionLabel(service.division)}
+                    {divisions.find(d => d.id === service.division)?.name || 'Sin división'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">Categoría:</span>
-                  <span className="text-sm text-gray-900">{service.category}</span>
+                  <span className="text-sm text-gray-900">{categories.find(c => c.id === service.category)?.name || 'Sin categoría'}</span>
                 </div>
                 <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                   <span className="text-sm font-medium text-gray-500 flex items-center">

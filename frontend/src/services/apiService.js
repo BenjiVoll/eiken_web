@@ -81,6 +81,11 @@ export const publicAPI = {
     getByCategory: async (category) => {
       const response = await publicApi.get(`/public/services/category/${category}`);
       return response.data;
+    },
+
+    getCategories: async () => {
+      const response = await publicApi.get('/public/services/categories');
+      return response.data.data;
     }
   },
 
@@ -330,4 +335,26 @@ export const usersAPI = {
     const response = await api.delete(`/users/${id}`);
     return response.data;
   }
+};
+
+export const categoriesAPI = {
+  getAll: async () => {
+    const response = await api.get('/categories');
+    return response.data;
+  },
+  getById: async (id) => {
+    const response = await api.get(`/categories/${id}`);
+    return response.data;
+  },
+};
+
+export const divisionsAPI = {
+  getAll: async () => {
+    const response = await api.get('/divisions');
+    return response.data;
+  },
+  getById: async (id) => {
+    const response = await api.get(`/divisions/${id}`);
+    return response.data;
+  },
 };

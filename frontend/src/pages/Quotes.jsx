@@ -11,6 +11,9 @@ const getServiceTitle = (quote) => {
   if (quote.customServiceTitle) {
     return quote.customServiceTitle;
   }
+  if (quote.category?.name) {
+    return quote.category.name;
+  }
   return 'Sin servicio especificado';
 };
 
@@ -120,16 +123,28 @@ const Quotes = () => {
       }
 
       // Crear el proyecto basado en la cotización
+      const divisionId = typeof quote.service?.division === 'number' ? quote.service.division : null;
+      const categoryId = typeof quote.category?.id === 'number'
+        ? quote.category.id
+        : typeof quote.categoryId === 'number'
+          ? quote.categoryId
+          : null;
+      if (!divisionId) {
+        showErrorAlert('Error', 'La cotización no tiene una división asociada. No se puede convertir a proyecto.');
+        return;
+      }
+      if (!categoryId) {
+        showErrorAlert('Error', 'La cotización no tiene una categoría válida. No se puede convertir a proyecto.');
+        return;
+      }
       const projectData = {
         title: `Proyecto: ${getServiceTitle(quote)}`,
         description: quote.description,
         clientId: clientId,
-        projectType: quote.serviceType || 'otro',
-        division: 'design', // valor por defecto
-        status: 'approved',
-        priority: quote.urgency === 'Urgente' ? 'urgent' : 
-                 quote.urgency === 'Alta' ? 'high' : 
-                 quote.urgency === 'Media' ? 'medium' : 'low',
+        categoryId: categoryId,
+        division: divisionId,
+        status: 'Aprobado',
+        priority: quote.urgency,
         budgetAmount: quote.quotedAmount || null,
         notes: quote.notes || ''
       };
@@ -142,7 +157,7 @@ const Quotes = () => {
       );
 
       // Actualizar estado de la cotización para marcarla como convertida
-      await updateQuoteStatus(quote.id, 'converted');
+      await updateQuoteStatus(quote.id, 'Convertido');
 
       loadQuotes(); // Recargar cotizaciones
 
@@ -186,103 +201,28 @@ const Quotes = () => {
     }
   };
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'approved':
-        return 'Aprobado';
-      case 'converted':
-        return 'Convertido';
-      case 'pending':
-        return 'Pendiente';
-      case 'rejected':
-        return 'Rechazado';
-      case 'reviewing':
-        return 'Revisando';
-      case 'quoted':
-        return 'Cotizado';
-      case 'Aprobado':
-        return 'Aprobado';
-      case 'Convertido':
-        return 'Convertido';
-      case 'Pendiente':
-        return 'Pendiente';
-      case 'Rechazado':
-        return 'Rechazado';
-      case 'Revisando':
-        return 'Revisando';
-      case 'Cotizado':
-        return 'Cotizado';
-      default:
-        return status;
-    }
-  };
 
-  // Función para convertir de español a inglés (para enviar al backend)
-  const getStatusValue = (displayStatus) => {
-    switch (displayStatus) {
-      case 'Pendiente':
-        return 'pending';
-      case 'Revisando':
-        return 'reviewing';
-      case 'Cotizado':
-        return 'quoted';
-      case 'Aprobado':
-        return 'approved';
-      case 'Convertido':
-        return 'converted';
-      case 'Rechazado':
-        return 'rejected';
-      default:
-        return displayStatus;
-    }
-  };
 
   const getUrgencyColor = (urgency) => {
     switch (urgency) {
-      case 'urgent':
       case 'Urgente':
         return 'text-red-600';
-      case 'high':
-      case 'Alta':
+      case 'Alto':
         return 'text-orange-600';
-      case 'medium':
-      case 'Media':
+      case 'Medio':
         return 'text-yellow-600';
-      case 'low':
-      case 'Baja':
+      case 'Bajo':
         return 'text-green-600';
       default:
         return 'text-gray-600';
     }
   };
 
-  const getUrgencyLabel = (urgency) => {
-    switch (urgency) {
-      case 'urgent':
-        return 'Urgente';
-      case 'high':
-        return 'Alta';
-      case 'medium':
-        return 'Media';
-      case 'low':
-        return 'Baja';
-      case 'Urgente':
-        return 'Urgente';
-      case 'Alta':
-        return 'Alta';
-      case 'Media':
-        return 'Media';
-      case 'Baja':
-        return 'Baja';
-      default:
-        return urgency;
-    }
-  };
 
 
   const StatusSelector = ({ quote }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [selectedStatus, setSelectedStatus] = useState(getStatusLabel(quote.status));
+    const [selectedStatus, setSelectedStatus] = useState(quote.status);
 
     const statusOptions = [
       'Pendiente',
@@ -294,8 +234,7 @@ const Quotes = () => {
 
     const handleStatusChange = async (newStatus) => {
       if (newStatus !== quote.status) {
-        const statusValue = getStatusValue(newStatus); // Convertir a inglés
-        await updateQuoteStatus(quote.id, statusValue);
+        await updateQuoteStatus(quote.id, newStatus);
         setSelectedStatus(newStatus);
       }
       setIsEditing(false);
@@ -323,7 +262,7 @@ const Quotes = () => {
         onClick={() => setIsEditing(true)}
         title="Click para cambiar estado"
       >
-        {getStatusLabel(selectedStatus)} ✏️
+        {selectedStatus} ✏️
       </span>
     );
   };
@@ -385,9 +324,9 @@ const Quotes = () => {
                       <div className="ml-2 flex-shrink-0 flex items-center space-x-2">
                         <StatusSelector quote={quote} />
                         <span className={`text-xs font-medium ${getUrgencyColor(quote.urgency)}`}>
-                          {getUrgencyLabel(quote.urgency)}
+        {quote.urgency}
                         </span>
-                        {quote.status === 'approved' && quote.status !== 'converted' && (
+                        {(quote.status === 'Aprobado' || quote.status === 'approved') && quote.status !== 'Convertido' && quote.status !== 'converted' && (
                           <button
                             onClick={() => convertQuoteToProject(quote)}
                             className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"

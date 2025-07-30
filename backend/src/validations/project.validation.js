@@ -18,24 +18,40 @@ export const projectQueryValidation = Joi.object({
       "number.integer": "El id del cliente debe ser un número entero.",
       "number.positive": "El id del cliente debe ser un número positivo.",
     }),
+  categoryId: Joi.number()
+    .integer()
+    .positive()
+    .messages({
+      "number.base": "El id de categoría debe ser un número.",
+      "number.integer": "El id de categoría debe ser un número entero.",
+      "number.positive": "El id de categoría debe ser un número positivo.",
+    }),
+  division: Joi.number()
+    .integer()
+    .positive()
+    .messages({
+      "number.base": "El id de división debe ser un número.",
+      "number.integer": "El id de división debe ser un número entero.",
+      "number.positive": "El id de división debe ser un número positivo.",
+    }),
   status: Joi.string()
-    .valid("pending", "in-progress", "approved", "completed", "cancelled")
+    .valid("Pendiente", "En Proceso", "Aprobado", "Completado", "Cancelado")
     .messages({
       "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: pending, in-progress, approved, completed, cancelled.",
+      "any.only": "El estado debe ser uno de: Pendiente, En Proceso, Aprobado, Completado, Cancelado.",
     }),
   priority: Joi.string()
-    .valid("low", "medium", "high", "urgent")
+    .valid("Bajo", "Medio", "Alto", "Urgente")
     .messages({
       "string.base": "La prioridad debe ser de tipo string.",
-      "any.only": "La prioridad debe ser una de: low, medium, high, urgent.",
+      "any.only": "La prioridad debe ser una de: Bajo, Medio, Alto, Urgente.",
     }),
 })
-  .or("id", "clientId", "status", "priority")
+  .or("id", "clientId", "categoryId", "division", "status", "priority")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
-    "object.missing": "Debes proporcionar al menos un parámetro: id, clientId, status o priority.",
+    "object.missing": "Debes proporcionar al menos un parámetro: id, clientId, categoryId, division, status o priority.",
   });
 
 export const projectBodyValidation = Joi.object({
@@ -67,33 +83,37 @@ export const projectBodyValidation = Joi.object({
       "number.positive": "El id del cliente debe ser un número positivo.",
       "any.required": "El id del cliente es obligatorio.",
     }),
-  projectType: Joi.string()
-    .valid("otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular")
+  categoryId: Joi.number()
+    .integer()
+    .positive()
     .required()
     .messages({
-      "string.base": "El tipo de proyecto debe ser de tipo string.",
-      "any.only": "El tipo de proyecto debe ser uno de: otro, identidad-corporativa, grafica-competicion, wrap-vehicular.",
-      "any.required": "El tipo de proyecto es obligatorio.",
+      "number.base": "El id de categoría debe ser un número.",
+      "number.integer": "El id de categoría debe ser un número entero.",
+      "number.positive": "El id de categoría debe ser un número positivo.",
+      "any.required": "La categoría es obligatoria.",
     }),
-  division: Joi.string()
-    .valid("design", "truck-design", "racing-design")
+  division: Joi.number()
+    .integer()
+    .positive()
     .required()
     .messages({
-      "string.base": "La división debe ser de tipo string.",
-      "any.only": "La división debe ser una de: design, truck-design, racing-design.",
+      "number.base": "El id de división debe ser un número.",
+      "number.integer": "El id de división debe ser un número entero.",
+      "number.positive": "El id de división debe ser un número positivo.",
       "any.required": "La división es obligatoria.",
     }),
   status: Joi.string()
-    .valid("pending", "in-progress", "approved", "completed", "cancelled")
+    .valid("Pendiente", "En Proceso", "Aprobado", "Completado", "Cancelado")
     .messages({
       "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: pending, in-progress, approved, completed, cancelled.",
+      "any.only": "El estado debe ser uno de: Pendiente, En Proceso, Aprobado, Completado, Cancelado.",
     }),
   priority: Joi.string()
-    .valid("low", "medium", "high", "urgent")
+    .valid("Bajo", "Medio", "Alto", "Urgente")
     .messages({
       "string.base": "La prioridad debe ser de tipo string.",
-      "any.only": "La prioridad debe ser una de: low, medium, high, urgent.",
+      "any.only": "La prioridad debe ser una de: Bajo, Medio, Alto, Urgente.",
     }),
   budgetAmount: Joi.number()
     .positive()
@@ -151,29 +171,33 @@ export const projectUpdateValidation = Joi.object({
       "number.integer": "El id del cliente debe ser un número entero.",
       "number.positive": "El id del cliente debe ser un número positivo.",
     }),
-  projectType: Joi.string()
-    .valid("otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular")
+  categoryId: Joi.number()
+    .integer()
+    .positive()
     .messages({
-      "string.base": "El tipo de proyecto debe ser de tipo string.",
-      "any.only": "El tipo de proyecto debe ser uno de: otro, identidad-corporativa, grafica-competicion, wrap-vehicular.",
+      "number.base": "El id de categoría debe ser un número.",
+      "number.integer": "El id de categoría debe ser un número entero.",
+      "number.positive": "El id de categoría debe ser un número positivo.",
     }),
-  division: Joi.string()
-    .valid("design", "truck-design", "racing-design")
+  division: Joi.number()
+    .integer()
+    .positive()
     .messages({
-      "string.base": "La división debe ser de tipo string.",
-      "any.only": "La división debe ser una de: design, truck-design, racing-design.",
+      "number.base": "El id de división debe ser un número.",
+      "number.integer": "El id de división debe ser un número entero.",
+      "number.positive": "El id de división debe ser un número positivo.",
     }),
   status: Joi.string()
-    .valid("pending", "in-progress", "approved", "completed", "cancelled")
+    .valid("Pendiente", "En Proceso", "Aprobado", "Completado", "Cancelado")
     .messages({
       "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: pending, in-progress, approved, completed, cancelled.",
+      "any.only": "El estado debe ser uno de: Pendiente, En Proceso, Aprobado, Completado, Cancelado.",
     }),
   priority: Joi.string()
-    .valid("low", "medium", "high", "urgent")
+    .valid("Bajo", "Medio", "Alto", "Urgente")
     .messages({
       "string.base": "La prioridad debe ser de tipo string.",
-      "any.only": "La prioridad debe ser una de: low, medium, high, urgent.",
+      "any.only": "La prioridad debe ser una de: Bajo, Medio, Alto, Urgente.",
     }),
   budgetAmount: Joi.number()
     .positive()

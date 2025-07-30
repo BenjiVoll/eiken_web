@@ -24,11 +24,9 @@ const Inventory = () => {
     color: '',
     brand: '',
     model: '',
-    width: '',
     unit: 'metros',
     quantity: 0,
     minStock: 5,
-    unitCost: '',
     supplierId: ''
   });
 
@@ -71,9 +69,9 @@ const Inventory = () => {
 
       const inventoryData = {
         ...formData,
+        unit: 'metros',
         quantity: parseInt(formData.quantity),
         minStock: parseInt(formData.minStock),
-        unitCost: formData.unitCost ? parseFloat(formData.unitCost) : null,
         supplierId: formData.supplierId ? parseInt(formData.supplierId) : null
       };
 
@@ -101,11 +99,9 @@ const Inventory = () => {
       color: item.color,
       brand: item.brand || '',
       model: item.model || '',
-      width: item.width || '',
-      unit: item.unit,
+      unit: 'metros',
       quantity: item.quantity,
       minStock: item.minStock,
-      unitCost: item.unitCost ? item.unitCost.toString() : '',
       supplierId: item.supplierId ? item.supplierId.toString() : ''
     });
     setShowModal(true);
@@ -133,11 +129,9 @@ const Inventory = () => {
       color: '',
       brand: '',
       model: '',
-      width: '',
       unit: 'metros',
       quantity: 0,
       minStock: 5,
-      unitCost: '',
       supplierId: ''
     });
     setEditingItem(null);
@@ -150,12 +144,6 @@ const Inventory = () => {
     item.brand?.toLowerCase().includes(searchTerm.toLowerCase())
   ) : [];
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP'
-    }).format(price);
-  };
 
   const getStockStatus = (item) => {
     if (item.quantity <= item.minStock) {
@@ -243,16 +231,13 @@ const Inventory = () => {
                       <div className="mt-2 sm:flex sm:justify-between">
                         <div className="sm:flex">
                           <p className="flex items-center text-sm text-gray-500">
-                            Color: {item.color} • Ancho: {item.width}
+                          Color: {item.color}
                           </p>
                         </div>
                         <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                           <div className="flex items-center space-x-4">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stockStatus.bg} ${stockStatus.color}`}>
                               {item.quantity} {item.unit}
-                            </span>
-                            <span className="text-sm font-medium text-gray-900">
-                              {formatPrice(item.unitCost)} / {item.unit}
                             </span>
                             {isManager && (
                               <div className="flex space-x-2">
@@ -376,34 +361,16 @@ const Inventory = () => {
                   placeholder="Ej: Scotchcal, T-7500"
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ancho
-                </label>
-                <input
-                  type="text"
-                  value={formData.width}
-                  onChange={(e) => setFormData({ ...formData, width: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Ej: 1.22m, 1.37m"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Unidad
                 </label>
-                <select
-                  value={formData.unit}
-                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
-                  <option value="metros">Metros</option>
-                  <option value="unidades">Unidades</option>
-                  <option value="kilogramos">Kilogramos</option>
-                  <option value="litros">Litros</option>
-                </select>
+                <input
+                  type="text"
+                  value="metros"
+                  readOnly
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
               </div>
 
               <div>
@@ -430,21 +397,6 @@ const Inventory = () => {
                   value={formData.minStock}
                   onChange={(e) => setFormData({ ...formData, minStock: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Costo Unitario
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.unitCost}
-                  onChange={(e) => setFormData({ ...formData, unitCost: e.target.value })}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="0.00"
                 />
               </div>
 

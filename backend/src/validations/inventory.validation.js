@@ -86,13 +86,7 @@ export const inventoryBodyValidation = Joi.object({
       "string.base": "El modelo debe ser de tipo string.",
       "string.max": "El modelo debe tener como máximo 100 caracteres.",
     }),
-  width: Joi.string()
-    .max(50)
-    .allow(null, '')
-    .messages({
-      "string.base": "El ancho debe ser de tipo string.",
-      "string.max": "El ancho debe tener como máximo 50 caracteres.",
-    }),
+  
   unit: Joi.string()
     .max(50)
     .default("metros")
@@ -119,14 +113,7 @@ export const inventoryBodyValidation = Joi.object({
       "number.integer": "El stock mínimo debe ser un número entero.",
       "number.min": "El stock mínimo no puede ser negativo.",
     }),
-  unitCost: Joi.number()
-    .positive()
-    .precision(2)
-    .allow(null)
-    .messages({
-      "number.base": "El costo unitario debe ser un número.",
-      "number.positive": "El costo unitario debe ser un número positivo.",
-    }),
+  
   supplierId: Joi.number()
     .integer()
     .positive()
@@ -185,13 +172,7 @@ export const inventoryUpdateValidation = Joi.object({
       "string.base": "El modelo debe ser de tipo string.",
       "string.max": "El modelo debe tener como máximo 100 caracteres.",
     }),
-  width: Joi.string()
-    .max(50)
-    .allow(null, '')
-    .messages({
-      "string.base": "El ancho debe ser de tipo string.",
-      "string.max": "El ancho debe tener como máximo 50 caracteres.",
-    }),
+  // width eliminado completamente
   unit: Joi.string()
     .max(50)
     .messages({
@@ -214,14 +195,7 @@ export const inventoryUpdateValidation = Joi.object({
       "number.integer": "El stock mínimo debe ser un número entero.",
       "number.min": "El stock mínimo no puede ser negativo.",
     }),
-  unitCost: Joi.number()
-    .positive()
-    .precision(2)
-    .allow(null)
-    .messages({
-      "number.base": "El costo unitario debe ser un número.",
-      "number.positive": "El costo unitario debe ser un número positivo.",
-    }),
+  // unitCost eliminado completamente
   supplierId: Joi.number()
     .integer()
     .positive()
@@ -236,7 +210,7 @@ export const inventoryUpdateValidation = Joi.object({
       "boolean.base": "El estado activo debe ser de tipo boolean.",
     }),
 })
-  .or("name", "type", "color", "brand", "model", "width", "unit", "quantity", "minStock", "unitCost", "supplierId", "isActive")
+  .or("name", "type", "color", "brand", "model", "unit", "quantity", "minStock", "supplierId", "isActive")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",

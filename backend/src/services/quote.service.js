@@ -5,22 +5,31 @@ import { ClientSchema } from "../entity/user.entity.client.js";
 import { ServiceSchema } from "../entity/service.entity.js";
 
 const quoteRepository = AppDataSource.getRepository(QuoteSchema);
-const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createQuote = async (data) => {
-  const { clientName, clientEmail, clientPhone, company, serviceId, customServiceTitle, serviceType, description, urgency, quotedAmount, notes } = data;
-  
+  const { clientName, clientEmail, clientPhone, company, service, customServiceTitle, categoryId, description, urgency, quotedAmount, notes } = data;
+
+  let serviceObj = null;
+  if (service) {
+    // Si viene un objeto, usar el id. Si viene un id, buscar el objeto.
+    if (typeof service === 'object' && service.id) {
+      serviceObj = await AppDataSource.getRepository(ServiceSchema).findOneBy({ id: service.id });
+    } else if (typeof service === 'number' || typeof service === 'string') {
+      serviceObj = await AppDataSource.getRepository(ServiceSchema).findOneBy({ id: service });
+    }
+  }
+
   const quote = quoteRepository.create({
     clientName,
     clientEmail,
     clientPhone,
     company,
-    serviceId: serviceId || null,
+    service: serviceObj || null,
     customServiceTitle: customServiceTitle || null,
-    serviceType,
+    category: categoryId ? { id: categoryId } : null,
     description,
-    urgency: urgency || "medium",
-    status: "pending",
+    urgency: urgency || "Bajo",
+    status: "Pendiente",
     quotedAmount,
     notes
   });
@@ -42,7 +51,7 @@ export const updateQuote = async (id, data) => {
 
 export const getQuotes = async () => {
   const quotes = await quoteRepository.find({
-    relations: ["service"],
+    relations: ["service", "category"],
     order: { createdAt: "DESC" }
   });
   return quotes;
@@ -51,7 +60,7 @@ export const getQuotes = async () => {
 export const getQuoteById = async (id) => {
   const quote = await quoteRepository.findOne({
     where: { id },
-    relations: ["service"]
+    relations: ["service", "category"]
   });
   return quote;
 };
@@ -64,7 +73,7 @@ export const getQuotesByStatus = async (status) => {
 
   const quotes = await quoteRepository.find({
     where: { status },
-    relations: ["service"],
+    relations: ["service", "category"],
     order: { createdAt: "DESC" }
   });
   return quotes;
@@ -78,7 +87,7 @@ export const getQuotesByUrgency = async (urgency) => {
 
   const quotes = await quoteRepository.find({
     where: { urgency },
-    relations: ["service"],
+    relations: ["service", "category"],
     order: { createdAt: "DESC" }
   });
   return quotes;

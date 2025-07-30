@@ -9,6 +9,8 @@ import quoteRoutes from "./quote.routes.js";
 import inventoryRoutes from "./inventory.routes.js";
 import supplierRoutes from "./supplier.routes.js";
 import projectRoutes from "./project.routes.js";
+import categoryRoutes from "./category.routes.js";
+import divisionRoutes from "./division.routes.js";
 // import orderRoutes from "./order.routes.js";
 // import inventoryMovementRoutes from "./inventoryMovement.routes.js";
 // import projectInventoryUsageRoutes from "./projectInventoryUsage.routes.js";
@@ -25,7 +27,9 @@ router
     .use("/quotes", quoteRoutes)
     .use("/inventory", inventoryRoutes)
     .use("/suppliers", supplierRoutes)
-    .use("/projects", projectRoutes);
+    .use("/projects", projectRoutes)
+    .use("/categories", categoryRoutes)
+    .use("/divisions", divisionRoutes);
     // .use("/orders", orderRoutes)
     // .use("/inventory-movements", inventoryMovementRoutes)
     // .use("/project-inventory-usage", projectInventoryUsageRoutes);

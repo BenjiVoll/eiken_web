@@ -28,25 +28,23 @@ export const ProjectSchema = new EntitySchema({
     },
     
     projectType: {
-      type: "enum",
-      enum: ["otro", "identidad-corporativa", "grafica-competicion", "wrap-vehicular"],
+      type: "int",
       nullable: false,
-      name: "project_type",
+      name: "category_id",
     },
     division: {
-      type: "enum",
-      enum: ["design", "truck-design", "racing-design"],
+      type: "int",
       nullable: false,
     },
     
     status: {
       type: "enum",
-      enum: ["pending", "in-progress", "approved", "completed", "cancelled"],
+      enum: ["Pendiente", "En Proceso", "Aprobado", "Completado", "Cancelado"],
       nullable: false,
     },
     priority: {
       type: "enum",
-      enum: ["low", "medium", "high", "urgent"],
+      enum: ["Bajo", "Medio", "Alto", "Urgente"],
       nullable: false,
     },
     
@@ -114,6 +112,20 @@ export const ProjectSchema = new EntitySchema({
       joinColumn: { name: "client_id", referencedColumnName: "id" },
       inverseSide: "projects",
       nullable: false,
+    },
+    category: {
+      type: "many-to-one",
+      target: "Category",
+      joinColumn: { name: "category_id", referencedColumnName: "id" },
+      inverseSide: "projects",
+      nullable: false,
+    },
+    division: {
+      type: "many-to-one",
+      target: "Division",
+      joinColumn: true,
+      nullable: false,
+      inverseSide: "projects",
     },
   },
 });

@@ -69,12 +69,19 @@ const Projects = () => {
     try {
       setModalLoading(true);
       let savedProject;
+      let payload = { ...formData };
       if (editingProject) {
-        const response = await projectsAPI.update(editingProject.id, formData);
+        // En actualización, enviar categoryId
+        const response = await projectsAPI.update(editingProject.id, payload);
         savedProject = response?.data;
         showSuccessAlert('¡Actualizado!', 'El proyecto ha sido actualizado correctamente');
       } else {
-        const response = await projectsAPI.create(formData);
+        // En creación, convertir categoryId a projectType
+        if (payload.categoryId) {
+          payload.projectType = payload.categoryId;
+          delete payload.categoryId;
+        }
+        const response = await projectsAPI.create(payload);
         savedProject = response?.data;
         showSuccessAlert('¡Creado!', 'El proyecto ha sido creado correctamente');
       }
@@ -282,7 +289,7 @@ const Projects = () => {
               />
               <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate flex-1 mr-2">
+                  <h3 className="text-lg font-semibold text-gray-900 flex-1 mr-2">
                     {project.title}
                   </h3>
                   <div className="flex items-center space-x-2">
@@ -322,13 +329,13 @@ const Projects = () => {
                   <div className="flex items-center text-sm text-gray-600">
                     <Building className="h-4 w-4 mr-2 text-gray-400" />
                     <span className="font-medium">División:</span>
-                    <span className="ml-2">{project.division}</span>
+                    <span className="ml-2">{project.division?.name || project.division}</span>
                   </div>
 
                   <div className="flex items-center text-sm text-gray-600">
                     <Tag className="h-4 w-4 mr-2 text-gray-400" />
                     <span className="font-medium">Tipo:</span>
-                    <span className="ml-2">{project.projectType}</span>
+                    <span className="ml-2">{project.category?.name || project.projectType}</span>
                   </div>
 
                   <div className="flex items-center text-sm">

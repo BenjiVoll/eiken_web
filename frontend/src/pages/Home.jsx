@@ -34,13 +34,24 @@ const Home = () => {
     clientEmail: '',
     clientPhone: '',
     company: '',
-    serviceId: '',
+    service: null,
     customServiceTitle: '',
-    serviceType: 'otro',
+    categoryId: '',
     description: '',
-    urgency: 'medium',
+    urgency: 'Bajo',
     notes: ''
   });
+
+
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    const loadCategories = async () => {
+      const data = await publicAPI.services.getCategories();
+      setCategories(data.data || data || []);
+    };
+    loadCategories();
+  }, []);
+
   // Estado y lógica para proyectos
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
@@ -50,67 +61,46 @@ const Home = () => {
 
   useEffect(() => {
     const loadServices = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const servicesData = await publicAPI.services.getAll();
-        setServices(servicesData.data || servicesData || []);
-      } catch (err) {
-        console.error('Error al cargar servicios:', err);
-        setError('Error al cargar los servicios desde el servidor');
-        setServices([]);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      setError(null);
+      const servicesData = await publicAPI.services.getAll();
+      setServices(servicesData.data || servicesData || []);
+      setLoading(false);
     };
     loadServices();
   }, []);
 
-  // Cargar proyectos desde la API
   useEffect(() => {
     const loadProjects = async () => {
-      try {
-        setProjectsLoading(true);
-        setProjectsError(null);
-        const projectsData = await publicAPI.projects.getAll();
-        setProjects(projectsData.data || projectsData || []);
-      } catch (err) {
-        console.error('Error al cargar proyectos:', err);
-        setProjectsError('Error al cargar los proyectos desde el servidor');
-        setProjects([]);
-      } finally {
-        setProjectsLoading(false);
-      }
+      setProjectsLoading(true);
+      setProjectsError(null);
+      const projectsData = await publicAPI.projects.getAll();
+      setProjects(projectsData.data || projectsData || []);
+      setProjectsLoading(false);
     };
     loadProjects();
   }, []);
 
+  // Filtrado de servicios por categoría
   const filteredServices = Array.isArray(services) ? services.filter((service) => {
     const matchesSearch = service.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || service.category === selectedCategory || service.category?.id === selectedCategory;
     return matchesSearch && matchesCategory;
   }) : [];
 
   // Filtrado de proyectos
   const filteredProjects = Array.isArray(projects) ? projects.filter((project) => {
     const matchesSearch = project.title?.toLowerCase().includes(projectSearchTerm.toLowerCase());
-    const matchesCategory = selectedProjectCategory === 'all' || project.category === selectedProjectCategory;
+    const matchesCategory = selectedProjectCategory === 'all' || project.category?.id === selectedProjectCategory;
     return matchesSearch && matchesCategory;
   }) : [];
-
-  const getUniqueCategories = () => {
-    const categories = ['all'];
-    const uniqueCategories = Array.isArray(services) ? 
-      [...new Set(services.map(service => service.category))] : [];
-    return [...categories, ...uniqueCategories];
-  };
-  const categories = getUniqueCategories();
 
   // Categorías únicas para proyectos
   const getUniqueProjectCategories = () => {
     const categories = ['all'];
-    const uniqueCategories = Array.isArray(projects) ?
-      [...new Set(projects.map(project => project.category))] : [];
+    const uniqueCategories = Array.isArray(projects)
+      ? [...new Map(projects.filter(p => p.category).map(project => [project.category.id, project.category])).values()]
+      : [];
     return [...categories, ...uniqueCategories];
   };
   const projectCategories = getUniqueProjectCategories();
@@ -118,20 +108,24 @@ const Home = () => {
   const handleSubmitQuote = async (e) => {
     e.preventDefault();
     try {
-      if (!formData.serviceId && !formData.customServiceTitle) {
+      if (!formData.service && !formData.customServiceTitle) {
         alert('Debes seleccionar un servicio o especificar un servicio personalizado');
         return;
       }
-
-      await publicAPI.quotes.create(formData);
+      // Construir el payload correcto
+      const payload = {
+        ...formData,
+        service: formData.service ? formData.service : null,
+        customServiceTitle: formData.customServiceTitle || '',
+        status: 'Pendiente',
+      };
+      await publicAPI.quotes.create(payload);
       alert('¡Cotización enviada exitosamente! Nos pondremos en contacto contigo pronto.');
       resetForm();
     } catch (error) {
       console.error('Error al crear cotización:', error);
-      
       let errorMessage = 'Error al enviar la cotización. Por favor intenta nuevamente.';
       if (error.response?.data?.details) {
-        // Si hay detalles de validación, mostrar el primer error
         const validationErrors = error.response.data.details;
         if (typeof validationErrors === 'string') {
           errorMessage = validationErrors;
@@ -141,7 +135,6 @@ const Home = () => {
       } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
-      
       alert(errorMessage);
     }
   };
@@ -152,11 +145,11 @@ const Home = () => {
       clientEmail: '',
       clientPhone: '',
       company: '',
-      serviceId: '',
+      service: null,
       customServiceTitle: '',
-      serviceType: 'otro',
+      categoryId: '',
       description: '',
-      urgency: 'medium',
+      urgency: 'Bajo',
       notes: ''
     });
     setShowQuoteModal(false);
@@ -167,9 +160,19 @@ const Home = () => {
   };
 
   const openQuoteModalWithService = (serviceId) => {
+    const selectedService = Array.isArray(services) ? services.find(s => s.id === serviceId) : null;
+    let categoryId = '';
+    if (selectedService) {
+      if (typeof selectedService.category === 'object' && selectedService.category !== null) {
+        categoryId = selectedService.category.id;
+      } else if (typeof selectedService.category === 'number' || typeof selectedService.category === 'string') {
+        categoryId = selectedService.category;
+      }
+    }
     setFormData({
       ...formData,
-      serviceId: serviceId,
+      service: serviceId,
+      categoryId,
       customServiceTitle: ''
     });
     setShowQuoteModal(true);
@@ -315,17 +318,28 @@ const Home = () => {
               />
             </div>
             <div className="flex space-x-2">
+              <button
+                key="all"
+                onClick={() => setSelectedCategory('all')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedCategory === 'all'
+                    ? 'bg-eiken-red-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Todos
+              </button>
               {categories.map((category) => (
                 <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedCategory === category
+                    selectedCategory === category.id
                       ? 'bg-eiken-red-500 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  {category === 'all' ? 'Todos' : category}
+                  {category.name}
                 </button>
               ))}
             </div>
@@ -375,9 +389,7 @@ const Home = () => {
                   </div>
 
                   <div className="mb-4">
-                    <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mb-2">
-                      {service.division}
-                    </span>
+                    {/* Eliminado el id y la división visual */}
                     <h3 className="text-lg font-semibold mb-2">{service.name}</h3>
                     <p className="text-gray-600 text-sm mb-3">{service.description}</p>
                   </div>
@@ -454,17 +466,17 @@ const Home = () => {
               />
             </div>
             <div className="flex space-x-2">
-              {projectCategories.map((category, idx) => (
+              {projectCategories.map((category) => (
                 <button
-                  key={`project-cat-${category}-${idx}`}
-                  onClick={() => setSelectedProjectCategory(category)}
+                  key={`project-cat-${category === 'all' ? 'all' : category.id}`}
+                  onClick={() => setSelectedProjectCategory(category === 'all' ? 'all' : category.id)}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedProjectCategory === category
+                    selectedProjectCategory === (category === 'all' ? 'all' : category.id)
                       ? 'bg-eiken-orange-500 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  {category === 'all' ? 'Todos' : category}
+                  {category === 'all' ? 'Todos' : category.name}
                 </button>
               ))}
             </div>
@@ -502,9 +514,7 @@ const Home = () => {
                     )}
                   </div>
                   <div className="mb-4">
-                    <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mb-2">
-                      {project.division}
-                    </span>
+                    {/* Eliminado la división visual en proyectos */}
                     <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
                     <p className="text-gray-600 text-sm mb-3">{project.description}</p>
                   </div>
@@ -515,11 +525,11 @@ const Home = () => {
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <span className="font-medium">División:</span>
-                      <span className="ml-2">{project.division}</span>
+                      <span className="ml-2">{project.division?.name || ''}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
-                      <span className="font-medium">Tipo:</span>
-                      <span className="ml-2">{project.projectType}</span>
+                      <span className="font-medium">Categoría:</span>
+                      <span className="ml-2">{project.category?.name || ''}</span>
                     </div>
                     {project.budgetAmount && (
                       <div className="flex items-center text-sm text-gray-600">
@@ -712,8 +722,8 @@ const Home = () => {
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-gray-900">
-                {formData.serviceId ? 
-                  `Cotizar: ${Array.isArray(services) ? services.find(s => s.id === formData.serviceId)?.name || 'Servicio' : 'Servicio'}` : 
+                {formData.service ? 
+                  `Cotizar: ${Array.isArray(services) ? services.find(s => s.id === formData.service)?.name || 'Servicio' : 'Servicio'}` : 
                   'Solicitar Cotización'
                 }
               </h3>
@@ -729,6 +739,22 @@ const Home = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Información del Cliente */}
                 <div className="md:col-span-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Servicio del Catálogo
+                  </label>
+                  <select
+                    value={formData.service || ''}
+                    onChange={e => setFormData({ ...formData, service: e.target.value, customServiceTitle: '' })}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                    disabled={services.length === 0}
+                  >
+                    <option value="">Selecciona un servicio</option>
+                    {services.map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
                   <h4 className="text-md font-semibold text-gray-800 mb-2">Tus Datos</h4>
                 </div>
 
@@ -791,18 +817,18 @@ const Home = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo de Servicio *
+                    Categoría de Servicio *
                   </label>
                   <select
-                    value={formData.serviceType}
-                    onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
+                    value={formData.categoryId}
+                    onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
                     required
                   >
-                    <option value="otro">Otro</option>
-                    <option value="identidad-corporativa">Identidad Corporativa</option>
-                    <option value="grafica-competicion">Gráfica de Competición</option>
-                    <option value="wrap-vehicular">Wrap Vehicular</option>
+                    <option value="">Selecciona una categoría</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -815,79 +841,56 @@ const Home = () => {
                     onChange={(e) => setFormData({ ...formData, urgency: e.target.value })}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
                   >
-                    <option value="low">No hay apuro</option>
-                    <option value="medium">En un par de semanas</option>
-                    <option value="high">Lo antes posible</option>
-                    <option value="urgent">¡Es urgente!</option>
+                    <option value="Bajo">No hay apuro</option>
+                    <option value="Medio">En un par de semanas</option>
+                    <option value="Alto">Lo antes posible</option>
+                    <option value="Urgente">¡Urgente!</option>
                   </select>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Servicio de Nuestro Catálogo
-                    {formData.serviceId && (
-                      <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                        Preseleccionado
-                      </span>
-                    )}
-                  </label>
-                  <select
-                    value={formData.serviceId}
-                    onChange={(e) => setFormData({ ...formData, serviceId: e.target.value, customServiceTitle: e.target.value ? '' : formData.customServiceTitle })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-                  >
-                    <option value="">Seleccionar servicio</option>
-                    {services.map(service => (
-                      <option key={service.id} value={service.id}>
-                        {service.name} - ${service.price?.toLocaleString('es-CL')}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  O Descríbenos tu Servicio
+                </label>
+                <input
+                  type="text"
+                  value={formData.customServiceTitle}
+                  onChange={(e) => setFormData({ ...formData, customServiceTitle: e.target.value, service: e.target.value ? null : formData.service })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                  placeholder="Ej: Diseño de logos, rotulado de vehículo..."
+                  disabled={!!formData.service}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.service ? 'Deselecciona el servicio del catálogo para describir tu propio servicio' : 'O selecciona un servicio de nuestro catálogo arriba'}
+                </p>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    O Descríbenos tu Servicio
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.customServiceTitle}
-                    onChange={(e) => setFormData({ ...formData, customServiceTitle: e.target.value, serviceId: e.target.value ? '' : formData.serviceId })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-                    placeholder="Ej: Diseño de logos, rotulado de vehículo..."
-                    disabled={!!formData.serviceId}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.serviceId ? 'Deselecciona el servicio del catálogo para describir tu propio servicio' : 'O selecciona un servicio de nuestro catálogo arriba'}
-                  </p>
-                </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Cuéntanos más sobre tu proyecto *
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                  rows="4"
+                  placeholder="Describe tu proyecto, qué necesitas, colores preferidos, tamaño del vehículo si aplica, etc."
+                  required
+                />
+              </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cuéntanos más sobre tu proyecto *
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-                    rows="4"
-                    placeholder="Describe tu proyecto, qué necesitas, colores preferidos, tamaño del vehículo si aplica, etc."
-                    required
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Información Adicional
-                  </label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-                    rows="2"
-                    placeholder="Referencias, inspiraciones, presupuesto aproximado, fechas importantes..."
-                  />
-                </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Información Adicional
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                  rows="2"
+                  placeholder="Referencias, inspiraciones, presupuesto aproximado, fechas importantes..."
+                />
               </div>
 
               <div className="flex justify-end space-x-4 pt-4">

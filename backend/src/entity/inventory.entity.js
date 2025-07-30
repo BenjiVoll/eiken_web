@@ -35,11 +35,6 @@ export const InventorySchema = new EntitySchema({
       length: 100,
       nullable: true,
     },
-    width: {
-      type: "varchar",
-      length: 50,
-      nullable: true,
-    },
     unit: {
       type: "varchar",
       length: 50,
@@ -56,13 +51,6 @@ export const InventorySchema = new EntitySchema({
       default: 5,
       nullable: false,
       name: "min_stock",
-    },
-    unitCost: {
-      type: "decimal",
-      precision: 10,
-      scale: 2,
-      nullable: true,
-      name: "unit_cost",
     },
     supplierId: {
       type: "int",

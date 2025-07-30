@@ -17,7 +17,8 @@ import {
 // Crear un proyecto
 export const createProject = async (req, res) => {
     try {
-        const project = await createProjectService(req.body);
+        const body = { ...req.body };
+        const project = await createProjectService(body);
         handleSuccess(res, 201, "Proyecto creado exitosamente", project);
     } catch (error) {
         handleErrorServer(res, 400, error.message);
