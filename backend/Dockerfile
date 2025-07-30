@@ -18,6 +18,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 80
 
 CMD ["pm2-runtime", "src/index.js"]
