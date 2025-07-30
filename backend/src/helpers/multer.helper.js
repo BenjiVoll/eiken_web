@@ -7,9 +7,12 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
-    const name = path.basename(file.originalname, ext).replace(/\s+/g, '_');
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `${name}-${uniqueSuffix}${ext}`);
+    // Obtener el id desde body, params o query
+    const id = req.body.id || req.params.id || req.query.id || 'nuevo';
+    // Detectar si es proyecto o servicio por la ruta
+    const tipo = req.baseUrl && req.baseUrl.includes('project') ? 'proyecto' : 'servicio';
+    const timestamp = Date.now();
+    cb(null, `${tipo}-${id}-${timestamp}${ext}`);
   }
 });
 

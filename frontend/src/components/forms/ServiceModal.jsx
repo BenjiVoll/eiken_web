@@ -18,17 +18,24 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
   const [divisions, setDivisions] = useState([]);
 
   useEffect(() => {
-    if (service) {
+    if (!isOpen) return;
+    if (service && categories.length > 0) {
+      let categoryId = '';
+      if (service.category && typeof service.category === 'object' && service.category.id) {
+        categoryId = service.category.id;
+      } else if (typeof service.category === 'number') {
+      categoryId = service.category;
+    }
       setFormData({
         name: service.name || '',
         description: service.description || '',
-        categoryId: service.category?.id || service.categoryId || '',
+        categoryId,
         division: service.division || '',
         price: service.price ? service.price.toString() : ''
       });
       setImagePreview(service.image ? getImageUrl(service.image) : null);
       setImageToDelete(false);
-    } else {
+    } else if (!service) {
       setFormData({
         name: '',
         description: '',
@@ -41,7 +48,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
       setImagePreview(null);
       setImageToDelete(false);
     }
-  }, [service, isOpen]);
+  }, [service, isOpen, categories]);
 
   useEffect(() => {
     const loadApisAndData = async () => {
@@ -72,6 +79,10 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
     setImageError('');
     if (e.target.files[0]) {
       setImagePreview(URL.createObjectURL(e.target.files[0]));
+      // Si hay imagen previa y es edición, marcar para eliminar
+      if (service && service.image) {
+        setImageToDelete(true);
+      }
     }
   };
 

@@ -76,6 +76,7 @@ export async function updateUserService(query, body) {
       email: body.email,
       rol: body.rol,
       updatedAt: new Date(),
+      isActive: typeof body.isActive === 'boolean' ? body.isActive : userFound.isActive,
     };
 
     if (body.newPassword && body.newPassword.trim() !== "") {
@@ -150,7 +151,7 @@ export async function createUserService(userData) {
     const newUser = userRepository.create({
       name,
       email,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
       role: role || "operator", // rol por defecto
       isActive: true,
     });

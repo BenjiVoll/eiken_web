@@ -76,10 +76,9 @@ const Projects = () => {
         savedProject = response?.data;
         showSuccessAlert('¡Actualizado!', 'El proyecto ha sido actualizado correctamente');
       } else {
-        // En creación, convertir categoryId a projectType
+        // En creación, enviar categoryId como número
         if (payload.categoryId) {
-          payload.projectType = payload.categoryId;
-          delete payload.categoryId;
+          payload.categoryId = Number(payload.categoryId);
         }
         const response = await projectsAPI.create(payload);
         savedProject = response?.data;
@@ -120,7 +119,10 @@ const Projects = () => {
       const result = await response.json();
       console.log('Respuesta backend subida imagen:', result);
       await loadData();
-      showSuccessAlert('¡Imagen subida!', 'La imagen del proyecto se ha subido correctamente');
+      // Solo mostrar la alerta si el proyecto ya existe (no en creación)
+      if (editingProject) {
+        showSuccessAlert('¡Imagen subida!', 'La imagen del proyecto se ha subido correctamente');
+      }
     } catch (error) {
       console.error('Error al subir imagen de proyecto:', error);
       showErrorAlert('Error', 'No se pudo subir la imagen del proyecto');

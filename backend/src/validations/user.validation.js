@@ -71,6 +71,10 @@ export const userBodyValidation = Joi.object({
       "string.base": "El rol debe ser de tipo string.",
       "any.only": "El rol debe ser uno de: admin, manager, designer, operator.",
     }),
+  isActive: Joi.boolean()
+    .messages({
+      "boolean.base": "El estado activo debe ser booleano.",
+    }),
 })
   .or("name", "email", "password", "newPassword", "role")
   .unknown(false)
