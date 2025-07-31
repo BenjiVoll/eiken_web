@@ -77,8 +77,11 @@ const Projects = () => {
         const response = await projectsAPI.update(editingProject.id, payload);
         savedProject = response?.data;
         showSuccessAlert('¡Actualizado!', 'El proyecto ha sido actualizado correctamente');
+        // Subir imagen si existe y el proyecto se guardó correctamente
+        if (formData.image) {
+          await handleProjectImageUpload(editingProject.id, formData.image);
+        }
       } else {
-        // En creación, enviar categoryId como número
         if (payload.categoryId) {
           payload.categoryId = Number(payload.categoryId);
         }
@@ -86,6 +89,7 @@ const Projects = () => {
         savedProject = response?.data;
         showSuccessAlert('¡Creado!', 'El proyecto ha sido creado correctamente');
       }
+      // Cerrar el modal después de mostrar las alertas
       setIsModalOpen(false);
       loadData();
       return savedProject;
@@ -121,10 +125,7 @@ const Projects = () => {
       const result = await response.json();
       console.log('Respuesta backend subida imagen:', result);
       await loadData();
-      // Solo mostrar la alerta si el proyecto ya existe (no en creación)
-      if (editingProject) {
-        showSuccessAlert('¡Imagen subida!', 'La imagen del proyecto se ha subido correctamente');
-      }
+      // Ya no se muestra alerta de imagen subida
     } catch (error) {
       console.error('Error al subir imagen de proyecto:', error);
       showErrorAlert('Error', 'No se pudo subir la imagen del proyecto');
