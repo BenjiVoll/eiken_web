@@ -49,20 +49,6 @@ const Login = () => {
     }
   };
 
-  // Credenciales de ejemplo para desarrollo
-  const testCredentials = [
-    { role: 'Admin', email: 'admin@eikendesign.cl', password: 'admin2025' },
-    { role: 'Manager', email: 'manager@eikendesign.cl', password: 'manager2025' },
-    { role: 'Designer', email: 'designer@eikendesign.cl', password: 'designer2025' },
-    { role: 'Operator', email: 'operador@eikendesign.cl', password: 'operador2025' }
-  ];
-
-  const fillTestCredentials = (credentials) => {
-    setFormData({
-      email: credentials.email,
-      password: credentials.password
-    });
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -161,30 +147,6 @@ const Login = () => {
             </button>
           </div>
         </form>
-
-        <div className="mt-6">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 text-gray-500">Credenciales de prueba</span>
-            </div>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            {testCredentials.map((cred, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => fillTestCredentials(cred)}
-                className="text-xs px-3 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {cred.role}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
