@@ -146,7 +146,6 @@ const Dashboard = () => {
     }
   ];
 
-  // Solo mostrar usuarios si tiene permisos
   if (isAdmin) {
     dashboardCards.unshift({
       title: 'Usuarios',
@@ -174,7 +173,6 @@ const Dashboard = () => {
     case 'user':
     case 'usuario':
       return UserPlus;
-    // Puedes agregar más tipos aquí
     default:
       return Info;
   }
@@ -182,16 +180,12 @@ const Dashboard = () => {
 
   const getActivityColor = (type) => {
     switch (type) {
-      case 'project':
       case 'proyecto':
         return 'text-orange-600';
-      case 'quote':
       case 'cotización':
         return 'text-pink-600';
-      case 'inventory':
       case 'inventario':
         return 'text-green-600';
-      case 'service':
       case 'servicio':
         return 'text-blue-600';
       default:

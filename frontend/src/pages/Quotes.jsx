@@ -3,6 +3,7 @@ import { quotesAPI, projectsAPI, clientsAPI } from '../services/apiService';
 import { Quote, Search, Plus, X, ArrowRight, FolderPlus, FolderCheck } from 'lucide-react';
 import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
 import Swal from 'sweetalert2';
+import { useAuth } from '../context/AuthContext';
 
 const getServiceTitle = (quote) => {
   if (quote.service?.name) {
@@ -18,6 +19,7 @@ const getServiceTitle = (quote) => {
 };
 
 const Quotes = () => {
+  const { isManager, isAdmin } = useAuth();
   // Eliminar cotización
   const handleDeleteQuote = async (id) => {
     const result = await Swal.fire({
@@ -84,27 +86,19 @@ const Quotes = () => {
         'Convertir a Proyecto',
         '¿Deseas convertir esta cotización aprobada en un proyecto?'
       );
-
       if (!confirmed.isConfirmed) return;
-
-      // Obtener información del cliente o crear uno nuevo
       let clientId = null;
-
-      // Intentar buscar cliente existente por email o nombre
       try {
         const clientsResponse = await clientsAPI.getAll();
         const clients = Array.isArray(clientsResponse) ? clientsResponse : [];
-        
         const existingClient = clients.find(client => 
           client.email === quote.clientEmail || 
           client.name === quote.clientName ||
           client.company === quote.company
         );
-
         if (existingClient) {
           clientId = existingClient.id;
         } else {
-          // Crear nuevo cliente
           const newClientData = {
             name: quote.clientName,
             email: quote.clientEmail,
@@ -112,7 +106,6 @@ const Quotes = () => {
             company: quote.company || '',
             clientType: quote.company ? 'company' : 'individual'
           };
-
           const newClientResponse = await clientsAPI.create(newClientData);
           clientId = newClientResponse.id;
         }
@@ -121,18 +114,13 @@ const Quotes = () => {
         showErrorAlert('Error', 'No se pudo gestionar la información del cliente');
         return;
       }
-
-      // Crear el proyecto basado en la cotización
       let divisionId = typeof quote.service?.division === 'number' ? quote.service.division : null;
       const categoryId = typeof quote.category?.id === 'number'
         ? quote.category.id
         : typeof quote.categoryId === 'number'
           ? quote.categoryId
           : null;
-
-      // Si no hay división, pedirla al usuario
       if (!divisionId) {
-        // Obtener divisiones
         const divisionsResponse = await import('../services/apiService');
         let divisions = await divisionsResponse.divisionsAPI.getAll();
         if (divisions && typeof divisions === 'object' && Array.isArray(divisions.data)) {
@@ -162,7 +150,6 @@ const Quotes = () => {
         }
         divisionId = Number(selectedDivision);
       }
-
       if (!categoryId) {
         showErrorAlert('Error', 'La cotización no tiene una categoría válida. No se puede convertir a proyecto.');
         return;
@@ -178,21 +165,21 @@ const Quotes = () => {
         budgetAmount: quote.quotedAmount || null,
         notes: quote.notes || ''
       };
-
       await projectsAPI.create(projectData);
-
       showSuccessAlert(
         '¡Proyecto Creado!', 
         'La cotización ha sido convertida exitosamente en un proyecto'
       );
-
-      // Actualizar estado de la cotización para marcarla como convertida
       await updateQuoteStatus(quote.id, 'Convertido');
-      loadQuotes(); // Recargar cotizaciones
-
+      loadQuotes();
     } catch (error) {
       console.error('Error converting quote to project:', error);
-      showErrorAlert('Error', 'No se pudo convertir la cotización en proyecto');
+      // Si el error es 400, mostrar mensaje específico
+      if (error?.response?.status === 400) {
+        showErrorAlert('Error', 'Esta cotización ya fue convertida en proyecto.');
+      } else {
+        showErrorAlert('Error', 'No se pudo convertir la cotización en proyecto');
+      }
     }
   };
     
@@ -272,7 +259,7 @@ const Quotes = () => {
       setIsEditing(false);
     };
 
-    if (isEditing) {
+    if ((isAdmin || isManager) && isEditing) {
       return (
         <select
           value={selectedStatus}
@@ -290,11 +277,11 @@ const Quotes = () => {
 
     return (
       <span 
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-blue-300 transition-all duration-200 ${getStatusColor(selectedStatus)}`}
-        onClick={() => setIsEditing(true)}
-        title="Click para cambiar estado"
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${((isAdmin || isManager) ? 'cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-blue-300 transition-all duration-200' : 'cursor-not-allowed opacity-60')} ${getStatusColor(selectedStatus)}`}
+        onClick={() => (isAdmin || isManager) && setIsEditing(true)}
+        title={isAdmin || isManager ? "Click para cambiar estado" : "Solo admin y manager pueden cambiar el estado"}
       >
-        {selectedStatus} ✏️
+        {selectedStatus} {isAdmin || isManager ? '✏️' : ''}
       </span>
     );
   };
@@ -358,7 +345,7 @@ const Quotes = () => {
                         <span className={`text-xs font-medium ${getUrgencyColor(quote.urgency)}`}>
         {quote.urgency}
                         </span>
-                        {(quote.status === 'Aprobado' || quote.status === 'approved') && quote.status !== 'Convertido' && quote.status !== 'converted' && (
+                        {(quote.status === 'Aprobado' || quote.status === 'approved') && quote.status !== 'Convertido' && quote.status !== 'converted' ? (
                           <button
                             onClick={() => convertQuoteToProject(quote)}
                             className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
@@ -367,21 +354,23 @@ const Quotes = () => {
                             <FolderPlus className="h-3 w-3 mr-1" />
                             Proyecto
                           </button>
-                        )}
-                        {quote.status === 'converted' && (
+                        ) : null}
+                        {(quote.status === 'Convertido' || quote.status === 'converted') && (
                           <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
                             <FolderCheck className="h-3 w-3 mr-1" />
                             Convertido
                           </span>
                         )}
                         {/* Botón eliminar cotización */}
-                        <button
-                          onClick={() => handleDeleteQuote(quote.id)}
-                          className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                          title="Eliminar cotización"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
+                        {isManager && (
+                          <button
+                            onClick={() => handleDeleteQuote(quote.id)}
+                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                            title="Eliminar cotización"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="mt-2 sm:flex sm:justify-between">

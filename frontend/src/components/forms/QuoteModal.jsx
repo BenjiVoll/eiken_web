@@ -14,6 +14,7 @@ const QuoteModal = ({
   // Si el modal se abre con un servicio preseleccionado, no se puede cambiar ni la categoría ni el servicio
   // Solo bloquear la categoría si hay un servicio seleccionado
   const categoriaBloqueada = !!formData.service;
+  const [errors, setErrors] = React.useState({});
   if (!show) return null;
 
   return (
@@ -34,7 +35,35 @@ const QuoteModal = ({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={e => {
+          e.preventDefault();
+          const newErrors = {};
+          if (!formData.clientName || !formData.clientName.trim()) {
+            newErrors.clientName = 'Por favor ingresa tu nombre.';
+          }
+          if (!formData.clientEmail || !formData.clientEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.clientEmail)) {
+            newErrors.clientEmail = 'Por favor ingresa un email válido.';
+          }
+          if (!formData.clientPhone || !formData.clientPhone.trim()) {
+            newErrors.clientPhone = 'Por favor ingresa tu teléfono.';
+          } else {
+            // Validar formato chileno: +56 seguido de 9 números
+            const phone = formData.clientPhone.trim();
+            const regex = /^\+56\s?\d{9}$/;
+            if (!regex.test(phone)) {
+              newErrors.clientPhone = 'El formato debe ser +56 seguido de 9 números (ej: +56 912345678).';
+            }
+          }
+          if (!formData.categoryId) {
+            newErrors.categoryId = 'Por favor selecciona una categoría.';
+          }
+          if (!formData.description || !formData.description.trim()) {
+            newErrors.description = 'Por favor describe tu proyecto.';
+          }
+          setErrors(newErrors);
+          if (Object.keys(newErrors).length > 0) return;
+          onSubmit(e);
+        }} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Información del Cliente */}
             <div className="md:col-span-2">
@@ -81,10 +110,14 @@ const QuoteModal = ({
               <input
                 type="text"
                 value={formData.clientName}
-                onChange={e => setFormData({ ...formData, clientName: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-                required
+                onChange={e => {
+                  setFormData({ ...formData, clientName: e.target.value });
+                  if (errors.clientName) setErrors(prev => ({ ...prev, clientName: '' }));
+                }}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientName ? 'border-red-500' : 'border-gray-300'}`}
+                // required eliminado, validación manual
               />
+              {errors.clientName && <p className="text-red-600 text-sm mt-1">{errors.clientName}</p>}
             </div>
 
             <div>
@@ -94,10 +127,14 @@ const QuoteModal = ({
               <input
                 type="email"
                 value={formData.clientEmail}
-                onChange={e => setFormData({ ...formData, clientEmail: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-                required
+                onChange={e => {
+                  setFormData({ ...formData, clientEmail: e.target.value });
+                  if (errors.clientEmail) setErrors(prev => ({ ...prev, clientEmail: '' }));
+                }}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientEmail ? 'border-red-500' : 'border-gray-300'}`}
+                // required eliminado, validación manual
               />
+              {errors.clientEmail && <p className="text-red-600 text-sm mt-1">{errors.clientEmail}</p>}
             </div>
 
             <div>
@@ -107,11 +144,15 @@ const QuoteModal = ({
               <input
                 type="tel"
                 value={formData.clientPhone}
-                onChange={e => setFormData({ ...formData, clientPhone: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+                onChange={e => {
+                  setFormData({ ...formData, clientPhone: e.target.value });
+                  if (errors.clientPhone) setErrors(prev => ({ ...prev, clientPhone: '' }));
+                }}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientPhone ? 'border-red-500' : 'border-gray-300'}`}
                 placeholder="+56 9 xxxx xxxx"
-                required
+                // required eliminado, validación manual
               />
+              {errors.clientPhone && <p className="text-red-600 text-sm mt-1">{errors.clientPhone}</p>}
             </div>
 
             <div>
@@ -137,9 +178,12 @@ const QuoteModal = ({
               </label>
               <select
                 value={formData.categoryId}
-                onChange={e => setFormData({ ...formData, categoryId: e.target.value })}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-                required
+                onChange={e => {
+                  setFormData({ ...formData, categoryId: e.target.value });
+                  if (errors.categoryId) setErrors(prev => ({ ...prev, categoryId: '' }));
+                }}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.categoryId ? 'border-red-500' : 'border-gray-300'}`}
+                // required eliminado, validación manual
                 disabled={categoriaBloqueada}
               >
                 <option value="">Selecciona una categoría</option>
@@ -186,13 +230,17 @@ const QuoteModal = ({
               Cuéntanos más sobre tu proyecto *
             </label>
             <textarea
-              value={formData.description}
-              onChange={e => setFormData({ ...formData, description: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-              rows="4"
-              placeholder="Describe tu proyecto, qué necesitas, colores preferidos, tamaño del vehículo si aplica, etc."
-              required
-            />
+                value={formData.description}
+                onChange={e => {
+                  setFormData({ ...formData, description: e.target.value });
+                  if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
+                }}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                rows="4"
+                placeholder="Describe tu proyecto, qué necesitas, colores preferidos, tamaño del vehículo si aplica, etc."
+                
+              />
+              {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
           </div>
 
           <div className="md:col-span-2">

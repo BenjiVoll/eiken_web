@@ -2,9 +2,9 @@
 import { Router } from "express";
 import upload from "../helpers/multer.helper.js";
 import {
-  isAdmin, 
-  isManagerOrAbove, 
-  isDesignerOrAbove 
+  isAdmin,
+  isManagerOrAbove,
+  isDesignerOrAbove
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";

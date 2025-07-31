@@ -6,37 +6,33 @@ handleErrorServer,
 } from "../handlers/responseHandlers.js";
 
 export async function isAdmin(req, res, next) {
-try {
+  try {
     const userRepository = AppDataSource.getRepository(User);
-
     const userFound = await userRepository.findOneBy({ email: req.user.email });
-
     if (!userFound) {
-    return handleErrorClient(
+      return handleErrorClient(
         res,
         404,
         "Usuario no encontrado en la base de datos",
-    );
+      );
     }
-
     const userRole = userFound.role;
-
     if (userRole !== "admin") {
-        return handleErrorClient(
-            res,
-            403,
-            "Error al acceder al recurso",
-            "Se requiere un rol de administrador para realizar esta acción."
-        );
+      return handleErrorClient(
+        res,
+        403,
+        "Error al acceder al recurso",
+        "Se requiere un rol de administrador para realizar esta acción."
+      );
     }
     next();
-} catch (error) {
+  } catch (error) {
     handleErrorServer(
-    res,
-    500,
-    error.message,
+      res,
+      500,
+      error.message,
     );
-}
+  }
 }
 
 export async function isManagerOrAbove(req, res, next) {
@@ -54,7 +50,7 @@ try {
     }
 
     const userRole = userFound.role;
-    const allowedRoles = ["admin", "manager"];
+    const allowedRoles = ["admin", "manager", "operator"];
 
     if (!allowedRoles.includes(userRole)) {
         return handleErrorClient(
@@ -89,7 +85,7 @@ try {
     }
 
     const userRole = userFound.role;
-    const allowedRoles = ["admin", "manager", "designer"];
+    const allowedRoles = ["admin", "manager", "designer", "operator"];
 
     if (!allowedRoles.includes(userRole)) {
         return handleErrorClient(
@@ -124,7 +120,7 @@ try {
     }
 
     const userRole = userFound.role;
-    const allowedRoles = ["admin", "manager"];
+    const allowedRoles = ["admin", "manager", "operator"];
     const resourceUserId = req.params.id;
 
     // Si es admin o manager, puede acceder a cualquier recurso

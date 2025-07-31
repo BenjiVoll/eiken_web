@@ -138,9 +138,7 @@ export const deleteInventoryItem = async (id) => {
     throw new Error("Item de inventario no encontrado");
   }
 
-  // Soft delete - marcar como inactivo
-  item.isActive = false;
-  await inventoryRepository.save(item);
-  
+  // Hard delete - eliminar el registro de la base de datos
+  await inventoryRepository.remove(item);
   return { mensaje: "Item de inventario eliminado exitosamente" };
 };

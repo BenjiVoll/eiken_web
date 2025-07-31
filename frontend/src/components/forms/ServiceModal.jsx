@@ -14,6 +14,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
   });
   const [imageFile, setImageFile] = useState(null);
   const [imageError, setImageError] = useState('');
+  const [errors, setErrors] = useState({});
   const [categories, setCategories] = useState([]);
   const [divisions, setDivisions] = useState([]);
 
@@ -24,8 +25,8 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
       if (service.category && typeof service.category === 'object' && service.category.id) {
         categoryId = service.category.id;
       } else if (typeof service.category === 'number') {
-      categoryId = service.category;
-    }
+        categoryId = service.category;
+      }
       setFormData({
         name: service.name || '',
         description: service.description || '',
@@ -48,6 +49,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
       setImagePreview(null);
       setImageToDelete(false);
     }
+    setErrors({});
   }, [service, isOpen, categories]);
 
   useEffect(() => {
@@ -72,6 +74,9 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleImageChange = (e) => {
@@ -94,10 +99,24 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.categoryId || !formData.division || !formData.price) {
-      setImageError('Completa todos los campos obligatorios');
-      return;
+    const newErrors = {};
+    if (!formData.name.trim()) {
+      newErrors.name = 'Por favor ingresa el nombre del servicio.';
     }
+    if (!formData.description || !formData.description.trim()) {
+      newErrors.description = 'Por favor ingresa una descripción.';
+    }
+    if (!formData.categoryId) {
+      newErrors.categoryId = 'Por favor selecciona una categoría.';
+    }
+    if (!formData.division) {
+      newErrors.division = 'Por favor selecciona una división.';
+    }
+    if (!formData.price || isNaN(formData.price) || Number(formData.price) < 0 || !Number.isInteger(Number(formData.price))) {
+      newErrors.price = 'Por favor ingresa un precio válido.';
+    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
     if (imageToDelete && service && service.id) {
       try {
         const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -135,64 +154,70 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
               <input
                 type="text"
                 name="name"
-                required
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                disabled={loading}
               />
+              {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 rows={3}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                disabled={loading}
               />
+              {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
               <select
                 name="categoryId"
-                required
                 value={formData.categoryId}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 ${errors.categoryId ? 'border-red-500' : 'border-gray-300'}`}
+                disabled={loading}
               >
                 <option value="">Selecciona una categoría</option>
                 {categories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
+              {errors.categoryId && <p className="text-red-600 text-sm mt-1">{errors.categoryId}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">División *</label>
               <select
                 name="division"
-                required
                 value={formData.division}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 ${errors.division ? 'border-red-500' : 'border-gray-300'}`}
+                disabled={loading}
               >
                 <option value="">Selecciona una división</option>
                 {divisions.map(div => (
                   <option key={div.id} value={div.id}>{div.name}</option>
                 ))}
               </select>
+              {errors.division && <p className="text-red-600 text-sm mt-1">{errors.division}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Precio (CLP) *</label>
               <input
                 type="number"
                 name="price"
-                required
                 min="0"
-                step="0.01"
+        step="1"
                 value={formData.price}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 ${errors.price ? 'border-red-500' : 'border-gray-300'}`}
+                disabled={loading}
               />
+              {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Imagen del Servicio</label>

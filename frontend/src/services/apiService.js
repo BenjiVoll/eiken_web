@@ -208,33 +208,13 @@ export const projectsAPI = {
   },
 
   create: async (projectData) => {
-    try {
-      console.log('Creating project with data:', projectData);
-      const response = await api.post('/projects', projectData);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating project:', error.response?.data || error.message);
-      if (error.response?.data?.details) {
-        console.error('Validation details:', error.response.data.details);
-      }
-      console.error('Full error:', error.response || error);
-      throw error;
-    }
+    const response = await api.post('/projects', projectData);
+    return response.data;
   },
 
   update: async (id, projectData) => {
-    try {
-      console.log('Updating project with data:', { id, projectData });
-      const response = await api.patch(`/projects/${id}`, projectData);
-      return response.data;
-    } catch (error) {
-      console.error('Error updating project:', error.response?.data || error.message);
-      if (error.response?.data?.details) {
-        console.error('Validation details:', error.response.data.details);
-      }
-      console.error('Full error:', error.response || error);
-      throw error;
-    }
+    const response = await api.patch(`/projects/${id}`, projectData);
+    return response.data;
   },
 
   delete: async (id) => {

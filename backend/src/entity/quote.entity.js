@@ -122,7 +122,5 @@ export const QuoteSchema = new EntitySchema({
       name: "IDX_QUOTE_URGENCY",
       columns: ["urgency"],
     },
-    // Eliminar el índice IDX_QUOTE_SERVICE que hace referencia a la columna serviceId
-    // ya que esa columna fue eliminada y ahora se usa la relación service.
   ],
 });

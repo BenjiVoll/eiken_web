@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
 import ImageModal from '../components/forms/ImageModal';
 import { projectsAPI, clientsAPI } from '../services/apiService';
@@ -16,6 +17,7 @@ const Projects = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
+  const { isManager } = useAuth();
 
   useEffect(() => {
     loadData();
@@ -219,13 +221,15 @@ const Projects = () => {
             </h1>
             <p className="mt-2 text-gray-600">Gestiona los proyectos de la empresa</p>
           </div>
-          <button
-            onClick={handleCreateProject}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Proyecto
-          </button>
+          {isManager && (
+            <button
+              onClick={handleCreateProject}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Proyecto
+            </button>
+          )}
         </div>
       </div>
 
@@ -253,7 +257,7 @@ const Projects = () => {
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm ? 'Intenta con un término de búsqueda diferente' : 'Comienza creando un nuevo proyecto'}
           </p>
-          {!searchTerm && (
+          {!searchTerm && isManager && (
             <div className="mt-6">
               <button
                 onClick={handleCreateProject}
@@ -298,22 +302,24 @@ const Projects = () => {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                       {getStatusLabel(project.status)}
                     </span>
-                    <div className="flex space-x-1">
-                      <button
-                        onClick={() => handleEditProject(project)}
-                        className="text-orange-600 hover:text-orange-800 p-1"
-                        title="Editar proyecto"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProject(project)}
-                        className="text-red-600 hover:text-red-800 p-1"
-                        title="Eliminar proyecto"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    {isManager && (
+                      <div className="flex space-x-1">
+                        <button
+                          onClick={() => handleEditProject(project)}
+                          className="text-orange-600 hover:text-orange-800 p-1"
+                          title="Editar proyecto"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProject(project)}
+                          className="text-red-600 hover:text-red-800 p-1"
+                          title="Eliminar proyecto"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 

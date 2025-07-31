@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext';
 import React, { useState, useEffect } from 'react';
 import { suppliersAPI } from '../services/apiService';
 import { Briefcase, Search, Plus, Edit, Trash2, Globe, Phone, Mail, MapPin } from 'lucide-react';
@@ -11,6 +12,7 @@ const Suppliers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
+  const { isManager } = useAuth();
 
   useEffect(() => {
     loadSuppliers();
@@ -56,24 +58,26 @@ const Suppliers = () => {
   const handleSaveSupplier = async (formData) => {
     try {
       setModalLoading(true);
-      console.log('[DEBUG] Datos enviados al backend:', formData);
-      let response;
       if (editingSupplier) {
-        response = await suppliersAPI.update(editingSupplier.id, formData);
+        await suppliersAPI.update(editingSupplier.id, formData);
         showSuccessAlert('¡Actualizado!', 'El proveedor ha sido actualizado correctamente');
       } else {
-        response = await suppliersAPI.create(formData);
+        await suppliersAPI.create(formData);
         showSuccessAlert('¡Creado!', 'El proveedor ha sido creado correctamente');
       }
-      console.log('[DEBUG] Respuesta exitosa:', response);
       setIsModalOpen(false);
       loadSuppliers();
     } catch (error) {
-      console.error('[DEBUG] Error al guardar proveedor:', error);
-      let errorMsg = 'No se pudo guardar el proveedor';
+      let errorMsg = 'No se pudo guardar el proveedor.';
       if (error.response) {
-        console.error('[DEBUG] Respuesta de error del backend:', error.response.data);
-        if (error.response.data?.message) {
+        // Mensaje amigable para RUT duplicado
+        if (error.response.data?.message?.toLowerCase().includes('rut')) {
+          if (error.response.data?.message?.toLowerCase().includes('existe')) {
+            errorMsg = 'Ya existe un proveedor registrado con ese RUT. Por favor verifica el dato.';
+          } else {
+            errorMsg = 'El RUT ingresado no es válido o ya está registrado.';
+          }
+        } else if (error.response.data?.message) {
           errorMsg = error.response.data.message;
         }
         // Si hay detalles de validación, los mostramos también
@@ -112,13 +116,15 @@ const Suppliers = () => {
             </h1>
             <p className="mt-2 text-gray-600">Gestiona los proveedores de materiales</p>
           </div>
-          <button
-            onClick={handleCreateSupplier}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Proveedor
-          </button>
+          {isManager && (
+            <button
+              onClick={handleCreateSupplier}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Proveedor
+            </button>
+          )}
         </div>
       </div>
 
@@ -146,7 +152,7 @@ const Suppliers = () => {
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm ? 'Intenta con un término de búsqueda diferente' : 'Comienza creando un nuevo proveedor'}
           </p>
-          {!searchTerm && (
+          {!searchTerm && isManager && (
             <div className="mt-6">
               <button
                 onClick={handleCreateSupplier}
@@ -167,22 +173,24 @@ const Suppliers = () => {
                   <h3 className="text-lg font-semibold text-gray-900 truncate">
                     {supplier.name}
                   </h3>
-                  <div className="flex space-x-2 ml-2">
-                    <button
-                      onClick={() => handleEditSupplier(supplier)}
-                      className="text-blue-600 hover:text-blue-800 p-1"
-                      title="Editar proveedor"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSupplier(supplier)}
-                      className="text-red-600 hover:text-red-800 p-1"
-                      title="Eliminar proveedor"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {isManager && (
+                    <div className="flex space-x-2 ml-2">
+                      <button
+                        onClick={() => handleEditSupplier(supplier)}
+                        className="text-blue-600 hover:text-blue-800 p-1"
+                        title="Editar proveedor"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSupplier(supplier)}
+                        className="text-red-600 hover:text-red-800 p-1"
+                        title="Eliminar proveedor"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">

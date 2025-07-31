@@ -104,16 +104,5 @@ export const InventorySchema = new EntitySchema({
       inverseSide: "inventoryItems",
       nullable: true,
     },
-    movements: {
-      type: "one-to-many",
-      target: "InventoryMovement",
-      inverseSide: "inventory",
-      cascade: true,
-    },
-    projectUsages: {
-      type: "one-to-many",
-      target: "ProjectInventoryUsage",
-      inverseSide: "inventory",
-    },
   },
 });

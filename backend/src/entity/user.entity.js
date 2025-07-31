@@ -63,13 +63,6 @@ const UserSchema = new EntitySchema({
       columns: ["role"],
     },
   ],
-  relations: {
-    inventoryMovements: {
-      type: "one-to-many",
-      target: "InventoryMovement",
-      inverseSide: "createdBy",
-    },
-  },
 });
 
 export default UserSchema;
