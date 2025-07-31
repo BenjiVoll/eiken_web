@@ -1,8 +1,9 @@
 "use strict";
 import { Router } from "express";
 import { 
-  isAdmin, 
-  isManagerOrAbove 
+  isAdmin,
+  isManagerOrAbove,
+  isDesignerOrAbove
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";
@@ -28,11 +29,11 @@ router
     createSupplier
   )
   .get("/", 
-    isManagerOrAbove, // Solo Manager+ puede ver lista de proveedores
+    isDesignerOrAbove, // Designer+ y operador pueden ver lista de proveedores
     getSuppliers
   )
   .get("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede ver detalles de proveedor
+    isDesignerOrAbove, // Designer+ y operador pueden ver detalles de proveedor
     getSupplier
   )
   .patch("/:id", 

@@ -24,6 +24,11 @@ const ActivitySchema = new EntitySchema({
       type: "int",
       nullable: true,
     },
+    quoteId: {
+      type: "int",
+      nullable: true,
+      name: "quote_id",
+    },
     createdAt: {
       type: "timestamp",
       createDate: true,

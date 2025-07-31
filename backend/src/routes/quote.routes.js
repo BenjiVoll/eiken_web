@@ -1,9 +1,9 @@
 "use strict";
 import { Router } from "express";
 import { 
-  isAdmin, 
-  isManagerOrAbove, 
-  isDesignerOrAbove 
+  isAdmin,
+  isManagerOrAbove,
+  isDesignerOrAbove
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation } from "../middlewares/validations.middleware.js";
@@ -30,7 +30,7 @@ router.use(authenticateJwt);
 // Rutas para gestión de cotizaciones
 router
   .post("/", 
-    isDesignerOrAbove, // Designer+ puede crear cotizaciones
+    isManagerOrAbove, // Solo Manager+ puede crear cotizaciones
     createBodyValidation(quoteBodyValidation), 
     createQuote
   )
@@ -43,12 +43,12 @@ router
     getQuote
   )
   .patch("/:id", 
-    isDesignerOrAbove, // Designer+ puede actualizar cotizaciones
+    isManagerOrAbove, // Solo Manager+ puede actualizar cotizaciones
     createBodyValidation(quoteUpdateValidation), 
     updateQuote
   )
   .delete("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede eliminar cotizaciones
+    isAdmin, // Solo Admin puede eliminar cotizaciones
     deleteQuote
   );
 

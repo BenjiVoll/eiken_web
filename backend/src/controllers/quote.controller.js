@@ -23,7 +23,7 @@ export const createQuote = async (req, res) => {
         // Registrar actividad
         await createActivityService({
           type: "cotización",
-          description: `Cotización creada para ${quote.clientName || 'cliente'}`,
+          description: `Cotización de ${quote.clientName || 'cliente'} creada.`,
           userId: req.user?.id || null,
         });
         handleSuccess(res, 201, "Cotización creada exitosamente", quote);
@@ -39,7 +39,7 @@ export const updateQuote = async (req, res) => {
         // Registrar actividad de edición
         await createActivityService({
           type: "cotización",
-          description: `Cotización editada para ${quote.clientName || 'cliente'}`,
+          description: `Cotización de ${quote.clientName || 'cliente'} editada.`,
           userId: req.user?.id || null,
         });
         handleSuccess(res, 200, "Cotización actualizada exitosamente", quote);
@@ -98,16 +98,6 @@ export const getQuotesByUrgency = async (req, res) => {
     }
 };
 
-// Obtener cotizaciones por cliente - DESHABILITADO (las quotes no tienen relación directa con clientes)
-// export const getQuotesByClient = async (req, res) => {
-//     try {
-//         const quotes = await getQuotesByClientService(req.params.clientId);
-//         res.status(200).json(quotes);
-//     } catch (error) {
-//         res.status(400).json({ error: error.message });
-//     }
-// };
-
 // Actualizar estado de cotización
 export const updateQuoteStatus = async (req, res) => {
     try {
@@ -121,14 +111,14 @@ export const updateQuoteStatus = async (req, res) => {
 // Eliminar una cotización
 export const deleteQuote = async (req, res) => {
     try {
-        // Obtener la cotización antes de eliminar
-        const quote = await updateQuoteService(req.params.id, {});
+        const deletedQuote = await getQuoteByIdService(req.params.id);
         await deleteQuoteService(req.params.id);
         // Registrar actividad de eliminación con nombre
         await createActivityService({
           type: "cotización",
-          description: `Cotización "${quote?.title || quote?.clientName || ''}" eliminada`,
+          description: `Cotización de ${deletedQuote?.clientName || 'cliente'} eliminada.`,
           userId: req.user?.id || null,
+          quoteId: deletedQuote?.id || null,
         });
         res.status(204).send();
     } catch (error) {

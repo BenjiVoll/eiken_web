@@ -1,13 +1,13 @@
 "use strict";
 import { Router } from "express";
-import { 
-  isAdmin, 
-  isManagerOrAbove, 
-  isDesignerOrAbove 
+import {
+  isAdmin,
+  isManagerOrAbove,
+  isDesignerOrAbove
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";
-import { inventoryQueryValidation, inventoryBodyValidation } from "../validations/inventory.validation.js";
+import { createBodyValidation } from "../middlewares/validations.middleware.js";
+import { inventoryBodyValidation } from "../validations/inventory.validation.js";
 import {
   createInventory,
   deleteInventory,
@@ -36,12 +36,12 @@ router
     getInventory
   )
   .patch("/:id", 
-    isDesignerOrAbove,
+    isManagerOrAbove,
     createBodyValidation(inventoryBodyValidation), 
     updateInventory
   )
   .delete("/:id", 
-    isManagerOrAbove,
+    isAdmin,
     deleteInventory
   );
 

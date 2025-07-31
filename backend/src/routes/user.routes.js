@@ -1,13 +1,12 @@
 "use strict";
 import { Router } from "express";
 import { 
-  isAdmin, 
-  isManagerOrAbove, 
-  isOwnerOrManagerAbove 
+  isAdmin,
+  isManagerOrAbove
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";
-import { userQueryValidation, userBodyValidation } from "../validations/user.validation.js";
+import { createBodyValidation } from "../middlewares/validations.middleware.js";
+import { userBodyValidation } from "../validations/user.validation.js";
 import {
   createUserController,
   deleteUserController,
@@ -32,21 +31,19 @@ router
     isManagerOrAbove, 
     getUsersController
   ) // Manager+ puede ver lista de usuarios
+  .get("/:id", 
+    isManagerOrAbove,
+    getUserController
+  )
+  .patch("/:id", 
+    isAdmin,
+    createBodyValidation(userBodyValidation), 
+    updateUserController
+  )
   .delete("/:id", 
     isAdmin, 
     deleteUserController
   ); // Solo admin puede eliminar usuarios
 
-// Rutas que permiten acceso a recursos propios o requieren permisos de manager+
-router
-  .get("/:id", 
-    isOwnerOrManagerAbove,
-    getUserController
-  ) // Puede ver su propio perfil o manager+ puede ver cualquiera
-  .patch("/:id", 
-    isOwnerOrManagerAbove,
-    createBodyValidation(userBodyValidation), 
-    updateUserController
-  ); // Puede actualizar su propio perfil o manager+ puede actualizar cualquiera
 
 export default router;

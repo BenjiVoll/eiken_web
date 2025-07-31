@@ -44,8 +44,22 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null, loading = fal
   const validateForm = () => {
     const newErrors = {};
 
+    // Validar campos obligatorios
     if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es requerido';
+      newErrors.name = 'Por favor ingresa el nombre del proveedor.';
+    }
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Por favor ingresa el teléfono. Ejemplo: +56 9 1234 5678';
+    } else if (!/^[+]?[\d\s\-()]{7,15}$/.test(formData.phone)) {
+      newErrors.phone = 'El formato del teléfono no es válido. Usa el formato +56 9 1234 5678';
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = 'Por favor ingresa el correo electrónico.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'El correo electrónico no es válido.';
+    }
+    if (!formData.rut.trim()) {
+      newErrors.rut = 'Por favor ingresa el RUT.';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -113,7 +127,6 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null, loading = fal
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 disabled={loading}
-                required
               />
               {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
             </div>
@@ -134,7 +147,7 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null, loading = fal
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Teléfono
+                Teléfono *
               </label>
               <input
                 type="text"
@@ -152,7 +165,7 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null, loading = fal
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                Email *
               </label>
               <input
                 type="email"
@@ -169,7 +182,7 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null, loading = fal
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                RUT
+                RUT *
               </label>
               <input
                 type="text"
@@ -180,6 +193,7 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null, loading = fal
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 disabled={loading}
               />
+              {errors.rut && <p className="text-red-600 text-sm mt-1">{errors.rut}</p>}
             </div>
 
             <div>

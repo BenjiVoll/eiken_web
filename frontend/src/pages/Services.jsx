@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { showSuccessAlert, showErrorAlert } from '../helpers/sweetAlert';
+import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
 import ImageModal from '../components/forms/ImageModal';
 import { useAuth } from '../context/AuthContext';
 import { servicesAPI, categoriesAPI, divisionsAPI } from '../services/apiService';
@@ -122,13 +122,13 @@ const Services = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este servicio?')) {
+    const result = await confirmAlert('¿Estás seguro de que quieres eliminar este servicio?', 'Esta acción no se puede deshacer');
+    if (result.isConfirmed) {
       try {
         await servicesAPI.delete(id);
         await loadServices();
         showSuccessAlert('¡Eliminado!', 'El servicio ha sido eliminado correctamente');
-      } catch (error) {
-        console.error('Error deleting service:', error);
+      } catch {
         showErrorAlert('Error', 'No se pudo eliminar el servicio');
       }
     }
