@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Palette, Menu, X, ShoppingCart, Phone } from 'lucide-react';
+import { Palette, Menu, X, Phone } from 'lucide-react';
 
 const ClientNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,7 +25,7 @@ const ClientNavbar = () => {
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3 flex-1">
             <div className="flex items-center">
               <img 
                 src="/logo.png" 
@@ -69,17 +69,13 @@ const ClientNavbar = () => {
             </button>
           </nav>
 
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-4 justify-end flex-1">
             <Link 
               to="/intranet" 
-              className="text-gray-600 hover:text-eiken-red-500 font-medium transition-colors"
+              className="text-gray-600 hover:text-eiken-red-500 font-medium transition-colors px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
             >
               Intranet
             </Link>
-            <button className="relative bg-eiken-gradient text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center">
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Carrito
-            </button>
           </div>
 
           <div className="md:hidden">
@@ -131,10 +127,6 @@ const ClientNavbar = () => {
               <div className="space-y-2 px-4 pt-4 border-t border-gray-200">
                 <button className="w-full border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors text-center">
                   Cotizar Proyecto
-                </button>
-                <button className="w-full bg-eiken-gradient text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center justify-center">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Carrito
                 </button>
                 <a
                   href="tel:+541112345678"

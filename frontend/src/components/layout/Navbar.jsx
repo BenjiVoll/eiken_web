@@ -116,56 +116,54 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           {/* Logo y navegación principal */}
           <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/dashboard" className="text-xl font-bold text-gray-900">
-                Eiken Design
-              </Link>
-            </div>
-            
-            {/* Navegación desktop */}
-            <div className="hidden md:ml-6 md:flex md:space-x-8">
-              {filteredNavigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.href;
-                
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                      isActive
-                        ? 'border-blue-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                    }`}
+            <div className="flex w-full items-center justify-between">
+              <div className="flex-shrink-0 flex items-center">
+                <Link to="/dashboard" className="text-xl font-bold text-gray-900">
+                  Eiken Design
+                </Link>
+              </div>
+              <div className="hidden md:ml-6 md:flex md:space-x-8">
+                {filteredNavigation.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
+                        isActive
+                          ? 'border-blue-500 text-gray-900'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 mr-2" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="hidden md:flex md:items-center">
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                    <div className="flex items-center justify-end space-x-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user?.role)}`}>
+                        {getRoleLabel(user?.role)}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex-shrink-0 ml-4"
                   >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {item.name}
-                  </Link>
-                );
-              })}
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Salir
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Información del usuario y logout */}
-          <div className="hidden md:ml-6 md:flex md:items-center">
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <div className="flex items-center justify-end space-x-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user?.role)}`}>
-                    {getRoleLabel(user?.role)}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Salir
-              </button>
-            </div>
-          </div>
 
           {/* Menú móvil */}
           <div className="md:hidden flex items-center">

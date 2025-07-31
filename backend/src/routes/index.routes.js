@@ -16,7 +16,7 @@ import divisionRoutes from "./division.routes.js";
 // import projectInventoryUsageRoutes from "./projectInventoryUsage.routes.js";
 
 const router = Router();
-
+import activityRoutes from "./activity.routes.js";
 router
     .use("/auth", authRoutes)
     .use("/users", userRoutes)
@@ -29,7 +29,8 @@ router
     .use("/suppliers", supplierRoutes)
     .use("/projects", projectRoutes)
     .use("/categories", categoryRoutes)
-    .use("/divisions", divisionRoutes);
+    .use("/divisions", divisionRoutes)
+    .use("/activities", activityRoutes);
     // .use("/orders", orderRoutes)
     // .use("/inventory-movements", inventoryMovementRoutes)
     // .use("/project-inventory-usage", projectInventoryUsageRoutes);

@@ -1,20 +1,6 @@
+"use strict";
 import fs from "fs";
 import path from "path";
-
-export const deleteServiceImage = async (id) => {
-  const service = await serviceRepository.findOneBy({ id });
-  if (!service || !service.image) {
-    throw new Error("No hay imagen para eliminar");
-  }
-  const imagePath = path.join(process.cwd(), "uploads", service.image);
-  if (fs.existsSync(imagePath)) {
-    fs.unlinkSync(imagePath);
-  }
-  service.image = null;
-  await serviceRepository.save(service);
-  return true;
-};
-"use strict";
 import { AppDataSource } from "../config/configDb.js";
 import { ServiceSchema } from "../entity/service.entity.js";
 
@@ -130,4 +116,18 @@ export const deleteService = async (id) => {
   await serviceRepository.remove(service);
   
   return { mensaje: "Servicio eliminado exitosamente" };
+};
+
+export const deleteServiceImage = async (id) => {
+  const service = await serviceRepository.findOneBy({ id });
+  if (!service || !service.image) {
+    throw new Error("No hay imagen para eliminar");
+  }
+  const imagePath = path.join(process.cwd(), "uploads", service.image);
+  if (fs.existsSync(imagePath)) {
+    fs.unlinkSync(imagePath);
+  }
+  service.image = null;
+  await serviceRepository.save(service);
+  return true;
 };

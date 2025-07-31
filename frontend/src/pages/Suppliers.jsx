@@ -56,20 +56,32 @@ const Suppliers = () => {
   const handleSaveSupplier = async (formData) => {
     try {
       setModalLoading(true);
-      
+      console.log('[DEBUG] Datos enviados al backend:', formData);
+      let response;
       if (editingSupplier) {
-        await suppliersAPI.update(editingSupplier.id, formData);
+        response = await suppliersAPI.update(editingSupplier.id, formData);
         showSuccessAlert('¡Actualizado!', 'El proveedor ha sido actualizado correctamente');
       } else {
-        await suppliersAPI.create(formData);
+        response = await suppliersAPI.create(formData);
         showSuccessAlert('¡Creado!', 'El proveedor ha sido creado correctamente');
       }
-      
+      console.log('[DEBUG] Respuesta exitosa:', response);
       setIsModalOpen(false);
       loadSuppliers();
     } catch (error) {
-      console.error('Error saving supplier:', error);
-      showErrorAlert('Error', error.response?.data?.message || 'No se pudo guardar el proveedor');
+      console.error('[DEBUG] Error al guardar proveedor:', error);
+      let errorMsg = 'No se pudo guardar el proveedor';
+      if (error.response) {
+        console.error('[DEBUG] Respuesta de error del backend:', error.response.data);
+        if (error.response.data?.message) {
+          errorMsg = error.response.data.message;
+        }
+        // Si hay detalles de validación, los mostramos también
+        if (error.response.data?.details && Array.isArray(error.response.data.details)) {
+          errorMsg += '\n' + error.response.data.details.map(d => d.message).join('\n');
+        }
+      }
+      showErrorAlert('Error', errorMsg);
     } finally {
       setModalLoading(false);
     }

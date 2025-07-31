@@ -14,11 +14,18 @@ import {
   handleErrorServer,
   handleSuccess,
 } from "../handlers/responseHandlers.js";
+import { createActivityService } from "../services/activity.service.js";
 
 // Crear una cotización
 export const createQuote = async (req, res) => {
     try {
         const quote = await createQuoteService(req.body);
+        // Registrar actividad
+        await createActivityService({
+          type: "cotización",
+          description: `Cotización creada para ${quote.clientName || 'cliente'}`,
+          userId: req.user?.id || null,
+        });
         handleSuccess(res, 201, "Cotización creada exitosamente", quote);
     } catch (error) {
         handleErrorServer(res, 400, error.message);
@@ -29,6 +36,12 @@ export const createQuote = async (req, res) => {
 export const updateQuote = async (req, res) => {
     try {
         const quote = await updateQuoteService(req.params.id, req.body);
+        // Registrar actividad de edición
+        await createActivityService({
+          type: "cotización",
+          description: `Cotización editada para ${quote.clientName || 'cliente'}`,
+          userId: req.user?.id || null,
+        });
         handleSuccess(res, 200, "Cotización actualizada exitosamente", quote);
     } catch (error) {
         handleErrorServer(res, 400, error.message);
@@ -108,7 +121,15 @@ export const updateQuoteStatus = async (req, res) => {
 // Eliminar una cotización
 export const deleteQuote = async (req, res) => {
     try {
+        // Obtener la cotización antes de eliminar
+        const quote = await updateQuoteService(req.params.id, {});
         await deleteQuoteService(req.params.id);
+        // Registrar actividad de eliminación con nombre
+        await createActivityService({
+          type: "cotización",
+          description: `Cotización "${quote?.title || quote?.clientName || ''}" eliminada`,
+          userId: req.user?.id || null,
+        });
         res.status(204).send();
     } catch (error) {
         res.status(400).json({ error: error.message });

@@ -8,9 +8,14 @@ import {
   FileText, 
   Quote,
   TrendingUp,
-  AlertCircle
+  FilePlus,
+  Wrench,
+  Boxes,
+  Receipt,
+  UserPlus,
+  Info
 } from 'lucide-react';
-import { servicesAPI, inventoryAPI, suppliersAPI, projectsAPI, quotesAPI, usersAPI } from '../services/apiService';
+import { servicesAPI, inventoryAPI, suppliersAPI, projectsAPI, quotesAPI, usersAPI, activitiesAPI } from '../services/apiService';
 
 const Dashboard = () => {
   const { user, isAdmin, isManager } = useAuth();
@@ -73,13 +78,25 @@ const Dashboard = () => {
           users: isManager ? (results[5]?.data?.length || 0) : 0
         });
 
-        // Simular actividad reciente
-        setRecentActivity([
-          { id: 1, type: 'project', message: 'Nuevo proyecto "Wrap Taxi Regional" creado', time: '2 min ago' },
-          { id: 2, type: 'quote', message: 'Cotización aprobada para Empresa Test', time: '15 min ago' },
-          { id: 3, type: 'inventory', message: 'Stock bajo en Vinilo Metalizado Plata', time: '1 hora ago' },
-          { id: 4, type: 'service', message: 'Servicio "Wrap Parcial" actualizado', time: '2 horas ago' }
-        ]);
+        // Cargar actividad reciente desde el backend
+        try {
+          const data = await activitiesAPI.getRecent(10);
+          if (data && data.data) {
+            const activities = data.data.map(act => ({
+              id: act.id,
+              type: act.type,
+              message: act.type === 'cotización' || act.type === 'quote'
+                ? act.description.replace('para', 'por')
+                : act.description,
+              time: new Date(act.createdAt).toLocaleString('es-CL', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
+            }));
+            setRecentActivity(activities);
+          } else {
+            setRecentActivity([]);
+          }
+        } catch {
+          setRecentActivity([]);
+        }
 
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -141,29 +158,41 @@ const Dashboard = () => {
   }
 
   const getActivityIcon = (type) => {
-    switch (type) {
-      case 'project':
-        return FileText;
-      case 'quote':
-        return Quote;
-      case 'inventory':
-        return Package;
-      case 'service':
-        return Settings;
-      default:
-        return AlertCircle;
-    }
+  switch (type) {
+    case 'project':
+    case 'proyecto':
+      return FilePlus;
+    case 'service':
+    case 'servicio':
+      return Wrench;
+    case 'inventory':
+    case 'inventario':
+      return Boxes;
+    case 'quote':
+    case 'cotización':
+      return Receipt;
+    case 'user':
+    case 'usuario':
+      return UserPlus;
+    // Puedes agregar más tipos aquí
+    default:
+      return Info;
+  }
   };
 
   const getActivityColor = (type) => {
     switch (type) {
       case 'project':
+      case 'proyecto':
         return 'text-orange-600';
       case 'quote':
+      case 'cotización':
         return 'text-pink-600';
       case 'inventory':
+      case 'inventario':
         return 'text-green-600';
       case 'service':
+      case 'servicio':
         return 'text-blue-600';
       default:
         return 'text-gray-600';

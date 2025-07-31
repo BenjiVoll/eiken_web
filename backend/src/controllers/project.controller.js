@@ -8,6 +8,7 @@ import {
     deleteProjectImage as deleteProjectImageService,
     uploadProjectImage as uploadProjectImageService
 } from "../services/project.service.js";
+import { createActivityService } from "../services/activity.service.js";
 import {
   handleErrorClient,
   handleErrorServer,
@@ -19,6 +20,12 @@ export const createProject = async (req, res) => {
     try {
         const body = { ...req.body };
         const project = await createProjectService(body);
+        // Registrar actividad
+        await createActivityService({
+          type: "proyecto",
+          description: `Nuevo proyecto "${project.title}" creado`,
+          userId: req.user?.id || null,
+        });
         handleSuccess(res, 201, "Proyecto creado exitosamente", project);
     } catch (error) {
         handleErrorServer(res, 400, error.message);
@@ -29,6 +36,12 @@ export const createProject = async (req, res) => {
 export const updateProject = async (req, res) => {
     try {
         const project = await updateProjectService(req.params.id, req.body);
+        // Registrar actividad de edición
+        await createActivityService({
+          type: "proyecto",
+          description: `Proyecto "${project.title}" editado`,
+          userId: req.user?.id || null,
+        });
         handleSuccess(res, 200, "Proyecto actualizado exitosamente", project);
     } catch (error) {
         handleErrorServer(res, 400, error.message);
@@ -61,7 +74,15 @@ export const getProject = async (req, res) => {
 // Eliminar un proyecto
 export const deleteProject = async (req, res) => {
     try {
+        // Obtener el proyecto antes de eliminar
+        const project = await getProjectByIdService(req.params.id);
         await deleteProjectService(req.params.id);
+        // Registrar actividad de eliminación con nombre
+        await createActivityService({
+          type: "proyecto",
+          description: `Proyecto "${project?.title || ''}" eliminado`,
+          userId: req.user?.id || null,
+        });
         handleSuccess(res, 200, "Proyecto eliminado exitosamente");
     } catch (error) {
         handleErrorServer(res, 400, error.message);
