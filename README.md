@@ -17,17 +17,20 @@ Sistema de gestión para Eiken Design, desarrollado con el stack PERN (PostgreSQ
 
 ---
 
-## Descripción General
-
-Este proyecto es una solución integral para la gestión de proyectos, servicios, cotizaciones, usuarios y clientes en Eiken Design. Permite la administración de datos, autenticación, autorización, carga de imágenes y visualización de información relevante para la empresa.
-
-## Backend
-
-El backend implementa:
 - Autenticación y autorización (passport.js, JWT)
 - CRUD de usuarios, proyectos, servicios, cotizaciones, clientes, proveedores
-- Validaciones y middlewares personalizados
-- Conexión a base de datos PostgreSQL
+ [Descripción General](#descripción-general)
+ [Backend](#backend)
+ [Frontend](#frontend)
+ [Arquitectura del Proyecto](#arquitectura-del-proyecto)
+ [Estructura del Backend](#estructura-del-backend)
+ [Estructura del Frontend](#estructura-del-frontend)
+ [Instalación y Configuración](#instalación-y-configuración)
+   [Prerrequisitos](#prerrequisitos)
+   [Configuración de PostgreSQL](#configuración-de-postgresql)
+   [Despliegue con Docker](#despliegue-con-docker)
+ [Tecnologías](#tecnologías)
+ [Otros Recursos y Librerías](#otros-recursos-y-librerías)
 - Configuración por variables de entorno
 - API RESTful
 
