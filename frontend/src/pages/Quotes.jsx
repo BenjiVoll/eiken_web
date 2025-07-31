@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { quotesAPI, projectsAPI, clientsAPI } from '../services/apiService';
-import { Quote, Search, Plus, X, ArrowRight, FolderPlus, FolderCheck } from 'lucide-react';
+import { quotesAPI, projectsAPI, clientsAPI, divisionsAPI } from '../services/apiService';
+import { Quote, Search, X, FolderPlus, FolderCheck } from 'lucide-react';
 import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
 import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
@@ -121,8 +121,7 @@ const Quotes = () => {
           ? quote.categoryId
           : null;
       if (!divisionId) {
-        const divisionsResponse = await import('../services/apiService');
-        let divisions = await divisionsResponse.divisionsAPI.getAll();
+        let divisions = await divisionsAPI.getAll();
         if (divisions && typeof divisions === 'object' && Array.isArray(divisions.data)) {
           divisions = divisions.data;
         }
@@ -417,8 +416,6 @@ const Quotes = () => {
           </p>
         </div>
       )}
-
-      {/* Modal de creación de cotización deshabilitado en intranet */}
     </div>
   );
 };
