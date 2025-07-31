@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { categoriesAPI, divisionsAPI } from '../../services/apiService';
 import { getImageUrl } from '../../helpers/getImageUrl';
 import { showErrorAlert } from '../../helpers/sweetAlert';
 
@@ -54,7 +55,6 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
 
   useEffect(() => {
     const loadApisAndData = async () => {
-      const { categoriesAPI, divisionsAPI } = await import('../../services/apiService');
       try {
         const catData = await categoriesAPI.getAll();
         setCategories(catData.data || catData || []);
