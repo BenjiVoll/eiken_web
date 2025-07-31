@@ -10,11 +10,18 @@ import {
     updateInventoryQuantity as updateInventoryQuantityService,
     getInventoryBySupplier as getInventoryBySupplierService
 } from "../services/inventory.service.js";
+import { createActivityService } from "../services/activity.service.js";
 
 // Crear un item de inventario
 export const createInventory = async (req, res) => {
     try {
         const item = await createInventoryItemService(req.body);
+        // Registrar actividad
+        await createActivityService({
+          type: "inventario",
+          description: `Nuevo material "${item.name}" agregado al inventario`,
+          userId: req.user?.id || null,
+        });
         res.status(201).json({
             status: "success",
             message: "Item de inventario creado exitosamente",

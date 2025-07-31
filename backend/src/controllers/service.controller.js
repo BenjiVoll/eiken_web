@@ -16,12 +16,18 @@ import {
   handleErrorServer,
   handleSuccess,
 } from "../handlers/responseHandlers.js";
-
+import { createActivityService } from "../services/activity.service.js";
 
 // Crear un servicio
 export const createService = async (req, res) => {
   try {
     const service = await createServiceService(req.body);
+    // Registrar actividad
+    await createActivityService({
+      type: "servicio",
+      description: `Nuevo servicio "${service.name}" creado`,
+      userId: req.user?.id || null,
+    });
     handleSuccess(res, 201, "Servicio creado exitosamente", service);
   } catch (error) {
     handleErrorServer(res, 400, error.message);
@@ -48,6 +54,12 @@ export const uploadServiceImage = async (req, res) => {
 export const updateService = async (req, res) => {
     try {
         const service = await updateServiceService(req.params.id, req.body);
+        // Registrar actividad de edición
+        await createActivityService({
+          type: "servicio",
+          description: `Servicio "${service.name}" editado`,
+          userId: req.user?.id || null,
+        });
         handleSuccess(res, 200, "Servicio actualizado exitosamente", service);
     } catch (error) {
         handleErrorServer(res, 400, error.message);
@@ -127,7 +139,15 @@ export const updateServiceRatingController = async (req, res) => {
 // Eliminar un servicio
 export const deleteService = async (req, res) => {
     try {
+        // Obtener el servicio antes de eliminar
+        const service = await getServiceByIdService(req.params.id);
         await deleteServiceService(req.params.id);
+        // Registrar actividad de eliminación con nombre
+        await createActivityService({
+          type: "servicio",
+          description: `Servicio "${service?.name || ''}" eliminado`,
+          userId: req.user?.id || null,
+        });
         res.status(204).send();
     } catch (error) {
         res.status(400).json({ error: error.message });

@@ -113,9 +113,7 @@ export const deleteSupplier = async (id) => {
     throw new Error("No se puede eliminar el proveedor porque tiene items de inventario asociados");
   }
 
-  // Soft delete - marcar como inactivo
-  supplier.isActive = false;
-  await supplierRepository.save(supplier);
-  
+  // Hard delete - eliminar el registro
+  await supplierRepository.remove(supplier);
   return { mensaje: "Proveedor eliminado exitosamente" };
 };

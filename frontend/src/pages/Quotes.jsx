@@ -123,22 +123,52 @@ const Quotes = () => {
       }
 
       // Crear el proyecto basado en la cotización
-      const divisionId = typeof quote.service?.division === 'number' ? quote.service.division : null;
+      let divisionId = typeof quote.service?.division === 'number' ? quote.service.division : null;
       const categoryId = typeof quote.category?.id === 'number'
         ? quote.category.id
         : typeof quote.categoryId === 'number'
           ? quote.categoryId
           : null;
+
+      // Si no hay división, pedirla al usuario
       if (!divisionId) {
-        showErrorAlert('Error', 'La cotización no tiene una división asociada. No se puede convertir a proyecto.');
-        return;
+        // Obtener divisiones
+        const divisionsResponse = await import('../services/apiService');
+        let divisions = await divisionsResponse.divisionsAPI.getAll();
+        if (divisions && typeof divisions === 'object' && Array.isArray(divisions.data)) {
+          divisions = divisions.data;
+        }
+        const optionsHtml = `<option value="">Selecciona una división</option>` + divisions.map(div => `<option value="${div.id}">${div.name}</option>`).join('');
+        let selectedDivision = null;
+        while (!selectedDivision) {
+          const { value } = await Swal.fire({
+            title: 'Selecciona la división para el proyecto',
+            html: `<select id="division-select" class="swal2-input">${optionsHtml}</select>`,
+            focusConfirm: false,
+            preConfirm: () => {
+              const select = document.getElementById('division-select');
+              return select ? select.value : null;
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Continuar',
+            cancelButtonText: 'Cancelar',
+          });
+          if (!value || value === "") {
+            const result = await Swal.fire('Error', 'Debes seleccionar una división para continuar.', 'error');
+            if (result.isDismissed || result.isDenied) return;
+          } else {
+            selectedDivision = value;
+          }
+        }
+        divisionId = Number(selectedDivision);
       }
+
       if (!categoryId) {
         showErrorAlert('Error', 'La cotización no tiene una categoría válida. No se puede convertir a proyecto.');
         return;
       }
       const projectData = {
-        title: `Proyecto: ${getServiceTitle(quote)}`,
+        title: getServiceTitle(quote),
         description: quote.description,
         clientId: clientId,
         categoryId: categoryId,
@@ -158,7 +188,6 @@ const Quotes = () => {
 
       // Actualizar estado de la cotización para marcarla como convertida
       await updateQuoteStatus(quote.id, 'Convertido');
-
       loadQuotes(); // Recargar cotizaciones
 
     } catch (error) {
@@ -166,15 +195,18 @@ const Quotes = () => {
       showErrorAlert('Error', 'No se pudo convertir la cotización en proyecto');
     }
   };
-
-  const filteredQuotes = Array.isArray(quotes) ? quotes.filter(quote => {
-    const searchLower = searchTerm.toLowerCase();
-    const serviceTitle = getServiceTitle(quote);
     
-    return quote.clientName?.toLowerCase().includes(searchLower) ||
-           (quote.company && quote.company.toLowerCase().includes(searchLower)) ||
-           serviceTitle.toLowerCase().includes(searchLower);
-  }) : [];
+  const filteredQuotes = Array.isArray(quotes)
+    ? quotes.filter(quote => {
+        const searchLower = searchTerm.toLowerCase();
+        const serviceTitle = getServiceTitle(quote);
+        return (
+          (quote.clientName && quote.clientName.toLowerCase().includes(searchLower)) ||
+          (quote.company && quote.company.toLowerCase().includes(searchLower)) ||
+          serviceTitle.toLowerCase().includes(searchLower)
+        );
+      })
+    : [];
 
   const getStatusColor = (status) => {
     switch (status) {

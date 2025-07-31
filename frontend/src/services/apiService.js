@@ -1,3 +1,9 @@
+export const activitiesAPI = {
+  getRecent: async (limit = 10) => {
+    const response = await api.get(`/activities?limit=${limit}`);
+    return response.data;
+  }
+};
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000/api';

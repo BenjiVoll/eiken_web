@@ -1,5 +1,30 @@
 "use strict";
-import Joi from "joi";
+import JoiBase from "joi";
+
+const Joi = JoiBase.extend((joi) => ({
+  type: "rut",
+  base: joi.string(),
+  messages: {
+    "rut.invalid": "El RUT ingresado no es válido.",
+  },
+  validate(value, helpers) {
+    if (!value) return { value };
+    const rut = value.replace(/\./g, '').replace(/-/g, '');
+    if (rut.length < 2) return { value, errors: helpers.error("rut.invalid") };
+    const cuerpo = rut.slice(0, -1);
+    let dv = rut.slice(-1).toUpperCase();
+    if (!/^\d+$/.test(cuerpo) || !/^[0-9K]$/.test(dv)) return { value, errors: helpers.error("rut.invalid") };
+    let suma = 0, multiplo = 2;
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+      suma += parseInt(cuerpo[i]) * multiplo;
+      multiplo = multiplo < 7 ? multiplo + 1 : 2;
+    }
+    let dvEsperado = 11 - (suma % 11);
+    dvEsperado = dvEsperado === 11 ? '0' : dvEsperado === 10 ? 'K' : dvEsperado.toString();
+    if (dv !== dvEsperado) return { value, errors: helpers.error("rut.invalid") };
+    return { value };
+  }
+}));
 
 export const supplierQueryValidation = Joi.object({
   id: Joi.number()
@@ -42,6 +67,14 @@ export const supplierBodyValidation = Joi.object({
       "string.min": "El nombre debe tener como mínimo 2 caracteres.",
       "string.max": "El nombre debe tener como máximo 100 caracteres.",
     }),
+  rut: Joi.rut()
+    .max(20)
+    .allow("")
+    .messages({
+      "rut.invalid": "El RUT ingresado no es válido.",
+      "string.base": "El RUT debe ser de tipo string.",
+      "string.max": "El RUT debe tener como máximo 20 caracteres.",
+    }),
   email: Joi.string()
     .email()
     .messages({
@@ -49,7 +82,7 @@ export const supplierBodyValidation = Joi.object({
       "string.email": "El correo electrónico debe ser válido.",
     }),
   phone: Joi.string()
-    .pattern(/^[+]?[\d\s\-\(\)]{7,15}$/)
+    .pattern(/^[+]?([\d\s\-()]{7,15})$/)
     .messages({
       "string.base": "El teléfono debe ser de tipo string.",
       "string.pattern.base": "El formato del teléfono no es válido.",

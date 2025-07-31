@@ -9,7 +9,6 @@ const projectRepository = AppDataSource.getRepository(ProjectSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
-  console.log('Creating project with data:', data);
   const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId } = data;
   
   // Verificar que el cliente existe

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { validateRut, formatRut } from '../../helpers/validateRut';
+import { showErrorAlert } from '../../helpers/sweetAlert';
 
 const SupplierModal = ({ isOpen, onClose, onSave, supplier = null, loading = false }) => {
   const [formData, setFormData] = useState({
@@ -45,33 +47,30 @@ const SupplierModal = ({ isOpen, onClose, onSave, supplier = null, loading = fal
     if (!formData.name.trim()) {
       newErrors.name = 'El nombre es requerido';
     }
-
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email no válido';
-    }
-
-    if (formData.phone && !/^[+]?[\d\s\-()]{7,15}$/.test(formData.phone)) {
-      newErrors.phone = 'Formato de teléfono no válido';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!validateRut(formData.rut) && formData.rut) {
+      showErrorAlert('Error', 'El RUT chileno ingresado no es válido.');
+      return;
+    }
     if (validateForm()) {
       onSave(formData);
     }
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === 'rut') {
+      value = formatRut(value);
+    }
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
       setErrors(prev => ({
