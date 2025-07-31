@@ -6,6 +6,8 @@ import ClientNavbar from './components/layout/ClientNavbar';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
+import Categories from './pages/Categories';
+import Divisions from './pages/Divisions';
 import Services from './pages/Services';
 import Inventory from './pages/Inventory';
 import Suppliers from './pages/Suppliers';
@@ -101,6 +103,26 @@ function AppContent() {
             <ProtectedRoute>
               <AppLayout>
                 <Services />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/intranet/categories" 
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Categories />
+              </AppLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/intranet/divisions" 
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Divisions />
               </AppLayout>
             </ProtectedRoute>
           } 
