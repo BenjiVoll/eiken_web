@@ -332,6 +332,18 @@ export const categoriesAPI = {
     const response = await api.get(`/categories/${id}`);
     return response.data;
   },
+  create: async (data) => {
+    const response = await api.post('/categories', data);
+    return response.data;
+  },
+  update: async (id, data) => {
+    const response = await api.put(`/categories/${id}`, data);
+    return response.data;
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/categories/${id}`);
+    return response.data;
+  },
 };
 
 export const divisionsAPI = {
@@ -341,6 +353,18 @@ export const divisionsAPI = {
   },
   getById: async (id) => {
     const response = await api.get(`/divisions/${id}`);
+    return response.data;
+  },
+  create: async (data) => {
+    const response = await api.post('/divisions', data);
+    return response.data;
+  },
+  update: async (id, data) => {
+    const response = await api.put(`/divisions/${id}`, data);
+    return response.data;
+  },
+  delete: async (id) => {
+    const response = await api.delete(`/divisions/${id}`);
     return response.data;
   },
 };
