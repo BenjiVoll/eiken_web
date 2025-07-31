@@ -34,7 +34,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
         division: project.division?.id || '',
         status: project.status || 'Pendiente',
         priority: project.priority || 'Bajo',
-        budgetAmount: project.budgetAmount || '',
+        budgetAmount: project.budgetAmount ? Math.floor(Number(project.budgetAmount)).toString() : '',
         notes: project.notes || '',
         quoteId: project.quoteId || null
       });

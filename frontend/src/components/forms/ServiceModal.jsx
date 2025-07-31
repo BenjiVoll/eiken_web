@@ -33,7 +33,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
         description: service.description || '',
         categoryId,
         division: service.division || '',
-        price: service.price ? service.price.toString() : ''
+        price: service.price ? Math.floor(Number(service.price)).toString() : ''
       });
       setImagePreview(service.image ? getImageUrl(service.image) : null);
       setImageToDelete(false);
@@ -211,7 +211,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
                 type="number"
                 name="price"
                 min="0"
-        step="1"
+                step="1"
                 value={formData.price}
                 onChange={handleChange}
                 className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 ${errors.price ? 'border-red-500' : 'border-gray-300'}`}
