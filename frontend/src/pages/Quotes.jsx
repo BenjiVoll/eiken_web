@@ -334,10 +334,10 @@ const Quotes = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-indigo-600 truncate">
-                          {quote.clientName} - {quote.company}
+                          {getServiceTitle(quote)}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {getServiceTitle(quote)} • {quote.clientEmail}
+                          {quote.clientName} - {quote.company} • {quote.clientEmail}
                         </p>
                       </div>
                       <div className="ml-2 flex-shrink-0 flex items-center space-x-2">

@@ -305,54 +305,8 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
         <div className="lg:col-span-1">
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">
-                Acciones Rápidas
-              </h3>
-            </div>
-            <div className="p-6 space-y-4">
-              {isManager && (
-                <a
-                  href="/intranet/services"
-                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Nuevo Servicio
-                </a>
-              )}
-              
-              {isManager && (
-                <a
-                  href="/intranet/inventory"
-                  className="w-full bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center justify-center"
-                >
-                  <Package className="h-4 w-4 mr-2" />
-                  Agregar Inventario
-                </a>
-              )}
-              
-              <a
-                href="/intranet/projects"
-                className="w-full bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors duration-200 flex items-center justify-center"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Nuevo Proyecto
-              </a>
-              
-              <a
-                href="/intranet/quotes"
-                className="w-full bg-pink-600 text-white px-4 py-2 rounded-md hover:bg-pink-700 transition-colors duration-200 flex items-center justify-center"
-              >
-                <Quote className="h-4 w-4 mr-2" />
-                Ver Cotizaciones
-              </a>
-            </div>
-          </div>
-
-          <div className="mt-6 bg-white shadow rounded-lg">
+          <div className="bg-white shadow rounded-lg mt-6 lg:mt-0">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-900">
                 Mi Información
