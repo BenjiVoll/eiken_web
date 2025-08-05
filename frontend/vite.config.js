@@ -7,5 +7,19 @@ export default defineConfig({
   preview: {
     port: 443,
     host: true
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: [
+            'react',
+            'react-dom',
+            'sweetalert2',
+            'lucide-react'
+          ]
+        }
+      }
+    }
   }
 })

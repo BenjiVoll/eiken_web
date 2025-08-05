@@ -106,6 +106,11 @@ export const publicAPI = {
     getAll: async () => {
       const response = await publicApi.get('/public/projects');
       return response.data;
+    },
+
+    getByStatus: async (status) => {
+      const response = await publicApi.get(`/public/projects/status/${status}`);
+      return response.data;
     }
   }
 };

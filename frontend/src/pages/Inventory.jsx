@@ -11,7 +11,7 @@ import {
 } from '../helpers';
 
 const Inventory = () => {
-  const { isManager } = useAuth();
+  const { isManager, isAdmin } = useAuth();
   const [inventory, setInventory] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -176,7 +176,7 @@ const Inventory = () => {
               Gestión de materiales y suministros
             </p>
           </div>
-          {isManager && (
+          {(isManager || isAdmin) && (
             <button 
               onClick={() => setShowModal(true)}
               className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200 flex items-center"
@@ -220,7 +220,7 @@ const Inventory = () => {
                     {item.quantity} {item.unit}
                   </span>
                 </div>
-                {isManager && (
+                {(isManager || isAdmin) && (
                   <div className="flex justify-end space-x-2 mt-4">
                     <button 
                       onClick={() => handleEdit(item)}

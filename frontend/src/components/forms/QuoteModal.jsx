@@ -40,6 +40,11 @@ const QuoteModal = ({
           const newErrors = {};
           if (!formData.clientName || !formData.clientName.trim()) {
             newErrors.clientName = 'Por favor ingresa tu nombre.';
+          } else {
+            const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/;
+            if (!nameRegex.test(formData.clientName.trim())) {
+              newErrors.clientName = 'El nombre solo debe contener letras y espacios.';
+            }
           }
           if (!formData.clientEmail || !formData.clientEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.clientEmail)) {
             newErrors.clientEmail = 'Por favor ingresa un email válido.';
@@ -47,11 +52,11 @@ const QuoteModal = ({
           if (!formData.clientPhone || !formData.clientPhone.trim()) {
             newErrors.clientPhone = 'Por favor ingresa tu teléfono.';
           } else {
-            // Validar formato chileno: +56 seguido de 9 números
+            // Validar formato chileno: +56 seguido de 9 números, sin espacios
             const phone = formData.clientPhone.trim();
-            const regex = /^\+56\s?\d{9}$/;
+            const regex = /^\+56\d{9}$/;
             if (!regex.test(phone)) {
-              newErrors.clientPhone = 'El formato debe ser +56 seguido de 9 números (ej: +56 912345678).';
+              newErrors.clientPhone = 'El formato debe ser +56 seguido de 9 números (ej: +56912345678).';
             }
           }
           if (!formData.categoryId) {
@@ -114,7 +119,7 @@ const QuoteModal = ({
                   setFormData({ ...formData, clientName: e.target.value });
                   if (errors.clientName) setErrors(prev => ({ ...prev, clientName: '' }));
                 }}
-                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientName ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientName ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
                 // required eliminado, validación manual
               />
               {errors.clientName && <p className="text-red-600 text-sm mt-1">{errors.clientName}</p>}
@@ -131,7 +136,7 @@ const QuoteModal = ({
                   setFormData({ ...formData, clientEmail: e.target.value });
                   if (errors.clientEmail) setErrors(prev => ({ ...prev, clientEmail: '' }));
                 }}
-                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientEmail ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientEmail ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
                 // required eliminado, validación manual
               />
               {errors.clientEmail && <p className="text-red-600 text-sm mt-1">{errors.clientEmail}</p>}
@@ -148,7 +153,7 @@ const QuoteModal = ({
                   setFormData({ ...formData, clientPhone: e.target.value });
                   if (errors.clientPhone) setErrors(prev => ({ ...prev, clientPhone: '' }));
                 }}
-                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientPhone ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientPhone ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
                 placeholder="+56 9 xxxx xxxx"
                 // required eliminado, validación manual
               />
@@ -182,7 +187,7 @@ const QuoteModal = ({
                   setFormData({ ...formData, categoryId: e.target.value });
                   if (errors.categoryId) setErrors(prev => ({ ...prev, categoryId: '' }));
                 }}
-                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.categoryId ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.categoryId ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
                 // required eliminado, validación manual
                 disabled={categoriaBloqueada}
               >
@@ -235,7 +240,7 @@ const QuoteModal = ({
                   setFormData({ ...formData, description: e.target.value });
                   if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
                 }}
-                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.description ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
                 rows="4"
                 placeholder="Describe tu proyecto, qué necesitas, colores preferidos, tamaño del vehículo si aplica, etc."
                 

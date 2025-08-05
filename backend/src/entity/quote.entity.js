@@ -34,8 +34,6 @@ export const QuoteSchema = new EntitySchema({
       length: 255,
       nullable: true,
     },
-    
-    // Eliminado: serviceId. Usar solo la relación service.
     customServiceTitle: {
       type: "varchar",
       length: 255,

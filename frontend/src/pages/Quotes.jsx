@@ -344,7 +344,7 @@ const Quotes = () => {
                         <span className={`text-xs font-medium ${getUrgencyColor(quote.urgency)}`}>
         {quote.urgency}
                         </span>
-                        {(quote.status === 'Aprobado' || quote.status === 'approved') && quote.status !== 'Convertido' && quote.status !== 'converted' ? (
+                        {(isAdmin || isManager) && (quote.status === 'Aprobado' || quote.status === 'approved') && quote.status !== 'Convertido' && quote.status !== 'converted' ? (
                           <button
                             onClick={() => convertQuoteToProject(quote)}
                             className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"

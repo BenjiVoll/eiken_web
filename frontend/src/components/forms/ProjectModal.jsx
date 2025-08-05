@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { categoriesAPI, divisionsAPI } from '../../services/apiService';
 import { getImageUrl } from '../../helpers/getImageUrl';
-import { showErrorAlert } from '../../helpers/sweetAlert';
+import { showErrorAlert, showSuccessAlert } from '../../helpers/sweetAlert';
 import { X } from 'lucide-react';
 
-const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false, clients = [], onImageUpload }) => {
+const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false, clients = [], onImageUpload, noClientsMessage }) => {
   const [imageToDelete, setImageToDelete] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState({
@@ -124,6 +124,10 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
         const result = await response.json();
         if (!response.ok) {
           showErrorAlert('Error', result.error || 'No se pudo eliminar la imagen');
+        } else {
+          showSuccessAlert('Imagen eliminada correctamente');
+          setImagePreview(null);
+          setImageToDelete(false);
         }
       } catch {
         showErrorAlert('Error', 'No se pudo eliminar la imagen');
@@ -134,6 +138,25 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
     // Subir imagen si corresponde
     if (imageFile && savedProject && savedProject.id && typeof onImageUpload === 'function') {
       await onImageUpload(savedProject.id, imageFile);
+    }
+    // Recargar datos del proyecto actualizado si se editó
+    if (savedProject && savedProject.id) {
+      try {
+        const baseUrl = import.meta.env.VITE_BASE_URL;
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${baseUrl}/projects/${savedProject.id}`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const updated = await response.json();
+        setImagePreview(updated.image ? getImageUrl(updated.image) : null);
+        setImageToDelete(false);
+      } catch {
+        // Si falla, no actualiza el preview
+      }
     }
   };
 
@@ -219,6 +242,11 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {project ? 'Cliente' : 'Cliente *'}
               </label>
+              {noClientsMessage && (
+                <div className="mb-2 p-2 bg-yellow-100 text-yellow-800 rounded text-sm">
+                  {noClientsMessage}
+                </div>
+              )}
               {project ? (
                 // Modo edición: mostrar cliente actual con opción de cambiar
                 <div className="space-y-2">
@@ -236,7 +264,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
                       value={formData.clientId}
                       onChange={handleChange}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 mt-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={loading}
+                      disabled={loading || clients.length === 0}
                     >
                       <option value="">Seleccionar nuevo cliente</option>
                       {clients.map(client => (
@@ -256,7 +284,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
                   className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.clientId ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  disabled={loading}
+                  disabled={loading || clients.length === 0}
                   required
                 >
                   <option value="">Seleccionar cliente</option>
@@ -400,9 +428,13 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
                 <img src={imagePreview} alt="Preview" className="h-20 rounded shadow" />
                 <button
                   type="button"
-                  onClick={() => { setImageToDelete(true); setImagePreview(null); }}
                   className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
                   disabled={loading}
+                  onClick={() => {
+                    setImageToDelete(true);
+                    setImagePreview(null);
+                    setImageFile(null);
+                  }}
                 >
                   Eliminar imagen
                 </button>

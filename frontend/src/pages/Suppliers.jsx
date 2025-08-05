@@ -12,7 +12,7 @@ const Suppliers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
-  const { isManager } = useAuth();
+  const { isManager, isAdmin } = useAuth();
 
   useEffect(() => {
     loadSuppliers();
@@ -116,7 +116,7 @@ const Suppliers = () => {
             </h1>
             <p className="mt-2 text-gray-600">Gestiona los proveedores de materiales</p>
           </div>
-          {isManager && (
+          {(isManager || isAdmin) && (
             <button
               onClick={handleCreateSupplier}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -152,7 +152,7 @@ const Suppliers = () => {
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm ? 'Intenta con un término de búsqueda diferente' : 'Comienza creando un nuevo proveedor'}
           </p>
-          {!searchTerm && isManager && (
+          {!searchTerm && (isManager || isAdmin) && (
             <div className="mt-6">
               <button
                 onClick={handleCreateSupplier}
@@ -173,7 +173,7 @@ const Suppliers = () => {
                   <h3 className="text-lg font-semibold text-gray-900 truncate">
                     {supplier.name}
                   </h3>
-                  {isManager && (
+                  {(isManager || isAdmin) && (
                     <div className="flex space-x-2 ml-2">
                       <button
                         onClick={() => handleEditSupplier(supplier)}

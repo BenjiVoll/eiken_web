@@ -1,8 +1,7 @@
 "use strict";
 import { Router } from "express";
 import { 
-  isAdmin,
-  isManagerOrAbove
+  isAdmin
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation } from "../middlewares/validations.middleware.js";
@@ -17,10 +16,11 @@ import {
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
+
+// Todas las rutas protegidas requieren autenticación
 router.use(authenticateJwt);
 
-// Rutas que requieren rol de administrador
+// CRUD de usuarios solo para admin
 router
   .post("/", 
     isAdmin, 
@@ -28,11 +28,11 @@ router
     createUserController
   ) // Solo admin puede crear usuarios
   .get("/", 
-    isManagerOrAbove, 
+    isAdmin, 
     getUsersController
-  ) // Manager+ puede ver lista de usuarios
+  ) // Solo admin puede ver lista de usuarios
   .get("/:id", 
-    isManagerOrAbove,
+    isAdmin,
     getUserController
   )
   .patch("/:id", 

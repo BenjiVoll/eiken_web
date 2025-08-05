@@ -19,12 +19,10 @@ export const ServiceSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
-    // Relación con Category
     category: {
       type: "int",
       nullable: false,
     },
-    // Relación con Division
     division: {
       type: "int",
       nullable: false,

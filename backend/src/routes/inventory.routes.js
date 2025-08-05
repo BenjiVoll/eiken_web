@@ -1,9 +1,8 @@
 "use strict";
 import { Router } from "express";
 import {
-  isAdmin,
-  isManagerOrAbove,
-  isDesignerOrAbove
+  isAdminOrManager,
+  isAnyUser
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation } from "../middlewares/validations.middleware.js";
@@ -23,25 +22,25 @@ router.use(authenticateJwt);
 // Rutas para gestión de inventario
 router
   .post("/", 
-    isManagerOrAbove,
+    isAdminOrManager,
     createBodyValidation(inventoryBodyValidation), 
     createInventory
   )
   .get("/", 
-    isDesignerOrAbove,
+    isAnyUser,
     getInventories
   )
   .get("/:id", 
-    isDesignerOrAbove,
+    isAnyUser,
     getInventory
   )
   .patch("/:id", 
-    isManagerOrAbove,
+    isAdminOrManager,
     createBodyValidation(inventoryBodyValidation), 
     updateInventory
   )
   .delete("/:id", 
-    isAdmin,
+    isAdminOrManager,
     deleteInventory
   );
 

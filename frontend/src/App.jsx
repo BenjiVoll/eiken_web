@@ -37,7 +37,6 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   return children;
 };
 
-// Layout principal con Navbar para admin
 const AppLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,7 +48,6 @@ const AppLayout = ({ children }) => {
   );
 };
 
-// Layout para cliente con ClientNavbar
 const ClientLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-white">

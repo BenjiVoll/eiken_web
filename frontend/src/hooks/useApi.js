@@ -2,10 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 /**
  * Custom hook para manejar llamadas a la API
- * @param {Function} apiFunction - Función que hace la llamada a la API
- * @param {boolean} immediate - Si debe ejecutar la llamada inmediatamente
- * @returns {Object} - Estado de la llamada API
  */
+
 export const useApi = (apiFunction, immediate = false) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -50,8 +48,6 @@ export const useApi = (apiFunction, immediate = false) => {
 
 /**
  * Hook para manejar operaciones CRUD
- * @param {Object} apiMethods - Objeto con métodos CRUD (getAll, getById, create, update, delete)
- * @returns {Object} - Estado y funciones CRUD
  */
 export const useCrud = (apiMethods) => {
   const [items, setItems] = useState([]);
