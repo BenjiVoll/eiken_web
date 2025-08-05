@@ -6,7 +6,11 @@ import {
     getProjectById as getProjectByIdService,
     deleteProject as deleteProjectService,
     deleteProjectImage as deleteProjectImageService,
-    uploadProjectImage as uploadProjectImageService
+    uploadProjectImage as uploadProjectImageService,
+    getProjectsByStatus as getProjectsByStatusService
+
+
+
 } from "../services/project.service.js";
 import { createActivityService } from "../services/activity.service.js";
 import {
@@ -108,4 +112,15 @@ export const deleteProjectImage = async (req, res) => {
   } catch (error) {
     handleErrorServer(res, 400, error.message);
   }
+};
+
+// Obtener proyectos por status
+export const getProjectsByStatus = async (req, res) => {
+    try {
+        const { status } = req.params;
+        const projects = await getProjectsByStatusService(status);
+        handleSuccess(res, 200, `Proyectos con status '${status}' obtenidos exitosamente`, projects);
+    } catch (error) {
+        handleErrorServer(res, 400, error.message);
+    }
 };

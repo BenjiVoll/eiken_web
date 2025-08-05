@@ -2,9 +2,8 @@
 import { Router } from "express";
 import upload from "../helpers/multer.helper.js";
 import {
-  isAdmin,
-  isManagerOrAbove,
-  isDesignerOrAbove
+  isAdminOrManager,
+  isAnyUser
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";
@@ -33,25 +32,25 @@ router
     uploadServiceImage
   )
   .post("/", 
-    isManagerOrAbove, // Solo Manager+ puede crear servicios
+    isAdminOrManager,
     createBodyValidation(serviceBodyValidation), 
     createService
   )
   .get("/", 
-    isDesignerOrAbove, // Designer+ puede ver lista de servicios
+    isAnyUser,
     getServices
   )
   .get("/:id", 
-    isDesignerOrAbove, // Designer+ puede ver detalles de servicios
+    isAnyUser,
     getService
   )
   .patch("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede actualizar servicios
+    isAdminOrManager,
     createBodyValidation(serviceBodyValidation), 
     updateService
   )
   .delete("/:id", 
-    isAdmin, // Solo Admin puede eliminar servicios
+    isAdminOrManager,
     deleteService
   );
 

@@ -1,3 +1,21 @@
+.services-header-flex {
+  @apply mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4;
+}
+.services-title-flex {
+  @apply text-3xl font-bold text-gray-900 flex items-center;
+}
+.services-description-flex {
+  @apply mt-2 text-gray-600;
+}
+.services-button {
+  @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center;
+}
+.services-search {
+  @apply mb-6;
+}
+.services-search-input {
+  @apply block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
+}
 /* Estilos para la página de servicios */
 .services-container {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;

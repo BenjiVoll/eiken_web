@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import ServicesHeader from '../components/services/ServicesHeader';
+import ServicesSearchBar from '../components/services/ServicesSearchBar';
+import ServicesTable from '../components/services/ServicesTable';
 import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
 import ImageModal from '../components/forms/ImageModal';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +14,7 @@ const Services = () => {
   // Estado para el modal de imagen
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
-  const { isManager } = useAuth();
+  const { isManager, isAdmin } = useAuth();
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [divisions, setDivisions] = useState([]);
@@ -142,7 +145,7 @@ const Services = () => {
   const filteredServices = Array.isArray(services) ? services.filter(service =>
     service.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (service.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    service.division?.toLowerCase().includes(searchTerm.toLowerCase())
+    String(service.division || "").toLowerCase().includes(searchTerm.toLowerCase())
   ) : [];
 
   const formatPrice = (price) => {
@@ -178,119 +181,23 @@ const Services = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <Settings className="h-8 w-8 mr-3 text-blue-600" />
-              Servicios
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Gestiona los servicios ofrecidos por Eiken Design
-            </p>
-          </div>
-          {isManager && (
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 flex items-center"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Servicio
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            placeholder="Buscar servicios..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-      </div>
-
-      {/* Services Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredServices.map((service) => (
-          <div key={service.id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
-            <div className="w-full h-48 bg-gray-100 flex items-center justify-center" style={{ borderBottom: '1px solid #eee' }}>
-              {service.image ? (
-                <img
-                  src={getImageUrl(service.image)}
-                  alt={service.name}
-                  className="w-full h-48 object-cover cursor-pointer"
-                  onClick={() => {
-                    setModalImageUrl(getImageUrl(service.image));
-                    setShowImageModal(true);
-                  }}
-                />
-              ) : (
-                <span className="text-gray-400 text-sm">Sin imagen</span>
-              )}
-            </div>
-            <ImageModal
-              isOpen={showImageModal}
-              imageUrl={modalImageUrl}
-              onClose={() => setShowImageModal(false)}
-            />
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
-                {isManager && (
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEdit(service)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(service.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-              <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                {service.description}
-              </p>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-500">División:</span>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDivisionColor(service.division)}`}>
-                    {divisions.find(d => d.id === service.division)?.name || 'Sin división'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-500">Categoría:</span>
-                  <span className="text-sm text-gray-900">{categories.find(c => c.id === service.category)?.name || 'Sin categoría'}</span>
-                </div>
-                <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                  <span className="text-sm font-medium text-gray-500 flex items-center">
-                    <DollarSign className="h-4 w-4 mr-1" />
-                    Precio:
-                  </span>
-                  <span className="text-lg font-bold text-green-600">
-                    {formatPrice(service.price)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
+      <ServicesHeader isManager={isManager} isAdmin={isAdmin} onCreate={() => { setEditingService(null); setShowModal(true); }} />
+      <ServicesSearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <ServicesTable
+        services={filteredServices}
+        categories={categories}
+        divisions={divisions}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        getDivisionColor={getDivisionColor}
+        formatPrice={formatPrice}
+        isManager={isManager}
+        setModalImageUrl={setModalImageUrl}
+        setShowImageModal={setShowImageModal}
+        getImageUrl={getImageUrl}
+        showImageModal={showImageModal}
+        modalImageUrl={modalImageUrl}
+      />
       {filteredServices.length === 0 && (
         <div className="text-center py-12">
           <Settings className="mx-auto h-12 w-12 text-gray-400" />
@@ -300,14 +207,17 @@ const Services = () => {
           </p>
         </div>
       )}
-
-      {/* Modal */}
       <ServiceModal
         isOpen={showModal}
         onClose={handleCloseModal}
         onSave={handleSaveService}
         service={editingService}
         loading={modalLoading}
+      />
+      <ImageModal
+        isOpen={showImageModal}
+        imageUrl={modalImageUrl}
+        onClose={() => setShowImageModal(false)}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import eikenLogo from '/dist/logo.png';
 import { 
   Home, 
   Settings, 
@@ -119,8 +120,8 @@ const Navbar = () => {
           <div className="flex">
             <div className="flex w-full items-center justify-between">
               <div className="flex-shrink-0 flex items-center">
-                <Link to="/dashboard" className="text-xl font-bold text-gray-900">
-                  Eiken Design
+                <Link to="/dashboard" className="flex items-center">
+                  <img src={eikenLogo} alt="Eiken Design Logo" className="h-10 w-auto mr-2 rounded shadow" />
                 </Link>
               </div>
               <div className="hidden md:ml-6 md:flex md:space-x-8">
@@ -133,7 +134,7 @@ const Navbar = () => {
                         <button
                           className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 focus:outline-none ${
                             isActive
-                              ? 'border-blue-500 text-gray-900'
+                              ? 'border-eiken-orange-500 text-gray-900'
                               : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                           }`}
                           onClick={() => setIsServicesDropdownOpen((open) => !open)}
@@ -165,7 +166,7 @@ const Navbar = () => {
                         to={item.href}
                         className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
                           isActive
-                            ? 'border-blue-500 text-gray-900'
+                            ? 'border-eiken-orange-500 text-gray-900'
                             : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                         }`}
                       >

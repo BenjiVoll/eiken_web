@@ -2,9 +2,27 @@
 import Joi from "joi";
 
 export const quoteBodyValidation = Joi.object({
-  clientName: Joi.string().min(2).max(255).required(),
+  clientName: Joi.string()
+    .pattern(/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/)
+    .min(2)
+    .max(255)
+    .required()
+    .messages({
+      "string.pattern.base": "El nombre solo debe contener letras y espacios.",
+      "string.min": "El nombre debe tener al menos 2 caracteres.",
+      "string.max": "El nombre no puede tener más de 255 caracteres.",
+      "any.required": "El nombre es obligatorio."
+    }),
   clientEmail: Joi.string().email().max(255).required(),
-  clientPhone: Joi.string().max(50).required(),
+  clientPhone: Joi.string()
+    .pattern(/^(\+56\d{9})$/)
+    .max(12)
+    .required()
+    .messages({
+      "string.pattern.base": "El teléfono debe tener el formato +56 seguido de 9 números.",
+      "string.max": "El teléfono no puede tener más de 12 caracteres.",
+      "any.required": "El teléfono es obligatorio."
+    }),
   company: Joi.string().max(255).allow(null, ''),
   service: Joi.number().integer().allow(null),
   customServiceTitle: Joi.string().max(255).allow(null, ''),
@@ -42,10 +60,12 @@ export const quoteBodyValidation = Joi.object({
 
 export const quoteUpdateValidation = Joi.object({
   clientName: Joi.string()
+    .pattern(/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/)
     .min(1)
     .max(255)
     .trim()
     .messages({
+      "string.pattern.base": "El nombre solo debe contener letras y espacios.",
       "string.base": "El nombre del cliente debe ser de tipo string.",
       "string.min": "El nombre del cliente debe tener al menos 1 carácter.",
       "string.max": "El nombre del cliente no puede tener más de 255 caracteres.",
@@ -60,12 +80,13 @@ export const quoteUpdateValidation = Joi.object({
       "string.max": "El email del cliente no puede tener más de 255 caracteres.",
     }),
   clientPhone: Joi.string()
-    .max(50)
+    .pattern(/^(\+56\d{9})$/)
+    .max(12)
     .trim()
     .allow("")
     .messages({
-      "string.base": "El teléfono del cliente debe ser de tipo string.",
-      "string.max": "El teléfono del cliente no puede tener más de 50 caracteres.",
+      "string.pattern.base": "El teléfono debe tener el formato +56 seguido de 9 números.",
+      "string.max": "El teléfono no puede tener más de 12 caracteres.",
     }),
   company: Joi.string()
     .max(255)

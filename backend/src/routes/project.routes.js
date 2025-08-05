@@ -1,9 +1,8 @@
 "use strict";
 import { Router } from "express";
 import { 
-  isAdmin,
-  isManagerOrAbove,
-  isDesignerOrAbove
+  isAdminOrManager,
+  isAnyUser
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation } from "../middlewares/validations.middleware.js";
@@ -27,34 +26,34 @@ router.use(authenticateJwt);
 // Rutas para gestión de proyectos
 router
   .post("/", 
-    isManagerOrAbove, // Solo Manager+ puede crear proyectos
+    isAdminOrManager,
     createBodyValidation(projectBodyValidation), 
     createProject
   )
   .get("/", 
-    isDesignerOrAbove, // Designer+ y operador pueden ver lista de proyectos
+    isAnyUser,
     getProjects
   )
   .get("/:id", 
-    isDesignerOrAbove, // Designer+ y operador pueden ver detalles de proyecto
+    isAnyUser,
     getProject
   )
   .patch("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede actualizar proyectos
+    isAdminOrManager,
     createBodyValidation(projectUpdateValidation), 
     updateProject
   )
   .delete("/:id", 
-    isAdmin, // Solo Admin puede eliminar proyectos
+    isAdminOrManager,
     deleteProject
   )
   .post("/:id/image",
-    isDesignerOrAbove,
+    isAnyUser,
     upload.single("image"),
     uploadProjectImage
   );
   router.delete("/:id/image",
-  isManagerOrAbove,
+  isAdminOrManager,
   deleteProjectImage
 );
 

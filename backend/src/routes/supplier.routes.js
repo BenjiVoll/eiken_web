@@ -1,9 +1,8 @@
 "use strict";
 import { Router } from "express";
-import { 
-  isAdmin,
-  isManagerOrAbove,
-  isDesignerOrAbove
+import {
+  isAdminOrManager,
+  isAnyUser
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";
@@ -24,25 +23,25 @@ router.use(authenticateJwt);
 // Rutas para gestión de proveedores
 router
   .post("/", 
-    isManagerOrAbove, // Solo Manager+ puede crear proveedores
+    isAdminOrManager,
     createBodyValidation(supplierBodyValidation), 
     createSupplier
   )
   .get("/", 
-    isDesignerOrAbove, // Designer+ y operador pueden ver lista de proveedores
+    isAnyUser,
     getSuppliers
   )
   .get("/:id", 
-    isDesignerOrAbove, // Designer+ y operador pueden ver detalles de proveedor
+    isAnyUser,
     getSupplier
   )
   .patch("/:id", 
-    isManagerOrAbove, // Solo Manager+ puede actualizar proveedores
+    isAdminOrManager,
     createBodyValidation(supplierBodyValidation), 
     updateSupplier
   )
   .delete("/:id", 
-    isAdmin, // Solo Admin puede eliminar proveedores
+    isAdminOrManager,
     deleteSupplier
   );
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ImageModal from '../components/forms/ImageModal';
 import {
   Star,
   Phone,
@@ -17,6 +18,18 @@ import { getImageUrl } from '../helpers/getImageUrl';
 import QuoteModal from '../components/forms/QuoteModal';
 
 const Home = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState(null);
+
+  const handleImageClick = (imageUrl) => {
+    setModalImageUrl(imageUrl);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setModalImageUrl(null);
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [services, setServices] = useState([]);
@@ -68,7 +81,7 @@ const Home = () => {
     const loadProjects = async () => {
       setProjectsLoading(true);
       setProjectsError(null);
-      const projectsData = await publicAPI.projects.getAll();
+      const projectsData = await publicAPI.projects.getByStatus("Completado");
       setProjects(projectsData.data || projectsData || []);
       setProjectsLoading(false);
     };
@@ -86,7 +99,8 @@ const Home = () => {
   const filteredProjects = Array.isArray(projects) ? projects.filter((project) => {
     const matchesSearch = project.title?.toLowerCase().includes(projectSearchTerm.toLowerCase());
     const matchesCategory = selectedProjectCategory === 'all' || project.category?.id === selectedProjectCategory;
-    return matchesSearch && matchesCategory;
+    const isCompleted = project.status === 'Completado';
+    return matchesSearch && matchesCategory && isCompleted;
   }) : [];
 
   // Categorías únicas para proyectos
@@ -358,12 +372,17 @@ const Home = () => {
               <div key={service.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
                 <div className="p-6">
                   <div className="relative mb-4">
-                    {service.image && (
+                    {service.image ? (
                       <img
                         src={getImageUrl(service.image)}
                         alt={service.name}
-                        className="w-full h-48 object-cover rounded-lg"
+                        className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                        onClick={() => handleImageClick(getImageUrl(service.image))}
                       />
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400 text-lg">
+                        Sin imagen
+                      </div>
                     )}
                     {service.popular && (
                       <span className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 text-xs rounded">
@@ -479,14 +498,21 @@ const Home = () => {
               <div key={project.id || idx} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
                 <div className="p-6">
                   <div className="relative mb-4">
-                    {project.image && (
+                    {project.image ? (
                       <img
                         src={getImageUrl(project.image)}
                         alt={project.title}
-                        className="w-full h-48 object-cover rounded-lg"
+                        className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                        onClick={() => handleImageClick(getImageUrl(project.image))}
                       />
+                    ) : (
+                      <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400 text-lg">
+                        Sin imagen
+                      </div>
                     )}
                   </div>
+      {/* Modal de imagen ampliada */}
+      <ImageModal isOpen={modalOpen} imageUrl={modalImageUrl} onClose={handleCloseModal} />
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
                     <p className="text-gray-600 text-sm mb-3">{project.description}</p>
