@@ -214,7 +214,7 @@ const Inventory = () => {
                     <h2 className="text-lg font-bold text-indigo-700 truncate">{item.name}</h2>
                     {stockStatus.status === 'low' && <AlertTriangle className="h-5 w-5 text-red-500" />}
                   </div>
-                  <p className="text-sm text-gray-500 mb-1">{item.type} • {item.brand} • {item.code}</p>
+                  <p className="text-sm text-gray-500 mb-1">{item.type} • {item.brand} • {item.supplier?.name || 'Sin proveedor'}</p>
                   <p className="text-sm text-gray-500 mb-1">Color: {item.color}</p>
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${stockStatus.bg} ${stockStatus.color} mb-2`}>
                     {item.quantity} {item.unit}
