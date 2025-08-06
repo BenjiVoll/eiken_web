@@ -107,9 +107,23 @@ export const updateServiceRating = async (id, rating) => {
 };
 
 export const deleteService = async (id) => {
-  const service = await serviceRepository.findOneBy({ id });
+  const serviceId = parseInt(id);
+  
+  // Verificar si el servicio existe
+  const service = await serviceRepository.findOneBy({ id: serviceId });
   if (!service) {
     throw new Error("Servicio no encontrado");
+  }
+
+  // Verificar si tiene cotizaciones asociadas
+  const quotesResult = await AppDataSource.query(
+    "SELECT COUNT(*) as count FROM quotes WHERE service_id = $1",
+    [serviceId]
+  );
+
+  const quotesCount = parseInt(quotesResult[0]?.count || 0);
+  if (quotesCount > 0) {
+    throw new Error(`No se puede eliminar el servicio porque tiene ${quotesCount} cotización(es) asociada(s)`);
   }
 
   // Hard delete - eliminar completamente

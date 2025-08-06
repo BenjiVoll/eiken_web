@@ -1,8 +1,10 @@
 "use strict";
 import { AppDataSource } from "../config/configDb.js";
 import { SupplierSchema } from "../entity/supplier.entity.js";
+import { InventorySchema } from "../entity/inventory.entity.js";
 
 const supplierRepository = AppDataSource.getRepository(SupplierSchema);
+const inventoryRepository = AppDataSource.getRepository(InventorySchema);
 
 export const createSupplier = async (data) => {
   const { name, contactPerson, phone, email, address, rut, website } = data;
@@ -108,9 +110,20 @@ export const deleteSupplier = async (id) => {
     throw new Error("Proveedor no encontrado");
   }
 
-  // Verificar si el proveedor tiene items de inventario asociados
-  if (supplier.inventoryItems && supplier.inventoryItems.length > 0) {
-    throw new Error("No se puede eliminar el proveedor porque tiene items de inventario asociados");
+  // Verificar si el proveedor tiene items de inventario activos asociados usando relación
+  const activeInventoryItems = supplier.inventoryItems?.filter(item => item.isActive === true) || [];
+  
+  // Verificación adicional: consulta directa por si la relación no funciona
+  const inventoryCount = await inventoryRepository.count({
+    where: { 
+      supplierId: parseInt(id),
+      isActive: true 
+    }
+  });
+  
+  if (activeInventoryItems.length > 0 || inventoryCount > 0) {
+    const totalItems = Math.max(activeInventoryItems.length, inventoryCount);
+    throw new Error(`No se puede eliminar el proveedor porque tiene ${totalItems} materiales activos asociados. Desactive o elimine primero los materiales.`);
   }
 
   // Hard delete - eliminar el registro

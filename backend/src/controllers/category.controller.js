@@ -69,7 +69,9 @@ export const deleteCategoryController = async (req, res) => {
     await deleteCategory(req.params.id);
     res.status(204).send();
   } catch (error) {
-    res.status(400).json({
+    // Si el error es sobre elementos asociados, usar status 409 (Conflict)
+    const statusCode = error.message.includes("tiene") && error.message.includes("asociado") ? 409 : 400;
+    res.status(statusCode).json({
       status: "error",
       message: error.message
     });
