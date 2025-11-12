@@ -123,9 +123,9 @@ export const ProjectSchema = new EntitySchema({
     division: {
       type: "many-to-one",
       target: "Division",
-      joinColumn: true,
-      nullable: false,
+      joinColumn: { name: "division_id", referencedColumnName: "id" },
       inverseSide: "projects",
+      nullable: false,
     },
   },
 });

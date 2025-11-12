@@ -59,6 +59,11 @@ export const quoteBodyValidation = Joi.object({
   });
 
 export const quoteUpdateValidation = Joi.object({
+  id: Joi.number().integer().positive().optional(),
+  createdAt: Joi.date().optional(),
+  updatedAt: Joi.date().optional(),
+  service: Joi.object().optional(),
+  category: Joi.object().optional(),
   clientName: Joi.string()
     .pattern(/^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/)
     .min(1)
@@ -80,7 +85,7 @@ export const quoteUpdateValidation = Joi.object({
       "string.max": "El email del cliente no puede tener más de 255 caracteres.",
     }),
   clientPhone: Joi.string()
-    .pattern(/^(\+56\d{9})$/)
+    .pattern(/^\+56\d{9}$/)
     .max(12)
     .trim()
     .allow("")
@@ -116,15 +121,6 @@ export const quoteUpdateValidation = Joi.object({
       "string.base": "La descripción debe ser de tipo string.",
       "string.min": "La descripción debe tener al menos 10 caracteres.",
     }),
-  serviceId: Joi.number()
-    .integer()
-    .positive()
-    .allow(null)
-    .messages({
-      "number.base": "El id del servicio debe ser un número.",
-      "number.integer": "El id del servicio debe ser un número entero.",
-      "number.positive": "El id del servicio debe ser un número positivo.",
-    }),
   customServiceTitle: Joi.string()
     .max(255)
     .allow(null, '')
@@ -138,10 +134,10 @@ export const quoteUpdateValidation = Joi.object({
       "string.base": "Las notas deben ser de tipo string.",
     }),
   status: Joi.string()
-    .valid("Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado", "Convertido")
+    .valid("Pendiente", "En revisión", "Cotizado", "Aprobado", "Rechazado", "Convertido")
     .messages({
       "string.base": "El estado debe ser de tipo string.",
-      "any.only": "El estado debe ser uno de: Pendiente, Revisando, Cotizado, Aprobado, Rechazado.",
+      "any.only": "El estado debe ser uno de: Pendiente, En revisión, Cotizado, Aprobado, Rechazado.",
     }),
   quotedAmount: Joi.number()
     .positive()
@@ -152,10 +148,4 @@ export const quoteUpdateValidation = Joi.object({
       "number.positive": "El monto cotizado debe ser un número positivo.",
       "number.precision": "El monto cotizado debe tener máximo 2 decimales.",
     }),
-})
-  .min(1)
-  .unknown(false)
-  .messages({
-    "object.unknown": "No se permiten propiedades adicionales.",
-    "object.min": "Debes proporcionar al menos un campo válido para actualizar.",
-  });
+}).unknown(false);

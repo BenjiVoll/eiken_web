@@ -1,0 +1,1 @@
+Creación de un archivo DBML que representa las entidades y relaciones del proyecto, incluyendo tablas como `quote`, `project`, `division`, `user`, `order`, `order_item`, `product` y `category`.

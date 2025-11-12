@@ -526,7 +526,7 @@ async function createInitialData() {
             categoryId: corporativoCategory.id,
             description: "Desarrollo de identidad corporativa completa incluyendo logo y aplicaciones",
             urgency: "Bajo",
-            status: "En Revisión",
+            status: "En revisión",
             quotedAmount: 960000.00,
             notes: "En proceso de revisión de propuestas",
           })

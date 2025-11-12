@@ -4,9 +4,11 @@ import path from "path";
 import { AppDataSource } from "../config/configDb.js";
 import { ProjectSchema } from "../entity/project.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
+import { DivisionSchema } from "../entity/division.entity.js";
 
 const projectRepository = AppDataSource.getRepository(ProjectSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
+const divisionRepository = AppDataSource.getRepository(DivisionSchema);
 
 export const createProject = async (data) => {
   const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId } = data;
@@ -24,6 +26,12 @@ export const createProject = async (data) => {
   });
   if (existingProject) {
     throw new Error("Ya existe un proyecto con este título para este cliente");
+  }
+
+  // Verificar que la división existe
+  const divisionEntity = await divisionRepository.findOneBy({ id: division });
+  if (!divisionEntity) {
+    throw new Error("División no encontrada");
   }
 
   const project = projectRepository.create({

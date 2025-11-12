@@ -15,7 +15,9 @@ import {
 // Crear una orden
 export const createOrderController = async (req, res) => {
     try {
-        const order = await createOrder(req.body);
+        // Asignar el clientId desde el usuario autenticado
+        const clientId = req.user?.id;
+        const order = await createOrder({ ...req.body, clientId });
         res.status(201).json(order);
     } catch (error) {
         res.status(400).json({ error: error.message });
