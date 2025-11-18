@@ -4,6 +4,8 @@ import { Quote, Search, X, FolderPlus, FolderCheck } from 'lucide-react';
 import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
 import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
+import QuotePricingModal from '../components/forms/QuotePricingModal';
+import EditQuoteModal from '../components/forms/EditQuoteModal';
 
 const getServiceTitle = (quote) => {
   if (quote.service?.name) {
@@ -45,11 +47,24 @@ const Quotes = () => {
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+  const [quoteToPrice, setQuoteToPrice] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedQuote, setSelectedQuote] = useState(null);
 
   useEffect(() => {
     loadQuotes();
   }, []);
 
+  const closePricingModal = () => {
+    setQuoteToPrice(null);
+    setIsPricingModalOpen(false);
+  };
+
+  const handleQuoteSave = () => {
+    loadQuotes();
+    closePricingModal();
+  };
 
   const loadQuotes = async () => {
     try {
@@ -63,20 +78,17 @@ const Quotes = () => {
     }
   };
 
-
-
-
   const updateQuoteStatus = async (quoteId, newStatus) => {
     try {
+      console.log(`Enviando solicitud al backend con datos:`, { status: newStatus }); // Registro para inspeccionar el cuerpo de la solicitud
       await quotesAPI.updateStatus(quoteId, newStatus);
-      
       setQuotes(Array.isArray(quotes) ? quotes.map(quote => 
         quote.id === quoteId 
-          ? { ...quote, status: newStatus } // newStatus ya viene en inglés
+          ? { ...quote, status: newStatus }
           : quote
       ) : []);
     } catch (error) {
-      console.error('Error al actualizar estado:', error);
+      console.error('Error al actualizar estado:', error.response?.data || error.message);
     }
   };
 
@@ -181,7 +193,7 @@ const Quotes = () => {
       }
     }
   };
-    
+
   const filteredQuotes = Array.isArray(quotes)
     ? quotes.filter(quote => {
         const searchLower = searchTerm.toLowerCase();
@@ -214,6 +226,8 @@ const Quotes = () => {
       case 'quoted':
       case 'Cotizado':
         return 'bg-purple-100 text-purple-800';
+      case 'en revisión':
+        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -244,16 +258,33 @@ const Quotes = () => {
 
     const statusOptions = [
       'Pendiente',
-      'Revisando',
+      'En revisión',
+      'Cotizado',
+      'Aprobado',
+      'Rechazado'
+    ];
+
+    const validStatuses = [
+      'Pendiente',
+      'En revisión',
       'Cotizado',
       'Aprobado',
       'Rechazado'
     ];
 
     const handleStatusChange = async (newStatus) => {
+      if (!validStatuses.includes(newStatus)) {
+        showErrorAlert('Error', 'El estado seleccionado no es válido.');
+        return;
+      }
+
       if (newStatus !== quote.status) {
-        await updateQuoteStatus(quote.id, newStatus);
-        setSelectedStatus(newStatus);
+        try {
+          await updateQuoteStatus(quote.id, newStatus);
+          setSelectedStatus(newStatus);
+        } catch {
+          showErrorAlert('Error', 'No se pudo actualizar el estado.');
+        }
       }
       setIsEditing(false);
     };
@@ -275,14 +306,29 @@ const Quotes = () => {
     }
 
     return (
-      <span 
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${((isAdmin || isManager) ? 'cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-blue-300 transition-all duration-200' : 'cursor-not-allowed opacity-60')} ${getStatusColor(selectedStatus)}`}
-        onClick={() => (isAdmin || isManager) && setIsEditing(true)}
-        title={isAdmin || isManager ? "Click para cambiar estado" : "Solo admin y manager pueden cambiar el estado"}
-      >
-        {selectedStatus} {isAdmin || isManager ? '✏️' : ''}
-      </span>
+      <div className="flex items-center space-x-2">
+        <span 
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${((isAdmin || isManager) ? 'cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-blue-300 transition-all duration-200' : 'cursor-not-allowed opacity-60')} ${getStatusColor(selectedStatus)}`}
+          onClick={() => (isAdmin || isManager) && setIsEditing(true)}
+          title={isAdmin || isManager ? "Click para cambiar estado" : "Solo admin y manager pueden cambiar el estado"}
+        >
+          {selectedStatus} {isAdmin || isManager ? '✏️' : ''}
+        </span>
+        {selectedStatus === 'En revisión' && (
+          <button
+            onClick={() => editQuoteDetails(quote)}
+            className="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Editar
+          </button>
+        )}
+      </div>
     );
+  };
+
+  const editQuoteDetails = (quote) => {
+    setSelectedQuote(quote);
+    setEditModalOpen(true);
   };
 
   if (loading) {
@@ -342,7 +388,7 @@ const Quotes = () => {
                       <div className="ml-2 flex-shrink-0 flex items-center space-x-2">
                         <StatusSelector quote={quote} />
                         <span className={`text-xs font-medium ${getUrgencyColor(quote.urgency)}`}>
-        {quote.urgency}
+                          {quote.urgency}
                         </span>
                         {(isAdmin || isManager) && (quote.status === 'Aprobado' || quote.status === 'approved') && quote.status !== 'Convertido' && quote.status !== 'converted' ? (
                           <button
@@ -416,6 +462,30 @@ const Quotes = () => {
           </p>
         </div>
       )}
+
+      {isPricingModalOpen && (
+        <QuotePricingModal
+          quote={quoteToPrice}
+          onClose={closePricingModal}
+          onSave={handleQuoteSave}
+        />
+      )}
+
+      {editModalOpen ? (
+        <EditQuoteModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          quote={selectedQuote}
+          onSave={(updatedQuote) => {
+            setQuotes((prevQuotes) =>
+              prevQuotes.map((quote) =>
+                quote.id === updatedQuote.id ? updatedQuote : quote
+              )
+            );
+            setEditModalOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 };

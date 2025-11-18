@@ -1,9 +1,9 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-export const DivisionSchema = new EntitySchema({
-  name: "Division",
-  tableName: "divisions",
+export const QuoteStatusSchema = new EntitySchema({
+  name: "QuoteStatus",
+  tableName: "quote_statuses",
   columns: {
     id: {
       type: "int",
@@ -15,6 +15,22 @@ export const DivisionSchema = new EntitySchema({
       length: 100,
       unique: true,
       nullable: false,
+    },
+    description: {
+      type: "text",
+      nullable: true,
+    },
+    colorCode: {
+      type: "varchar",
+      length: 50,
+      nullable: true,
+      name: "color_code",
+    },
+    isEditable: {
+      type: "boolean",
+      default: true,
+      nullable: false,
+      name: "is_editable",
     },
     createdAt: {
       type: "timestamp",
@@ -30,15 +46,12 @@ export const DivisionSchema = new EntitySchema({
     },
   },
   relations: {
-    services: {
+    quotes: {
       type: "one-to-many",
-      target: "Service",
-      inverseSide: "division",
-    },
-    projects: {
-      type: "one-to-many",
-      target: "Project",
-      inverseSide: "division",
+      target: "Quote",
+      inverseSide: "quoteStatus",
     },
   },
 });
+
+export default QuoteStatusSchema;

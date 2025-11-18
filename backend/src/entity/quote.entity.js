@@ -40,11 +40,6 @@ export const QuoteSchema = new EntitySchema({
       nullable: true,
       name: "custom_service_title",
     },
-    categoryId: {
-      type: "int",
-      nullable: true,
-      name: "category_id",
-    },
     description: {
       type: "text",
       nullable: false,
@@ -52,12 +47,6 @@ export const QuoteSchema = new EntitySchema({
     urgency: {
       type: "enum",
       enum: ["Bajo", "Medio", "Alto", "Urgente"],
-      nullable: false,
-    },
-    
-    status: {
-      type: "enum",
-      enum: ["Pendiente", "En revisión", "Cotizado", "Aprobado", "Rechazado", "Convertido"],
       nullable: false,
     },
     quotedAmount: {
@@ -105,13 +94,27 @@ export const QuoteSchema = new EntitySchema({
       },
       nullable: true,
     },
+    quoteStatus: {
+      type: "many-to-one",
+      target: "QuoteStatus",
+      joinColumn: { name: "quote_status_id" },
+      inverseSide: "quotes",
+      nullable: false,
+    },
+    quoteItems: {
+      type: "one-to-many",
+      target: "QuoteItem",
+      inverseSide: "quote",
+      cascade: true,
+    },
+    project: {
+      type: "one-to-one",
+      target: "Project",
+      inverseSide: "quote",
+    },
   },
   
   indices: [
-    {
-      name: "IDX_QUOTE_STATUS",
-      columns: ["status"],
-    },
     {
       name: "IDX_QUOTE_EMAIL",
       columns: ["clientEmail"],

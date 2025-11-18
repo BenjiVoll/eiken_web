@@ -10,23 +10,6 @@ export const OrderSchema = new EntitySchema({
       primary: true,
       generated: "increment",
     },
-    clientId: {
-      type: "int",
-      nullable: true,
-      name: "client_id",
-    },
-    clientEmail: {
-      type: "varchar",
-      length: 255,
-      nullable: true,
-      name: "client_email",
-    },
-    clientName: {
-      type: "varchar",
-      length: 255,
-      nullable: true,
-      name: "client_name",
-    },
     totalAmount: {
       type: "decimal",
       precision: 10,
@@ -34,21 +17,37 @@ export const OrderSchema = new EntitySchema({
       nullable: false,
       name: "total_amount",
     },
-    status: {
+    paymentStatus: {
       type: "enum",
-      enum: ["pending", "processing", "completed", "cancelled"],
+      enum: ["pending", "approved", "rejected", "in_process", "cancelled", "refunded"],
       default: "pending",
       nullable: false,
+      name: "payment_status",
+    },
+    paymentMethod: {
+      type: "varchar",
+      length: 100,
+      default: "mercadopago",
+      nullable: true,
+      name: "payment_method",
+    },
+    mercadopagoPreferenceId: {
+      type: "varchar",
+      length: 255,
+      nullable: true,
+      name: "mercadopago_preference_id",
+    },
+    mercadopagoPaymentId: {
+      type: "varchar",
+      length: 255,
+      nullable: true,
+      name: "mercadopago_payment_id",
     },
     orderDate: {
       type: "timestamp",
       nullable: false,
       name: "order_date",
       default: () => "CURRENT_TIMESTAMP",
-    },
-    notes: {
-      type: "text",
-      nullable: true,
     },
     createdAt: {
       type: "timestamp",
@@ -65,31 +64,45 @@ export const OrderSchema = new EntitySchema({
   },
   indices: [
     {
-      name: "IDX_ORDER_STATUS",
-      columns: ["status"],
+      name: "IDX_ORDER_PAYMENT_STATUS",
+      columns: ["paymentStatus"],
     },
     {
       name: "IDX_ORDER_DATE",
       columns: ["orderDate"],
-    },
-    {
-      name: "IDX_ORDER_CLIENT_EMAIL",
-      columns: ["clientEmail"],
     },
   ],
   relations: {
     client: {
       type: "many-to-one",
       target: "Client",
-      joinColumn: { name: "client_id", referencedColumnName: "id" },
+      joinColumn: { name: "client_id" },
       inverseSide: "orders",
-      nullable: true,
+      nullable: false,
     },
-    items: {
+    user: {
+      type: "many-to-one",
+      target: "User",
+      joinColumn: { name: "user_id" },
+      nullable: false,
+    },
+    orderStatus: {
+      type: "many-to-one",
+      target: "OrderStatus",
+      joinColumn: { name: "order_status_id" },
+      inverseSide: "orders",
+      nullable: false,
+    },
+    orderItems: {
       type: "one-to-many",
       target: "OrderItem",
       inverseSide: "order",
       cascade: true,
+    },
+    mercadopagoNotifications: {
+      type: "one-to-many",
+      target: "MercadoPagoNotification",
+      inverseSide: "order",
     },
   },
 });

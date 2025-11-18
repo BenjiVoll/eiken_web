@@ -2,11 +2,13 @@
 import { AppDataSource } from "../config/configDb.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { ServiceSchema } from "../entity/service.entity.js";
+import { QuoteStatusSchema } from "../entity/quoteStatus.entity.js";
 import UserSchema from "../entity/user.entity.js";
 import { sendEmail } from '../helpers/mailer.helper.js';
 
 const quoteRepository = AppDataSource.getRepository(QuoteSchema);
 const userRepository = AppDataSource.getRepository(UserSchema);
+const quoteStatusRepository = AppDataSource.getRepository(QuoteStatusSchema);
 
 export const createQuote = async (data) => {
   const { clientName, clientEmail, clientPhone, company, service, customServiceTitle, categoryId, description, urgency, quotedAmount, notes } = data;
@@ -21,6 +23,12 @@ export const createQuote = async (data) => {
     }
   }
 
+  // Obtener el estado inicial "Pendiente"
+  const pendingStatus = await quoteStatusRepository.findOneBy({ name: "Pendiente" });
+  if (!pendingStatus) {
+    throw new Error("Estado 'Pendiente' no encontrado. Asegúrate de que los estados estén inicializados.");
+  }
+
   const quote = quoteRepository.create({
     clientName,
     clientEmail,
@@ -31,7 +39,7 @@ export const createQuote = async (data) => {
     category: categoryId ? { id: categoryId } : null,
     description,
     urgency: urgency || "Bajo",
-    status: "Pendiente",
+    quoteStatus: pendingStatus,
     quotedAmount,
     notes
   });
@@ -81,26 +89,45 @@ export const createQuote = async (data) => {
 };
 
 export const updateQuote = async (id, data) => {
-  const quote = await quoteRepository.findOneBy({ id });
+  const quote = await quoteRepository.findOne({
+    where: { id },
+    relations: ["quoteStatus"]
+  });
   if (!quote) {
     throw new Error("Cotización no encontrada");
   }
 
-  const oldStatus = quote.status;
+  const oldStatusName = quote.quoteStatus?.name;
+
+  // Si se está actualizando el estado
+  if (data.statusId) {
+    const newStatus = await quoteStatusRepository.findOneBy({ id: data.statusId });
+    if (!newStatus) {
+      throw new Error("Estado de cotización no encontrado");
+    }
+    quote.quoteStatus = newStatus;
+    delete data.statusId;
+  }
 
   Object.assign(quote, data);
   await quoteRepository.save(quote);
 
+  // Recargar para tener las relaciones actualizadas
+  const updatedQuote = await quoteRepository.findOne({
+    where: { id },
+    relations: ["quoteStatus", "service", "category"]
+  });
+
   // --- INICIO: Notificación de propuesta al cliente ---
   // Se envía si el estado cambia a "Cotizado" y se ha añadido un monto.
-  if (data.status === 'Cotizado' && oldStatus !== 'Cotizado' && quote.quotedAmount) {
-    const subjectClient = `Tu Propuesta de Eiken Design está Lista (Cotización #${quote.id})`;
+  if (updatedQuote.quoteStatus?.name === 'Cotizado' && oldStatusName !== 'Cotizado' && updatedQuote.quotedAmount) {
+    const subjectClient = `Tu Propuesta de Eiken Design está Lista (Cotización #${updatedQuote.id})`;
     const htmlClient = `
-      <h1>Hola ${quote.clientName},</h1>
+      <h1>Hola ${updatedQuote.clientName},</h1>
       <p>Gracias por tu interés en Eiken Design. Hemos preparado una propuesta para tu solicitud.</p>
       <h2>Detalles de la Propuesta:</h2>
-      <p><strong>Monto Propuesto:</strong> CLP $${parseFloat(quote.quotedAmount).toLocaleString('es-CL')}</p>
-      ${quote.notes ? `<p><strong>Notas Adicionales:</strong><br>${quote.notes}</p>` : ''}
+      <p><strong>Monto Propuesto:</strong> CLP $${parseFloat(updatedQuote.quotedAmount).toLocaleString('es-CL')}</p>
+      ${updatedQuote.notes ? `<p><strong>Notas Adicionales:</strong><br>${updatedQuote.notes}</p>` : ''}
       <hr>
       <p>Si estás de acuerdo con la propuesta, por favor, <strong>responde a este correo electrónico para confirmar</strong> y procederemos con los siguientes pasos.</p>
       <p>Si tienes alguna duda, no dudes en contactarnos.</p>
@@ -108,16 +135,16 @@ export const updateQuote = async (id, data) => {
       <p>Saludos cordiales,</p>
       <p><strong>El equipo de Eiken Design</strong></p>
     `;
-    await sendEmail(quote.clientEmail, subjectClient, htmlClient);
+    await sendEmail(updatedQuote.clientEmail, subjectClient, htmlClient);
   }
   // --- FIN: Notificación ---
 
-  return quote;
+  return updatedQuote;
 };
 
 export const getQuotes = async () => {
   const quotes = await quoteRepository.find({
-    relations: ["service", "category"],
+    relations: ["service", "category", "quoteStatus"],
     order: { createdAt: "DESC" }
   });
   return quotes;
@@ -126,20 +153,20 @@ export const getQuotes = async () => {
 export const getQuoteById = async (id) => {
   const quote = await quoteRepository.findOne({
     where: { id },
-    relations: ["service", "category"]
+    relations: ["service", "category", "quoteStatus"]
   });
   return quote;
 };
 
-export const getQuotesByStatus = async (status) => {
-  const validStatuses = ["Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado"];
-  if (!validStatuses.includes(status)) {
-    throw new Error("Estado de cotización no válido");
+export const getQuotesByStatus = async (statusName) => {
+  const status = await quoteStatusRepository.findOneBy({ name: statusName });
+  if (!status) {
+    throw new Error("Estado de cotización no encontrado");
   }
 
   const quotes = await quoteRepository.find({
-    where: { status },
-    relations: ["service", "category"],
+    where: { quoteStatus: { id: status.id } },
+    relations: ["service", "category", "quoteStatus"],
     order: { createdAt: "DESC" }
   });
   return quotes;

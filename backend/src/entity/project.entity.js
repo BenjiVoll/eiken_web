@@ -20,32 +20,11 @@ export const ProjectSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
-    
-    clientId: {
-      type: "int",
-      nullable: false,
-      name: "client_id",
-    },
-    
-    projectType: {
-      type: "int",
-      nullable: false,
-      name: "category_id",
-    },
-    division: {
-      type: "int",
-      nullable: false,
-    },
-    
-    status: {
-      type: "enum",
-      enum: ["Pendiente", "En Proceso", "Aprobado", "Completado", "Cancelado"],
-      nullable: false,
-    },
     priority: {
       type: "enum",
       enum: ["Bajo", "Medio", "Alto", "Urgente"],
       nullable: false,
+      default: "Medio",
     },
     
     budgetAmount: {
@@ -66,12 +45,6 @@ export const ProjectSchema = new EntitySchema({
       nullable: true,
     },
     
-    quoteId: {
-      type: "int",
-      nullable: true,
-      name: "quote_id",
-    },
-    
     createdAt: {
       type: "timestamp",
       createDate: true,
@@ -88,20 +61,8 @@ export const ProjectSchema = new EntitySchema({
   
   indices: [
     {
-      name: "IDX_PROJECT_CLIENT",
-      columns: ["clientId"],
-    },
-    {
-      name: "IDX_PROJECT_STATUS",
-      columns: ["status"],
-    },
-    {
       name: "IDX_PROJECT_PRIORITY", 
       columns: ["priority"],
-    },
-    {
-      name: "IDX_PROJECT_DIVISION",
-      columns: ["division"],
     },
   ],
   
@@ -123,7 +84,20 @@ export const ProjectSchema = new EntitySchema({
     division: {
       type: "many-to-one",
       target: "Division",
-      joinColumn: { name: "division_id", referencedColumnName: "id" },
+      joinColumn: { name: "division_id" },
+      inverseSide: "projects",
+      nullable: false,
+    },
+    quote: {
+      type: "many-to-one",
+      target: "Quote",
+      joinColumn: { name: "quote_id" },
+      nullable: true,
+    },
+    projectStatus: {
+      type: "many-to-one",
+      target: "ProjectStatus",
+      joinColumn: { name: "project_status_id" },
       inverseSide: "projects",
       nullable: false,
     },

@@ -100,6 +100,19 @@ export const InventorySchema = new EntitySchema({
     supplier: {
       type: "many-to-one",
       target: "Supplier",
+      joinColumn: { name: "supplier_id" },
+      inverseSide: "inventoryItems",
+      nullable: true,
+    },
+    supplierMaterials: {
+      type: "one-to-many",
+      target: "SupplierMaterial",
+      inverseSide: "material",
+    },
+  },
+});
+      type: "many-to-one",
+      target: "Supplier",
       joinColumn: { name: "supplier_id", referencedColumnName: "id" },
       inverseSide: "inventoryItems",
       nullable: true,

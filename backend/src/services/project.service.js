@@ -3,15 +3,19 @@ import fs from "fs";
 import path from "path";
 import { AppDataSource } from "../config/configDb.js";
 import { ProjectSchema } from "../entity/project.entity.js";
+import { ProjectStatusSchema } from "../entity/projectStatus.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
+import { CategorySchema } from "../entity/category.entity.js";
 import { DivisionSchema } from "../entity/division.entity.js";
 
 const projectRepository = AppDataSource.getRepository(ProjectSchema);
+const projectStatusRepository = AppDataSource.getRepository(ProjectStatusSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
+const categoryRepository = AppDataSource.getRepository(CategorySchema);
 const divisionRepository = AppDataSource.getRepository(DivisionSchema);
 
 export const createProject = async (data) => {
-  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId } = data;
+  const { title, description, clientId, categoryId, divisionId, statusId, priority, budgetAmount, notes, quoteId } = data;
   
   // Verificar que el cliente existe
   const client = await clientRepository.findOneBy({ id: clientId });
@@ -20,31 +24,57 @@ export const createProject = async (data) => {
   }
 
   // Verificar si ya existe un proyecto con el mismo título para el mismo cliente
-  const existingProject = await projectRepository.findOneBy({ 
-    clientId, 
-    title 
+  const existingProject = await projectRepository.findOne({ 
+    where: {
+      client: { id: clientId },
+      title 
+    }
   });
   if (existingProject) {
     throw new Error("Ya existe un proyecto con este título para este cliente");
   }
 
+  // Verificar que la categoría existe
+  if (categoryId) {
+    const category = await categoryRepository.findOneBy({ id: categoryId });
+    if (!category) {
+      throw new Error("Categoría no encontrada");
+    }
+  }
+
   // Verificar que la división existe
-  const divisionEntity = await divisionRepository.findOneBy({ id: division });
-  if (!divisionEntity) {
-    throw new Error("División no encontrada");
+  if (divisionId) {
+    const division = await divisionRepository.findOneBy({ id: divisionId });
+    if (!division) {
+      throw new Error("División no encontrada");
+    }
+  }
+
+  // Obtener el estado (si no se proporciona, usar "Pendiente" por defecto)
+  let projectStatus;
+  if (statusId) {
+    projectStatus = await projectStatusRepository.findOneBy({ id: statusId });
+    if (!projectStatus) {
+      throw new Error("Estado de proyecto no encontrado");
+    }
+  } else {
+    projectStatus = await projectStatusRepository.findOneBy({ name: "Pendiente" });
+    if (!projectStatus) {
+      throw new Error("Estado 'Pendiente' no encontrado. Asegúrate de que los estados estén inicializados.");
+    }
   }
 
   const project = projectRepository.create({
     title,
     description,
-    clientId,
-    projectType: categoryId,
-    division,
-    status,
-    priority,
+    client: { id: clientId },
+    category: categoryId ? { id: categoryId } : null,
+    division: divisionId ? { id: divisionId } : null,
+    projectStatus,
+    priority: priority || "Medio",
     budgetAmount,
     notes,
-    quoteId
+    quote: quoteId ? { id: quoteId } : null
   });
 
   await projectRepository.save(project);
@@ -52,45 +82,82 @@ export const createProject = async (data) => {
 };
 
 export const updateProject = async (id, data) => {
-  const project = await projectRepository.findOneBy({ id });
+  const project = await projectRepository.findOne({
+    where: { id },
+    relations: ["client", "category", "division", "projectStatus"]
+  });
   if (!project) {
     throw new Error("Proyecto no encontrado");
   }
 
   // Si se está cambiando el cliente, verificar que existe
-  if (data.clientId && data.clientId !== project.clientId) {
+  if (data.clientId && data.clientId !== project.client.id) {
     const client = await clientRepository.findOneBy({ id: data.clientId });
     if (!client) {
       throw new Error("Cliente no encontrado");
     }
+    project.client = client;
+    delete data.clientId;
   }
 
   // Si se está actualizando el título, verificar que no exista otro con el mismo título para el mismo cliente
   if (data.title && data.title !== project.title) {
-    const clientId = data.clientId || project.clientId;
-    const existingProject = await projectRepository.findOneBy({ 
-      clientId, 
-      title: data.title 
+    const clientId = data.clientId || project.client.id;
+    const existingProject = await projectRepository.findOne({ 
+      where: {
+        client: { id: clientId },
+        title: data.title
+      }
     });
     if (existingProject && existingProject.id !== id) {
       throw new Error("Ya existe un proyecto con este título para este cliente");
     }
   }
 
-  // Si se actualiza categoryId, mapear a projectType
+  // Si se actualiza el estado
+  if (data.statusId) {
+    const newStatus = await projectStatusRepository.findOneBy({ id: data.statusId });
+    if (!newStatus) {
+      throw new Error("Estado de proyecto no encontrado");
+    }
+    project.projectStatus = newStatus;
+    delete data.statusId;
+  }
+
+  // Si se actualiza la categoría
   if (data.categoryId) {
-    project.projectType = data.categoryId;
+    const category = await categoryRepository.findOneBy({ id: data.categoryId });
+    if (!category) {
+      throw new Error("Categoría no encontrada");
+    }
+    project.category = category;
     delete data.categoryId;
   }
+
+  // Si se actualiza la división
+  if (data.divisionId) {
+    const division = await divisionRepository.findOneBy({ id: data.divisionId });
+    if (!division) {
+      throw new Error("División no encontrada");
+    }
+    project.division = division;
+    delete data.divisionId;
+  }
+
   // Asignar el resto de campos
   Object.assign(project, data);
   await projectRepository.save(project);
-  return project;
+  
+  // Recargar con relaciones actualizadas
+  return await projectRepository.findOne({
+    where: { id },
+    relations: ["client", "category", "division", "projectStatus", "quote"]
+  });
 };
 
 export const getProjects = async () => {
   const projects = await projectRepository.find({
-    relations: ["client", "category", "division"],
+    relations: ["client", "category", "division", "projectStatus"],
     order: { createdAt: "DESC" }
   });
   return projects;

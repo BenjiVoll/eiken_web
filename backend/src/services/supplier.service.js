@@ -2,9 +2,11 @@
 import { AppDataSource } from "../config/configDb.js";
 import { SupplierSchema } from "../entity/supplier.entity.js";
 import { InventorySchema } from "../entity/inventory.entity.js";
+import { SupplierMaterialSchema } from "../entity/supplierMaterial.entity.js";
 
 const supplierRepository = AppDataSource.getRepository(SupplierSchema);
 const inventoryRepository = AppDataSource.getRepository(InventorySchema);
+const supplierMaterialRepository = AppDataSource.getRepository(SupplierMaterialSchema);
 
 export const createSupplier = async (data) => {
   const { name, contactPerson, phone, email, address, rut, website } = data;
@@ -85,7 +87,7 @@ export const getActiveSuppliers = async () => {
 export const getSupplierById = async (id) => {
   const supplier = await supplierRepository.findOne({
     where: { id },
-    relations: ["inventoryItems"]
+    relations: ["supplierMaterials", "supplierMaterials.material"]
   });
   return supplier;
 };
@@ -103,30 +105,102 @@ export const getSupplierByRut = async (rut) => {
 export const deleteSupplier = async (id) => {
   const supplier = await supplierRepository.findOne({
     where: { id },
-    relations: ["inventoryItems"]
+    relations: ["supplierMaterials"]
   });
   
   if (!supplier) {
     throw new Error("Proveedor no encontrado");
   }
 
-  // Verificar si el proveedor tiene items de inventario activos asociados usando relación
-  const activeInventoryItems = supplier.inventoryItems?.filter(item => item.isActive === true) || [];
-  
-  // Verificación adicional: consulta directa por si la relación no funciona
-  const inventoryCount = await inventoryRepository.count({
-    where: { 
-      supplierId: parseInt(id),
-      isActive: true 
-    }
-  });
-  
-  if (activeInventoryItems.length > 0 || inventoryCount > 0) {
-    const totalItems = Math.max(activeInventoryItems.length, inventoryCount);
-    throw new Error(`No se puede eliminar el proveedor porque tiene ${totalItems} materiales activos asociados. Desactive o elimine primero los materiales.`);
+  // Verificar si el proveedor tiene materiales asociados
+  if (supplier.supplierMaterials && supplier.supplierMaterials.length > 0) {
+    throw new Error(`No se puede eliminar el proveedor porque tiene ${supplier.supplierMaterials.length} materiales asociados. Elimine primero las asociaciones.`);
   }
 
   // Hard delete - eliminar el registro
   await supplierRepository.remove(supplier);
   return { mensaje: "Proveedor eliminado exitosamente" };
+};
+
+// Funciones para gestionar la relación Supplier-Material
+export const addMaterialToSupplier = async (supplierId, materialId, costPrice) => {
+  const supplier = await supplierRepository.findOneBy({ id: supplierId });
+  if (!supplier) {
+    throw new Error("Proveedor no encontrado");
+  }
+
+  const material = await inventoryRepository.findOneBy({ id: materialId });
+  if (!material) {
+    throw new Error("Material no encontrado");
+  }
+
+  // Verificar si ya existe esta asociación
+  const existing = await supplierMaterialRepository.findOne({
+    where: {
+      supplier: { id: supplierId },
+      material: { id: materialId }
+    }
+  });
+
+  if (existing) {
+    throw new Error("Este material ya está asociado a este proveedor");
+  }
+
+  const supplierMaterial = supplierMaterialRepository.create({
+    supplier,
+    material,
+    costPrice
+  });
+
+  await supplierMaterialRepository.save(supplierMaterial);
+  return supplierMaterial;
+};
+
+export const updateMaterialCostPrice = async (supplierId, materialId, costPrice) => {
+  const supplierMaterial = await supplierMaterialRepository.findOne({
+    where: {
+      supplier: { id: supplierId },
+      material: { id: materialId }
+    }
+  });
+
+  if (!supplierMaterial) {
+    throw new Error("Asociación proveedor-material no encontrada");
+  }
+
+  supplierMaterial.costPrice = costPrice;
+  await supplierMaterialRepository.save(supplierMaterial);
+  return supplierMaterial;
+};
+
+export const removeMaterialFromSupplier = async (supplierId, materialId) => {
+  const supplierMaterial = await supplierMaterialRepository.findOne({
+    where: {
+      supplier: { id: supplierId },
+      material: { id: materialId }
+    }
+  });
+
+  if (!supplierMaterial) {
+    throw new Error("Asociación proveedor-material no encontrada");
+  }
+
+  await supplierMaterialRepository.remove(supplierMaterial);
+  return { mensaje: "Material removido del proveedor exitosamente" };
+};
+
+export const getSupplierMaterials = async (supplierId) => {
+  const supplierMaterials = await supplierMaterialRepository.find({
+    where: { supplier: { id: supplierId } },
+    relations: ["material"]
+  });
+  return supplierMaterials;
+};
+
+export const getMaterialSuppliers = async (materialId) => {
+  const supplierMaterials = await supplierMaterialRepository.find({
+    where: { material: { id: materialId } },
+    relations: ["supplier"]
+  });
+  return supplierMaterials;
 };

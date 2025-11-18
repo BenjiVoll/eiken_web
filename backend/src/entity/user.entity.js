@@ -63,6 +63,13 @@ const UserSchema = new EntitySchema({
       columns: ["role"],
     },
   ],
+  relations: {
+    activities: {
+      type: "one-to-many",
+      target: "Activity",
+      inverseSide: "user",
+    },
+  },
 });
 
 export default UserSchema;

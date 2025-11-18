@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import eikenLogo from '/dist/logo.png';
+import eikenLogo from '/logo.png';
 import { 
   Home, 
   Settings, 

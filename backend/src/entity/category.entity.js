@@ -35,5 +35,10 @@ export const CategorySchema = new EntitySchema({
       target: "Service",
       inverseSide: "category",
     },
+    projects: {
+      type: "one-to-many",
+      target: "Project",
+      inverseSide: "category",
+    },
   },
 });

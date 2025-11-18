@@ -1,9 +1,9 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-export const ServiceSchema = new EntitySchema({
-  name: "Service",
-  tableName: "services",
+export const ProductSchema = new EntitySchema({
+  name: "Product",
+  tableName: "products",
   columns: {
     id: {
       type: "int",
@@ -25,10 +25,22 @@ export const ServiceSchema = new EntitySchema({
       scale: 2,
       nullable: false,
     },
+    quantityOnHand: {
+      type: "int",
+      nullable: false,
+      default: 0,
+      name: "quantity_on_hand",
+    },
     image: {
       type: "varchar",
       length: 500,
       nullable: true,
+    },
+    isActive: {
+      type: "boolean",
+      default: true,
+      nullable: false,
+      name: "is_active",
     },
     createdAt: {
       type: "timestamp",
@@ -44,24 +56,12 @@ export const ServiceSchema = new EntitySchema({
     },
   },
   relations: {
-    category: {
-      type: "many-to-one",
-      target: "Category",
-      joinColumn: true,
-      nullable: false,
-      inverseSide: "services",
-    },
-    division: {
-      type: "many-to-one",
-      target: "Division",
-      joinColumn: { name: "division_id" },
-      nullable: false,
-      inverseSide: "services",
-    },
-    quoteItems: {
+    orderItems: {
       type: "one-to-many",
-      target: "QuoteItem",
-      inverseSide: "service",
+      target: "OrderItem",
+      inverseSide: "product",
     },
   },
 });
+
+export default ProductSchema;

@@ -88,5 +88,10 @@ export const SupplierSchema = new EntitySchema({
       target: "Inventory",
       inverseSide: "supplier",
     },
+    supplierMaterials: {
+      type: "one-to-many",
+      target: "SupplierMaterial",
+      inverseSide: "supplier",
+    },
   },
 });
