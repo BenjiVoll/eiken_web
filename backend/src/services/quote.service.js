@@ -109,6 +109,79 @@ export const updateQuoteStatus = async (id, newStatus) => {
   return quote;
 };
 
+export const convertQuoteToProject = async (id) => {
+  const quote = await quoteRepository.findOne({
+    where: { id },
+    relations: ["service", "category"]
+  });
+
+  if (!quote) {
+    throw new Error("Cotización no encontrada");
+  }
+
+  if (quote.status !== "Aprobado") {
+    throw new Error("Solo se pueden convertir cotizaciones aprobadas");
+  }
+
+  // Verificar si ya fue convertida (aunque el estado debería prevenirlo, es doble check)
+  const existingProject = await AppDataSource.getRepository("Project").findOneBy({ quoteId: id });
+  if (existingProject) {
+    throw new Error("Esta cotización ya ha sido convertida a proyecto");
+  }
+
+  // Crear el proyecto
+  // Nota: RF_03 dice "crea automáticamente un nuevo proyecto con estado 'Completado'".
+  // Esto es inusual, pero seguiremos el requerimiento.
+  // Asumiremos que el cliente existe. Si no, habría que crearlo o manejarlo.
+  // La cotización tiene clientName, email, phone.
+  // Buscamos cliente por email, si no existe, ¿lo creamos?
+  // RF_08 dice que usuarios se registran.
+  // Asumiremos que el cliente YA existe como usuario tipo 'client' o similar, o buscamos por email en tabla users/clients.
+  // En quote.entity.js no hay relación directa a User, solo campos de texto.
+  // En project.entity.js se requiere clientId.
+  // Vamos a buscar un cliente con ese email. Si no existe, fallamos o lo creamos?
+  // El requerimiento no especifica creación de usuario cliente.
+  // Asumiremos que se busca en la tabla de clientes (User con rol client o tabla Client si existe separada).
+  // En user.entity.client.js existe ClientSchema.
+
+  const clientRepository = AppDataSource.getRepository(ClientSchema);
+  let client = await clientRepository.findOneBy({ email: quote.clientEmail });
+
+  if (!client) {
+    // Si no existe cliente, lo creamos?
+    // Para simplificar y cumplir el flujo, crearemos un cliente básico.
+    client = clientRepository.create({
+      name: quote.clientName,
+      email: quote.clientEmail,
+      phone: quote.clientPhone,
+      company: quote.company
+    });
+    await clientRepository.save(client);
+  }
+
+  const projectRepository = AppDataSource.getRepository("Project");
+  const project = projectRepository.create({
+    title: quote.customServiceTitle || (quote.service ? quote.service.name : "Proyecto desde Cotización"),
+    description: quote.description,
+    clientId: client.id,
+    projectType: quote.category ? quote.category.id : 1, // Default category if null?
+    division: quote.service ? quote.service.division : 1, // Default division?
+    status: "Completado", // Según RF_03
+    priority: quote.urgency === "Urgente" ? "Urgente" : "Medio",
+    budgetAmount: quote.quotedAmount,
+    notes: quote.notes,
+    quoteId: quote.id
+  });
+
+  await projectRepository.save(project);
+
+  // Actualizar estado de cotización
+  quote.status = "Convertido";
+  await quoteRepository.save(quote);
+
+  return project;
+};
+
 export const deleteQuote = async (id) => {
   const quote = await quoteRepository.findOneBy({ id });
   if (!quote) {

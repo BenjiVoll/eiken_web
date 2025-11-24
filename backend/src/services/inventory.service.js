@@ -8,7 +8,7 @@ const supplierRepository = AppDataSource.getRepository(SupplierSchema);
 
 export const createInventoryItem = async (data) => {
   const { name, type, color, quantity, unit, width, brand, model, minStock, unitCost, supplierId } = data;
-  
+
   // Si se proporciona supplierId, verificar que el proveedor existe
   if (supplierId) {
     const supplier = await supplierRepository.findOneBy({ id: supplierId });
@@ -136,6 +136,20 @@ export const deleteInventoryItem = async (id) => {
   const item = await inventoryRepository.findOneBy({ id });
   if (!item) {
     throw new Error("Item de inventario no encontrado");
+  }
+
+  // Verificar movimientos en el último año
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+  const movementsCount = await AppDataSource.getRepository("InventoryMovement")
+    .createQueryBuilder("movement")
+    .where("movement.inventoryId = :id", { id })
+    .andWhere("movement.createdAt >= :oneYearAgo", { oneYearAgo })
+    .getCount();
+
+  if (movementsCount > 0) {
+    throw new Error("No se puede eliminar el material porque tiene movimientos registrados en el último año");
   }
 
   // Hard delete - eliminar el registro de la base de datos

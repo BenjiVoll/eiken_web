@@ -7,12 +7,13 @@ import {
     deleteQuote as deleteQuoteService,
     getQuotesByStatus as getQuotesByStatusService,
     getQuotesByUrgency as getQuotesByUrgencyService,
-    updateQuoteStatus as updateQuoteStatusService
+    updateQuoteStatus as updateQuoteStatusService,
+    convertQuoteToProject as convertQuoteToProjectService
 } from "../services/quote.service.js";
 import {
-  handleErrorClient,
-  handleErrorServer,
-  handleSuccess,
+    handleErrorClient,
+    handleErrorServer,
+    handleSuccess,
 } from "../handlers/responseHandlers.js";
 import { createActivityService } from "../services/activity.service.js";
 
@@ -22,9 +23,9 @@ export const createQuote = async (req, res) => {
         const quote = await createQuoteService(req.body);
         // Registrar actividad
         await createActivityService({
-          type: "cotización",
-          description: `Cotización de ${quote.clientName || 'cliente'} creada.`,
-          userId: req.user?.id || null,
+            type: "cotización",
+            description: `Cotización de ${quote.clientName || 'cliente'} creada.`,
+            userId: req.user?.id || null,
         });
         handleSuccess(res, 201, "Cotización creada exitosamente", quote);
     } catch (error) {
@@ -38,9 +39,9 @@ export const updateQuote = async (req, res) => {
         const quote = await updateQuoteService(req.params.id, req.body);
         // Registrar actividad de edición
         await createActivityService({
-          type: "cotización",
-          description: `Cotización de ${quote.clientName || 'cliente'} editada.`,
-          userId: req.user?.id || null,
+            type: "cotización",
+            description: `Cotización de ${quote.clientName || 'cliente'} editada.`,
+            userId: req.user?.id || null,
         });
         handleSuccess(res, 200, "Cotización actualizada exitosamente", quote);
     } catch (error) {
@@ -58,9 +59,9 @@ export const getQuotes = async (req, res) => {
             data: quotes
         });
     } catch (error) {
-        res.status(400).json({ 
+        res.status(400).json({
             status: "error",
-            message: error.message 
+            message: error.message
         });
     }
 };
@@ -108,6 +109,22 @@ export const updateQuoteStatus = async (req, res) => {
     }
 };
 
+// Convertir cotización a proyecto
+export const convertQuoteToProject = async (req, res) => {
+    try {
+        const project = await convertQuoteToProjectService(req.params.id);
+        // Registrar actividad
+        await createActivityService({
+            type: "proyecto",
+            description: `Proyecto generado desde cotización #${req.params.id}`,
+            userId: req.user?.id || null,
+        });
+        handleSuccess(res, 201, "Cotización convertida a proyecto exitosamente", project);
+    } catch (error) {
+        handleErrorServer(res, 400, error.message);
+    }
+};
+
 // Eliminar una cotización
 export const deleteQuote = async (req, res) => {
     try {
@@ -115,10 +132,10 @@ export const deleteQuote = async (req, res) => {
         await deleteQuoteService(req.params.id);
         // Registrar actividad de eliminación con nombre
         await createActivityService({
-          type: "cotización",
-          description: `Cotización de ${deletedQuote?.clientName || 'cliente'} eliminada.`,
-          userId: req.user?.id || null,
-          quoteId: deletedQuote?.id || null,
+            type: "cotización",
+            description: `Cotización de ${deletedQuote?.clientName || 'cliente'} eliminada.`,
+            userId: req.user?.id || null,
+            quoteId: deletedQuote?.id || null,
         });
         res.status(204).send();
     } catch (error) {

@@ -36,6 +36,14 @@ const ActivitySchema = new EntitySchema({
       name: "created_at",
     },
   },
+  relations: {
+    user: {
+      type: "many-to-one",
+      target: "User",
+      joinColumn: { name: "userId" },
+      nullable: true,
+    },
+  },
 });
 
 export default ActivitySchema;

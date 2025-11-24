@@ -110,8 +110,13 @@ export const OrderItemSchema = new EntitySchema({
     },
     serviceId: {
       type: "int",
-      nullable: false,
+      nullable: true,
       name: "service_id",
+    },
+    productId: {
+      type: "int",
+      nullable: true,
+      name: "product_id",
     },
     quantity: {
       type: "int",
@@ -152,6 +157,10 @@ export const OrderItemSchema = new EntitySchema({
       name: "IDX_ORDER_ITEM_SERVICE",
       columns: ["serviceId"],
     },
+    {
+      name: "IDX_ORDER_ITEM_PRODUCT",
+      columns: ["productId"],
+    },
   ],
   relations: {
     order: {
@@ -167,7 +176,13 @@ export const OrderItemSchema = new EntitySchema({
       target: "Service",
       joinColumn: { name: "service_id", referencedColumnName: "id" },
       inverseSide: "orderItems",
-      nullable: false,
+      nullable: true,
+    },
+    product: {
+      type: "many-to-one",
+      target: "Product",
+      joinColumn: { name: "product_id", referencedColumnName: "id" },
+      nullable: true,
     },
   },
 });

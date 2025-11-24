@@ -11,12 +11,13 @@ import supplierRoutes from "./supplier.routes.js";
 import projectRoutes from "./project.routes.js";
 import categoryRoutes from "./category.routes.js";
 import divisionRoutes from "./division.routes.js";
-// import orderRoutes from "./order.routes.js";
-// import inventoryMovementRoutes from "./inventoryMovement.routes.js";
-// import projectInventoryUsageRoutes from "./projectInventoryUsage.routes.js";
+import activityRoutes from "./activity.routes.js";
+import productRoutes from "./product.routes.js";
+import publicProductRoutes from "./public.product.routes.js";
+import dashboardRoutes from "./dashboard.routes.js";
 
 const router = Router();
-import activityRoutes from "./activity.routes.js";
+
 router
     .use("/auth", authRoutes)
     .use("/users", userRoutes)
@@ -24,15 +25,15 @@ router
     .use("/services", serviceRoutes)
     .use("/public/services", publicServiceRoutes) // Rutas públicas para servicios
     .use("/public/projects", publicProjectRoutes) // Rutas públicas para proyectos
+    .use("/public/products", publicProductRoutes) // Rutas públicas para productos (tienda)
     .use("/quotes", quoteRoutes)
     .use("/inventory", inventoryRoutes)
     .use("/suppliers", supplierRoutes)
     .use("/projects", projectRoutes)
     .use("/categories", categoryRoutes)
     .use("/divisions", divisionRoutes)
-    .use("/activities", activityRoutes);
-    // .use("/orders", orderRoutes)
-    // .use("/inventory-movements", inventoryMovementRoutes)
-    // .use("/project-inventory-usage", projectInventoryUsageRoutes);
+    .use("/activities", activityRoutes)
+    .use("/products", productRoutes)
+    .use("/dashboard", dashboardRoutes);
 
 export default router;

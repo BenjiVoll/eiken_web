@@ -10,7 +10,7 @@ const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
   const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId } = data;
-  
+
   // Verificar que el cliente existe
   const client = await clientRepository.findOneBy({ id: clientId });
   if (!client) {
@@ -18,9 +18,9 @@ export const createProject = async (data) => {
   }
 
   // Verificar si ya existe un proyecto con el mismo título para el mismo cliente
-  const existingProject = await projectRepository.findOneBy({ 
-    clientId, 
-    title 
+  const existingProject = await projectRepository.findOneBy({
+    clientId,
+    title
   });
   if (existingProject) {
     throw new Error("Ya existe un proyecto con este título para este cliente");
@@ -60,9 +60,9 @@ export const updateProject = async (id, data) => {
   // Si se está actualizando el título, verificar que no exista otro con el mismo título para el mismo cliente
   if (data.title && data.title !== project.title) {
     const clientId = data.clientId || project.clientId;
-    const existingProject = await projectRepository.findOneBy({ 
-      clientId, 
-      title: data.title 
+    const existingProject = await projectRepository.findOneBy({
+      clientId,
+      title: data.title
     });
     if (existingProject && existingProject.id !== id) {
       throw new Error("Ya existe un proyecto con este título para este cliente");
@@ -134,6 +134,14 @@ export const deleteProject = async (id) => {
   const project = await projectRepository.findOneBy({ id });
   if (!project) {
     throw new Error("Proyecto no encontrado");
+  }
+
+  if (project.quoteId) {
+    throw new Error("No se puede eliminar un proyecto asociado a una cotización");
+  }
+
+  if (project.status === "Completado") {
+    throw new Error("No se puede eliminar un proyecto completado");
   }
 
   await projectRepository.remove(project);

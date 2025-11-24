@@ -1,6 +1,6 @@
 "use strict";
 import { Router } from "express";
-import { 
+import {
   isAdminOrManager,
   isAnyUser
 } from "../middlewares/authorization.middleware.js";
@@ -13,13 +13,14 @@ import {
   getQuote,
   getQuotes,
   updateQuote,
+  convertQuoteToProject
 } from "../controllers/quote.controller.js";
 
 const router = Router();
 
 // Ruta pública para crear cotizaciones (para clientes)
-router.post("/public", 
-  createBodyValidation(quoteBodyValidation), 
+router.post("/public",
+  createBodyValidation(quoteBodyValidation),
   createQuote
 );
 
@@ -28,25 +29,29 @@ router.use(authenticateJwt);
 
 // Rutas para gestión de cotizaciones
 router
-  .post("/", 
+  .post("/",
     isAdminOrManager,
-    createBodyValidation(quoteBodyValidation), 
+    createBodyValidation(quoteBodyValidation),
     createQuote
   )
-  .get("/", 
+  .get("/",
     isAnyUser,
     getQuotes
   )
-  .get("/:id", 
+  .get("/:id",
     isAnyUser,
     getQuote
   )
-  .patch("/:id", 
+  .patch("/:id",
     isAdminOrManager,
-    createBodyValidation(quoteUpdateValidation), 
+    createBodyValidation(quoteUpdateValidation),
     updateQuote
   )
-  .delete("/:id", 
+  .post("/:id/convert",
+    isAdminOrManager,
+    convertQuoteToProject
+  )
+  .delete("/:id",
     isAdminOrManager,
     deleteQuote
   );
