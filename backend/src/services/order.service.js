@@ -3,15 +3,17 @@ import { AppDataSource } from "../config/configDb.js";
 import { OrderSchema, OrderItemSchema } from "../entity/order.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
 import { ServiceSchema } from "../entity/service.entity.js";
+import { ProductSchema } from "../entity/product.entity.js";
 
 const orderRepository = AppDataSource.getRepository(OrderSchema);
 const orderItemRepository = AppDataSource.getRepository(OrderItemSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 const serviceRepository = AppDataSource.getRepository(ServiceSchema);
+const productRepository = AppDataSource.getRepository(ProductSchema);
 
 export const createOrder = async (data) => {
   const { clientId, clientEmail, clientName, items, notes } = data;
-  
+
   // Si se proporciona clientId, verificar que el cliente existe
   if (clientId) {
     const client = await clientRepository.findOneBy({ id: clientId });
@@ -25,23 +27,39 @@ export const createOrder = async (data) => {
   const validatedItems = [];
 
   for (const item of items) {
-    const service = await serviceRepository.findOneBy({ id: item.serviceId });
-    if (!service) {
-      throw new Error(`Servicio con ID ${item.serviceId} no encontrado`);
+    let unitPrice;
+    let itemData = {
+      quantity: item.quantity || 1,
+      customizations: item.customizations
+    };
+
+    // Verificar si es un servicio o un producto
+    if (item.serviceId) {
+      const service = await serviceRepository.findOneBy({ id: item.serviceId });
+      if (!service) {
+        throw new Error(`Servicio con ID ${item.serviceId} no encontrado`);
+      }
+      unitPrice = item.unitPrice || service.price;
+      itemData.serviceId = item.serviceId;
+    } else if (item.productId) {
+      const product = await productRepository.findOneBy({ id: item.productId });
+      if (!product) {
+        throw new Error(`Producto con ID ${item.productId} no encontrado`);
+      }
+      if (product.stock < itemData.quantity) {
+        throw new Error(`Stock insuficiente para el producto ${product.name}`);
+      }
+      unitPrice = item.unitPrice || product.price;
+      itemData.productId = item.productId;
+    } else {
+      throw new Error("Cada item debe tener serviceId o productId");
     }
 
-    const quantity = item.quantity || 1;
-    const unitPrice = item.unitPrice || service.price;
-    const totalPrice = quantity * unitPrice;
+    const totalPrice = itemData.quantity * unitPrice;
+    itemData.unitPrice = unitPrice;
+    itemData.totalPrice = totalPrice;
 
-    validatedItems.push({
-      serviceId: item.serviceId,
-      quantity,
-      unitPrice,
-      totalPrice,
-      customizations: item.customizations
-    });
-
+    validatedItems.push(itemData);
     totalAmount += totalPrice;
   }
 
@@ -106,7 +124,7 @@ export const getOrders = async () => {
 export const getOrderById = async (id) => {
   const order = await orderRepository.findOne({
     where: { id },
-    relations: ["items", "items.service", "client"]
+    relations: ["items", "items.service", "items.product", "client"]
   });
   return order;
 };
@@ -134,58 +152,13 @@ export const getOrdersByClient = async (clientId) => {
   return orders;
 };
 
-export const addOrderItem = async (orderId, itemData) => {
-  const order = await orderRepository.findOneBy({ id: orderId });
-  if (!order) {
-    throw new Error("Orden no encontrada");
-  }
-
-  const service = await serviceRepository.findOneBy({ id: itemData.serviceId });
-  if (!service) {
-    throw new Error("Servicio no encontrado");
-  }
-
-  const quantity = itemData.quantity || 1;
-  const unitPrice = itemData.unitPrice || service.price;
-  const totalPrice = quantity * unitPrice;
-
-  const orderItem = orderItemRepository.create({
-    orderId,
-    serviceId: itemData.serviceId,
-    quantity,
-    unitPrice,
-    totalPrice,
-    customizations: itemData.customizations
+export const getOrdersByEmail = async (email) => {
+  const orders = await orderRepository.find({
+    where: { clientEmail: email },
+    relations: ["items", "items.service", "items.product"],
+    order: { orderDate: "DESC" }
   });
-
-  await orderItemRepository.save(orderItem);
-
-  // Actualizar el total de la orden
-  order.totalAmount += totalPrice;
-  await orderRepository.save(order);
-
-  return orderItem;
-};
-
-export const removeOrderItem = async (orderId, itemId) => {
-  const orderItem = await orderItemRepository.findOneBy({ id: itemId, orderId });
-  if (!orderItem) {
-    throw new Error("Item de orden no encontrado");
-  }
-
-  const order = await orderRepository.findOneBy({ id: orderId });
-  if (!order) {
-    throw new Error("Orden no encontrada");
-  }
-
-  // Actualizar el total de la orden
-  order.totalAmount -= orderItem.totalPrice;
-  await orderRepository.save(order);
-
-  // Eliminar el item
-  await orderItemRepository.remove(orderItem);
-
-  return { mensaje: "Item removido de la orden exitosamente" };
+  return orders;
 };
 
 export const updateOrderStatus = async (id, newStatus) => {
@@ -194,9 +167,50 @@ export const updateOrderStatus = async (id, newStatus) => {
     throw new Error("Estado de orden no válido");
   }
 
-  const order = await orderRepository.findOneBy({ id });
+  const order = await orderRepository.findOne({
+    where: { id },
+    relations: ["items", "items.product"]
+  });
+
   if (!order) {
     throw new Error("Orden no encontrada");
+  }
+
+  const oldStatus = order.status;
+
+  // Si la orden pasa a "completed" y venía de otro estado, descontar stock
+  if (newStatus === "completed" && oldStatus !== "completed") {
+    for (const orderItem of order.items) {
+      if (orderItem.productId) {
+        const product = await productRepository.findOneBy({ id: orderItem.productId });
+        if (!product) {
+          throw new Error(`Producto con ID ${orderItem.productId} no encontrado`);
+        }
+
+        // Verificar stock disponible
+        if (product.stock < orderItem.quantity) {
+          throw new Error(`Stock insuficiente para el producto ${product.name}. Disponible: ${product.stock}, Requerido: ${orderItem.quantity}`);
+        }
+
+        // Descontar stock
+        product.stock -= orderItem.quantity;
+        await productRepository.save(product);
+      }
+    }
+  }
+
+  // Si la orden se cancela y estaba completada, restaurar stock
+  if (newStatus === "cancelled" && oldStatus === "completed") {
+    for (const orderItem of order.items) {
+      if (orderItem.productId) {
+        const product = await productRepository.findOneBy({ id: orderItem.productId });
+        if (product) {
+          // Restaurar stock
+          product.stock += orderItem.quantity;
+          await productRepository.save(product);
+        }
+      }
+    }
   }
 
   order.status = newStatus;
@@ -209,7 +223,7 @@ export const deleteOrder = async (id) => {
     where: { id },
     relations: ["items"]
   });
-  
+
   if (!order) {
     throw new Error("Orden no encontrada");
   }

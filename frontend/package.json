@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@mercadopago/sdk-react": "^1.0.6",
     "axios": "^1.10.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.525.0",

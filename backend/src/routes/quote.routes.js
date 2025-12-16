@@ -13,7 +13,8 @@ import {
   getQuote,
   getQuotes,
   updateQuote,
-  convertQuoteToProject
+  convertQuoteToProject,
+  replyQuote
 } from "../controllers/quote.controller.js";
 
 const router = Router();
@@ -50,6 +51,10 @@ router
   .post("/:id/convert",
     isAdminOrManager,
     convertQuoteToProject
+  )
+  .post("/:id/reply",
+    isAdminOrManager,
+    replyQuote
   )
   .delete("/:id",
     isAdminOrManager,

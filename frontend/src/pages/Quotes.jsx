@@ -20,6 +20,16 @@ const getServiceTitle = (quote) => {
 
 const Quotes = () => {
   const { isManager, isAdmin } = useAuth();
+  const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Reply modal state - Moved to top to avoid hook order issues
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [selectedQuoteForReply, setSelectedQuoteForReply] = useState(null);
+  const [replyAmount, setReplyAmount] = useState('');
+  const [replyMessage, setReplyMessage] = useState('');
+
   // Eliminar cotización
   const handleDeleteQuote = async (id) => {
     const result = await Swal.fire({
@@ -42,9 +52,6 @@ const Quotes = () => {
       }
     }
   };
-  const [quotes, setQuotes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadQuotes();
@@ -63,15 +70,12 @@ const Quotes = () => {
     }
   };
 
-
-
-
   const updateQuoteStatus = async (quoteId, newStatus) => {
     try {
       await quotesAPI.updateStatus(quoteId, newStatus);
-      
-      setQuotes(Array.isArray(quotes) ? quotes.map(quote => 
-        quote.id === quoteId 
+
+      setQuotes(Array.isArray(quotes) ? quotes.map(quote =>
+        quote.id === quoteId
           ? { ...quote, status: newStatus } // newStatus ya viene en inglés
           : quote
       ) : []);
@@ -87,111 +91,67 @@ const Quotes = () => {
         '¿Deseas convertir esta cotización aprobada en un proyecto?'
       );
       if (!confirmed.isConfirmed) return;
-      let clientId = null;
-      try {
-        const clientsResponse = await clientsAPI.getAll();
-        const clients = Array.isArray(clientsResponse) ? clientsResponse : [];
-        const existingClient = clients.find(client => 
-          client.email === quote.clientEmail || 
-          client.name === quote.clientName ||
-          client.company === quote.company
-        );
-        if (existingClient) {
-          clientId = existingClient.id;
-        } else {
-          const newClientData = {
-            name: quote.clientName,
-            email: quote.clientEmail,
-            phone: quote.clientPhone,
-            company: quote.company || '',
-            clientType: quote.company ? 'company' : 'individual'
-          };
-          const newClientResponse = await clientsAPI.create(newClientData);
-          clientId = newClientResponse.id;
-        }
-      } catch (error) {
-        console.error('Error managing client:', error);
-        showErrorAlert('Error', 'No se pudo gestionar la información del cliente');
-        return;
-      }
-      let divisionId = typeof quote.service?.division === 'number' ? quote.service.division : null;
-      const categoryId = typeof quote.category?.id === 'number'
-        ? quote.category.id
-        : typeof quote.categoryId === 'number'
-          ? quote.categoryId
-          : null;
-      if (!divisionId) {
-        let divisions = await divisionsAPI.getAll();
-        if (divisions && typeof divisions === 'object' && Array.isArray(divisions.data)) {
-          divisions = divisions.data;
-        }
-        const optionsHtml = `<option value="">Selecciona una división</option>` + divisions.map(div => `<option value="${div.id}">${div.name}</option>`).join('');
-        let selectedDivision = null;
-        while (!selectedDivision) {
-          const { value } = await Swal.fire({
-            title: 'Selecciona la división para el proyecto',
-            html: `<select id="division-select" class="swal2-input">${optionsHtml}</select>`,
-            focusConfirm: false,
-            preConfirm: () => {
-              const select = document.getElementById('division-select');
-              return select ? select.value : null;
-            },
-            showCancelButton: true,
-            confirmButtonText: 'Continuar',
-            cancelButtonText: 'Cancelar',
-          });
-          if (!value || value === "") {
-            const result = await Swal.fire('Error', 'Debes seleccionar una división para continuar.', 'error');
-            if (result.isDismissed || result.isDenied) return;
-          } else {
-            selectedDivision = value;
-          }
-        }
-        divisionId = Number(selectedDivision);
-      }
-      if (!categoryId) {
-        showErrorAlert('Error', 'La cotización no tiene una categoría válida. No se puede convertir a proyecto.');
-        return;
-      }
-      const projectData = {
-        title: getServiceTitle(quote),
-        description: quote.description,
-        clientId: clientId,
-        categoryId: categoryId,
-        division: divisionId,
-        status: 'Aprobado',
-        priority: quote.urgency,
-        budgetAmount: quote.quotedAmount || null,
-        notes: quote.notes || ''
-      };
-      await projectsAPI.create(projectData);
+
+      await quotesAPI.convert(quote.id);
+
       showSuccessAlert(
-        '¡Proyecto Creado!', 
+        '¡Proyecto Creado!',
         'La cotización ha sido convertida exitosamente en un proyecto'
       );
-      await updateQuoteStatus(quote.id, 'Convertido');
       loadQuotes();
     } catch (error) {
       console.error('Error converting quote to project:', error);
-      // Si el error es 400, mostrar mensaje específico
-      if (error?.response?.status === 400) {
-        showErrorAlert('Error', 'Esta cotización ya fue convertida en proyecto.');
+      if (error?.response?.data?.message) {
+        showErrorAlert('Error', error.response.data.message);
       } else {
         showErrorAlert('Error', 'No se pudo convertir la cotización en proyecto');
       }
     }
   };
-    
+
+  const handleOpenReply = (quote) => {
+    setSelectedQuoteForReply(quote);
+    setReplyAmount(quote.quotedAmount || '');
+    setReplyMessage('');
+    setReplyModalOpen(true);
+  };
+
+  const handleCloseReply = () => {
+    setReplyModalOpen(false);
+    setSelectedQuoteForReply(null);
+    setReplyAmount('');
+    setReplyMessage('');
+  };
+
+  const handleSubmitReply = async (e) => {
+    e.preventDefault();
+    if (!selectedQuoteForReply) return;
+
+    try {
+      await quotesAPI.reply(selectedQuoteForReply.id, {
+        amount: parseFloat(replyAmount),
+        message: replyMessage
+      });
+
+      showSuccessAlert('Respuesta Enviada', 'La cotización ha sido enviada al cliente.');
+      handleCloseReply();
+      loadQuotes();
+    } catch (error) {
+      console.error('Error replying to quote:', error);
+      showErrorAlert('Error', 'No se pudo enviar la respuesta.');
+    }
+  };
+
   const filteredQuotes = Array.isArray(quotes)
     ? quotes.filter(quote => {
-        const searchLower = searchTerm.toLowerCase();
-        const serviceTitle = getServiceTitle(quote);
-        return (
-          (quote.clientName && quote.clientName.toLowerCase().includes(searchLower)) ||
-          (quote.company && quote.company.toLowerCase().includes(searchLower)) ||
-          serviceTitle.toLowerCase().includes(searchLower)
-        );
-      })
+      const searchLower = searchTerm.toLowerCase();
+      const serviceTitle = getServiceTitle(quote);
+      return (
+        (quote.clientName && quote.clientName.toLowerCase().includes(searchLower)) ||
+        (quote.company && quote.company.toLowerCase().includes(searchLower)) ||
+        serviceTitle.toLowerCase().includes(searchLower)
+      );
+    })
     : [];
 
   const getStatusColor = (status) => {
@@ -219,8 +179,6 @@ const Quotes = () => {
     }
   };
 
-
-
   const getUrgencyColor = (urgency) => {
     switch (urgency) {
       case 'Urgente':
@@ -235,8 +193,6 @@ const Quotes = () => {
         return 'text-gray-600';
     }
   };
-
-
 
   const StatusSelector = ({ quote }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -275,7 +231,7 @@ const Quotes = () => {
     }
 
     return (
-      <span 
+      <span
         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${((isAdmin || isManager) ? 'cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-blue-300 transition-all duration-200' : 'cursor-not-allowed opacity-60')} ${getStatusColor(selectedStatus)}`}
         onClick={() => (isAdmin || isManager) && setIsEditing(true)}
         title={isAdmin || isManager ? "Click para cambiar estado" : "Solo admin y manager pueden cambiar el estado"}
@@ -342,8 +298,21 @@ const Quotes = () => {
                       <div className="ml-2 flex-shrink-0 flex items-center space-x-2">
                         <StatusSelector quote={quote} />
                         <span className={`text-xs font-medium ${getUrgencyColor(quote.urgency)}`}>
-        {quote.urgency}
+                          {quote.urgency}
                         </span>
+
+                        {/* Botón Responder */}
+                        {(isAdmin || isManager) && (quote.status === 'Pendiente' || quote.status === 'Revisando' || quote.status === 'pending' || quote.status === 'reviewing') && (
+                          <button
+                            onClick={() => handleOpenReply(quote)}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                            title="Responder / Cotizar"
+                          >
+                            <Quote className="h-3 w-3 mr-1" />
+                            Responder
+                          </button>
+                        )}
+
                         {(isAdmin || isManager) && (quote.status === 'Aprobado' || quote.status === 'approved') && quote.status !== 'Convertido' && quote.status !== 'converted' ? (
                           <button
                             onClick={() => convertQuoteToProject(quote)}
@@ -396,7 +365,7 @@ const Quotes = () => {
                     </div>
                     {quote.notes && (
                       <div className="mt-2">
-                        <p className="text-sm text-gray-600 italic">{quote.notes}</p>
+                        <p className="text-sm text-gray-600 italic whitespace-pre-wrap">{quote.notes}</p>
                       </div>
                     )}
                   </div>
@@ -414,6 +383,78 @@ const Quotes = () => {
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm ? 'Intenta con otros términos de búsqueda.' : 'No hay cotizaciones registradas.'}
           </p>
+        </div>
+      )}
+
+      {/* Modal de Respuesta */}
+      {replyModalOpen && (
+        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={handleCloseReply}></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleSubmitReply}>
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <div className="sm:flex sm:items-start">
+                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                      <Quote className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                      <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                        Responder Cotización
+                      </h3>
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-500 mb-4">
+                          Ingresa el monto de la cotización y un mensaje detallado para el cliente.
+                        </p>
+
+                        <div className="mb-4">
+                          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Monto (CLP)</label>
+                          <input
+                            type="number"
+                            id="amount"
+                            required
+                            min="0"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={replyAmount}
+                            onChange={(e) => setReplyAmount(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="mb-4">
+                          <label htmlFor="message" className="block text-sm font-medium text-gray-700">Mensaje / Propuesta</label>
+                          <textarea
+                            id="message"
+                            required
+                            rows="4"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            value={replyMessage}
+                            onChange={(e) => setReplyMessage(e.target.value)}
+                            placeholder="Detalla aquí la propuesta..."
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="submit"
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  >
+                    Enviar Respuesta
+                  </button>
+                  <button
+                    type="button"
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    onClick={handleCloseReply}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -4,8 +4,12 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5173, // Puerto para desarrollo (npm run dev)
+    host: true
+  },
   preview: {
-    port: 443,
+    port: 442, // Puerto para preview (npm run preview)
     host: true
   },
   build: {
@@ -15,7 +19,7 @@ export default defineConfig({
           vendor: [
             'react',
             'react-dom',
-            'sweetalert2',
+            'sweetalert1',
             'lucide-react'
           ]
         }

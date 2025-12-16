@@ -3,6 +3,7 @@ import { AppDataSource } from "../config/configDb.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
 import { ServiceSchema } from "../entity/service.entity.js";
+import { mailService } from "./mail.service.js";
 
 const quoteRepository = AppDataSource.getRepository(QuoteSchema);
 
@@ -35,6 +36,11 @@ export const createQuote = async (data) => {
   });
 
   await quoteRepository.save(quote);
+
+  // Send email notifications asynchronously
+  mailService.sendQuoteNotification(quote);
+  mailService.sendNewQuoteAlert(quote);
+
   return quote;
 };
 
@@ -106,6 +112,30 @@ export const updateQuoteStatus = async (id, newStatus) => {
 
   quote.status = newStatus;
   await quoteRepository.save(quote);
+  return quote;
+};
+
+export const replyToQuote = async (id, amount, message) => {
+  const quote = await quoteRepository.findOne({
+    where: { id },
+    relations: ["service", "category"]
+  });
+
+  if (!quote) {
+    throw new Error("Cotización no encontrada");
+  }
+
+  quote.quotedAmount = amount;
+  quote.status = "Cotizado";
+  // Optionally append the proposal message to notes or handle it differently.
+  // For now, we'll append it to notes for record keeping.
+  quote.notes = quote.notes ? `${quote.notes}\n\n[Propuesta]: ${message}` : `[Propuesta]: ${message}`;
+
+  await quoteRepository.save(quote);
+
+  // Send email
+  mailService.sendQuoteProposal(quote, message);
+
   return quote;
 };
 

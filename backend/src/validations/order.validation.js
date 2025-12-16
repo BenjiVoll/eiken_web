@@ -67,11 +67,25 @@ export const orderBodyValidation = Joi.object({
   totalAmount: Joi.number()
     .positive()
     .precision(2)
-    .required()
+    .optional()
     .messages({
       "number.base": "El monto total debe ser un número.",
       "number.positive": "El monto total debe ser un número positivo.",
-      "any.required": "El monto total es obligatorio.",
+    }),
+  items: Joi.array()
+    .items(
+      Joi.object({
+        productId: Joi.number().integer().optional(),
+        serviceId: Joi.number().integer().optional(),
+        quantity: Joi.number().integer().min(1).required(),
+        unitPrice: Joi.number().positive().optional(),
+      })
+    )
+    .min(1)
+    .required()
+    .messages({
+      "array.min": "Debe haber al menos un item en la orden.",
+      "any.required": "Los items son obligatorios.",
     }),
   status: Joi.string()
     .valid("pending", "processing", "completed", "cancelled")
@@ -94,8 +108,8 @@ export const orderBodyValidation = Joi.object({
   .custom((value, helpers) => {
     // Debe tener clientId o clientEmail/clientName
     if (!value.clientId && (!value.clientEmail || !value.clientName)) {
-      return helpers.error('any.custom', { 
-        message: 'Debe especificar un clientId o proporcionar clientEmail y clientName.' 
+      return helpers.error('any.custom', {
+        message: 'Debe especificar un clientId o proporcionar clientEmail y clientName.'
       });
     }
     return value;

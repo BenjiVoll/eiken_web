@@ -125,6 +125,31 @@ export const convertQuoteToProject = async (req, res) => {
     }
 };
 
+// Responder a una cotización
+export const replyQuote = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount, message } = req.body;
+
+        // Import dynamically to avoid circular dependency issues if any, 
+        // though here we are importing from service at top.
+        // We need to add replyToQuote to the imports at the top first.
+        const { replyToQuote: replyToQuoteService } = await import("../services/quote.service.js");
+
+        const quote = await replyToQuoteService(id, amount, message);
+
+        await createActivityService({
+            type: "cotización",
+            description: `Respuesta enviada a cotización #${id}`,
+            userId: req.user?.id || null,
+        });
+
+        handleSuccess(res, 200, "Respuesta enviada exitosamente", quote);
+    } catch (error) {
+        handleErrorServer(res, 400, error.message);
+    }
+};
+
 // Eliminar una cotización
 export const deleteQuote = async (req, res) => {
     try {

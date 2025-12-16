@@ -15,6 +15,8 @@ import activityRoutes from "./activity.routes.js";
 import productRoutes from "./product.routes.js";
 import publicProductRoutes from "./public.product.routes.js";
 import dashboardRoutes from "./dashboard.routes.js";
+import orderRoutes from "./order.routes.js";
+import paymentRoutes from "./payment.routes.js";
 
 const router = Router();
 
@@ -23,9 +25,9 @@ router
     .use("/users", userRoutes)
     .use("/clients", clientRoutes)
     .use("/services", serviceRoutes)
-    .use("/public/services", publicServiceRoutes) // Rutas públicas para servicios
-    .use("/public/projects", publicProjectRoutes) // Rutas públicas para proyectos
-    .use("/public/products", publicProductRoutes) // Rutas públicas para productos (tienda)
+    .use("/public/services", publicServiceRoutes)
+    .use("/public/projects", publicProjectRoutes)
+    .use("/public/products", publicProductRoutes)
     .use("/quotes", quoteRoutes)
     .use("/inventory", inventoryRoutes)
     .use("/suppliers", supplierRoutes)
@@ -34,6 +36,8 @@ router
     .use("/divisions", divisionRoutes)
     .use("/activities", activityRoutes)
     .use("/products", productRoutes)
+    .use("/orders", orderRoutes)
+    .use("/payments", paymentRoutes)
     .use("/dashboard", dashboardRoutes);
 
 export default router;

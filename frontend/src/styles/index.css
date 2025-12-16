@@ -21,4 +21,41 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Custom scrollbar for navbar - only visible on hover */
+  .navbar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .navbar-scroll:hover {
+    scrollbar-color: #d1d5db #f3f4f6;
+  }
+
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  .navbar-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .navbar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .navbar-scroll::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  .navbar-scroll:hover::-webkit-scrollbar-track {
+    background: #f3f4f6;
+  }
+
+  .navbar-scroll:hover::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+  }
+
+  .navbar-scroll:hover::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
 }
+

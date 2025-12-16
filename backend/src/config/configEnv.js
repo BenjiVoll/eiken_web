@@ -18,3 +18,7 @@ export const PASSWORD = process.env.PASSWORD;
 export const DATABASE = process.env.DATABASE;
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 export const cookieKey = process.env.cookieKey;
+export const MERCADOPAGO_ACCESS_TOKEN_TEST = process.env.MERCADOPAGO_ACCESS_TOKEN_TEST;
+export const MERCADOPAGO_ACCESS_TOKEN_PROD = process.env.MERCADOPAGO_ACCESS_TOKEN_PROD;
+export const FRONTEND_URL = process.env.FRONTEND_URL;
+export const BACKEND_URL = process.env.BACKEND_URL;
