@@ -17,6 +17,7 @@ import publicProductRoutes from "./public.product.routes.js";
 import dashboardRoutes from "./dashboard.routes.js";
 import orderRoutes from "./order.routes.js";
 import paymentRoutes from "./payment.routes.js";
+import uploadsRoutes from "./uploads.routes.js";
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router
     .use("/products", productRoutes)
     .use("/orders", orderRoutes)
     .use("/payments", paymentRoutes)
-    .use("/dashboard", dashboardRoutes);
+    .use("/dashboard", dashboardRoutes)
+    .use("/uploads", uploadsRoutes);
 
 export default router;

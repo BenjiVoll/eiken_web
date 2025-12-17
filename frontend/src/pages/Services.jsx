@@ -11,7 +11,7 @@ import { getImageUrl } from '../helpers/getImageUrl';
 import ServiceModal from '../components/forms/ServiceModal';
 
 const Services = () => {
-  // Estado para el modal de imagen
+
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
   const { isManager, isAdmin } = useAuth();
@@ -70,7 +70,7 @@ const Services = () => {
         category: formData.categoryId,
         division: formData.division
       };
-      // Eliminar posibles campos extra
+
       delete serviceData.categoryId;
       let savedService;
       if (editingService) {
@@ -96,7 +96,6 @@ const Services = () => {
             Authorization: `Bearer ${token}`
           }
         });
-        // Solo mostrar la alerta si se está editando un servicio existente
         if (editingService) {
           showSuccessAlert('¡Imagen subida!', 'La imagen del servicio se ha subido correctamente');
         }

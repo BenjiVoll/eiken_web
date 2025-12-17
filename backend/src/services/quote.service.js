@@ -1,4 +1,6 @@
 "use strict";
+import fs from "fs";
+import path from "path";
 import { AppDataSource } from "../config/configDb.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
@@ -8,7 +10,7 @@ import { mailService } from "./mail.service.js";
 const quoteRepository = AppDataSource.getRepository(QuoteSchema);
 
 export const createQuote = async (data) => {
-  const { clientName, clientEmail, clientPhone, company, service, customServiceTitle, categoryId, description, urgency, quotedAmount, notes } = data;
+  const { clientName, clientEmail, clientPhone, company, service, customServiceTitle, categoryId, description, requestedDeliveryDate, quotedAmount, notes } = data;
 
   let serviceObj = null;
   if (service) {
@@ -29,7 +31,7 @@ export const createQuote = async (data) => {
     customServiceTitle: customServiceTitle || null,
     category: categoryId ? { id: categoryId } : null,
     description,
-    urgency: urgency || "Bajo",
+    requestedDeliveryDate: requestedDeliveryDate || null,
     status: "Pendiente",
     quotedAmount,
     notes
@@ -85,19 +87,7 @@ export const getQuotesByStatus = async (status) => {
   return quotes;
 };
 
-export const getQuotesByUrgency = async (urgency) => {
-  const validUrgencies = ["Baja", "Media", "Alta", "Urgente"];
-  if (!validUrgencies.includes(urgency)) {
-    throw new Error("Nivel de urgencia no válido");
-  }
 
-  const quotes = await quoteRepository.find({
-    where: { urgency },
-    relations: ["service", "category"],
-    order: { createdAt: "DESC" }
-  });
-  return quotes;
-};
 
 export const updateQuoteStatus = async (id, newStatus) => {
   const validStatuses = ["Pendiente", "Revisando", "Cotizado", "Aprobado", "Rechazado"];
@@ -133,7 +123,7 @@ export const replyToQuote = async (id, amount, message) => {
 
   await quoteRepository.save(quote);
 
-  // Send email
+
   mailService.sendQuoteProposal(quote, message);
 
   return quote;
@@ -153,33 +143,17 @@ export const convertQuoteToProject = async (id) => {
     throw new Error("Solo se pueden convertir cotizaciones aprobadas");
   }
 
-  // Verificar si ya fue convertida (aunque el estado debería prevenirlo, es doble check)
+
   const existingProject = await AppDataSource.getRepository("Project").findOneBy({ quoteId: id });
   if (existingProject) {
     throw new Error("Esta cotización ya ha sido convertida a proyecto");
   }
 
-  // Crear el proyecto
-  // Nota: RF_03 dice "crea automáticamente un nuevo proyecto con estado 'Completado'".
-  // Esto es inusual, pero seguiremos el requerimiento.
-  // Asumiremos que el cliente existe. Si no, habría que crearlo o manejarlo.
-  // La cotización tiene clientName, email, phone.
-  // Buscamos cliente por email, si no existe, ¿lo creamos?
-  // RF_08 dice que usuarios se registran.
-  // Asumiremos que el cliente YA existe como usuario tipo 'client' o similar, o buscamos por email en tabla users/clients.
-  // En quote.entity.js no hay relación directa a User, solo campos de texto.
-  // En project.entity.js se requiere clientId.
-  // Vamos a buscar un cliente con ese email. Si no existe, fallamos o lo creamos?
-  // El requerimiento no especifica creación de usuario cliente.
-  // Asumiremos que se busca en la tabla de clientes (User con rol client o tabla Client si existe separada).
-  // En user.entity.client.js existe ClientSchema.
-
+  // Buscar o crear cliente
   const clientRepository = AppDataSource.getRepository(ClientSchema);
   let client = await clientRepository.findOneBy({ email: quote.clientEmail });
 
   if (!client) {
-    // Si no existe cliente, lo creamos?
-    // Para simplificar y cumplir el flujo, crearemos un cliente básico.
     client = clientRepository.create({
       name: quote.clientName,
       email: quote.clientEmail,
@@ -194,10 +168,10 @@ export const convertQuoteToProject = async (id) => {
     title: quote.customServiceTitle || (quote.service ? quote.service.name : "Proyecto desde Cotización"),
     description: quote.description,
     clientId: client.id,
-    projectType: quote.category ? quote.category.id : 1, // Default category if null?
-    division: quote.service ? quote.service.division : 1, // Default division?
-    status: "Completado", // Según RF_03
-    priority: quote.urgency === "Urgente" ? "Urgente" : "Medio",
+    projectType: quote.category ? quote.category.id : 1,
+    division: quote.service ? quote.service.division : 1,
+    status: "Completado",
+    priority: "Medio",
     budgetAmount: quote.quotedAmount,
     notes: quote.notes,
     quoteId: quote.id
@@ -220,4 +194,64 @@ export const deleteQuote = async (id) => {
 
   await quoteRepository.remove(quote);
   return { mensaje: "Cotización eliminada exitosamente" };
+};
+
+// --- Funciones de imágenes ---
+export const uploadQuoteImages = async (id, files) => {
+  if (!files || files.length === 0) {
+    throw new Error("No se subieron archivos");
+  }
+
+  if (files.length > 3) {
+    throw new Error("Máximo 3 imágenes permitidas");
+  }
+
+  const quote = await quoteRepository.findOneBy({ id });
+  if (!quote) {
+    throw new Error("Cotización no encontrada");
+  }
+
+  const currentImages = quote.referenceImages || [];
+
+  if (currentImages.length + files.length > 3) {
+    files.forEach(file => {
+      const filePath = path.join(process.cwd(), "uploads", file.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    });
+    throw new Error(`Solo puedes tener 3 imágenes. Ya tienes ${currentImages.length}`);
+  }
+
+  const newImages = files.map(file => file.filename);
+  quote.referenceImages = [...currentImages, ...newImages];
+
+  await quoteRepository.save(quote);
+
+  return { images: quote.referenceImages, quote };
+};
+
+export const deleteQuoteImage = async (id, filename) => {
+  const quote = await quoteRepository.findOneBy({ id });
+  if (!quote) throw new Error("Cotización no encontrada");
+
+  if (!quote.referenceImages || quote.referenceImages.length === 0) {
+    return { mensaje: "La cotización no tiene imágenes" };
+  }
+
+  const updatedImages = quote.referenceImages.filter(img => img !== filename);
+
+  if (updatedImages.length === quote.referenceImages.length) {
+    throw new Error("Imagen no encontrada");
+  }
+
+  const imagePath = path.join(process.cwd(), "uploads", filename);
+  if (fs.existsSync(imagePath)) {
+    fs.unlinkSync(imagePath);
+  }
+
+  quote.referenceImages = updatedImages.length > 0 ? updatedImages : null;
+  await quoteRepository.save(quote);
+
+  return { mensaje: "Imagen eliminada correctamente" };
 };

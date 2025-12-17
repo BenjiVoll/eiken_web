@@ -2,7 +2,7 @@ import React from 'react';
 import { Edit, Trash2, DollarSign, Package } from 'lucide-react';
 
 const ProductsTable = ({ products, onEdit, onDelete, formatPrice, isManager, setModalImageUrl, setShowImageModal, getImageUrl }) => (
-    <div className="services-grid">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {products.map((product) => (
             <div key={product.id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="w-full h-48 bg-gray-100 flex items-center justify-center" style={{ borderBottom: '1px solid #eee' }}>

@@ -45,7 +45,8 @@ const Home = () => {
     customServiceTitle: '',
     categoryId: '',
     description: '',
-    urgency: 'Bajo',
+    requestedDeliveryDate: '',
+    selectedImages: [],
     notes: ''
   });
 
@@ -120,14 +121,34 @@ const Home = () => {
         showErrorAlert('Validación', 'Debes seleccionar un servicio o especificar un servicio personalizado');
         return;
       }
-      // Construir el payload correcto
+
+      // Construir el payload sin las imágenes
+      const { selectedImages, ...quoteData } = formData;
       const payload = {
-        ...formData,
+        ...quoteData,
         service: formData.service ? formData.service : null,
         customServiceTitle: formData.customServiceTitle || '',
         status: 'Pendiente',
       };
-      await publicAPI.quotes.create(payload);
+
+
+      const createdQuote = await publicAPI.quotes.create(payload);
+
+      // Si hay imágenes seleccionadas, subirlas
+      if (selectedImages && selectedImages.length > 0) {
+        const imageFormData = new FormData();
+        selectedImages.forEach(file => {
+          imageFormData.append('images', file);
+        });
+
+        try {
+          await publicAPI.quotes.uploadImages(createdQuote.data.id, imageFormData);
+        } catch (imageError) {
+          console.error('Error al subir imágenes:', imageError);
+          // No fallar si las imágenes no se suben, la cotización ya está creada
+        }
+      }
+
       showSuccessAlert('¡Cotización enviada!', 'Nos pondremos en contacto contigo pronto.');
       resetForm();
     } catch (error) {
@@ -157,7 +178,8 @@ const Home = () => {
       customServiceTitle: '',
       categoryId: '',
       description: '',
-      urgency: 'Bajo',
+      requestedDeliveryDate: '',
+      selectedImages: [],
       notes: ''
     });
     setShowQuoteModal(false);
@@ -201,7 +223,7 @@ const Home = () => {
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Especialistas en diseño publicitario, gráfica vehicular y competición con más de 20 años de experiencia
             </p>
-            <button 
+            <button
               onClick={openQuoteModal}
               className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto mb-8"
             >
@@ -327,11 +349,10 @@ const Home = () => {
               <button
                 key="all"
                 onClick={() => setSelectedCategory('all')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedCategory === 'all'
-                    ? 'bg-eiken-red-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCategory === 'all'
+                  ? 'bg-eiken-red-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
               >
                 Todos
               </button>
@@ -339,11 +360,10 @@ const Home = () => {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedCategory === category.id
-                      ? 'bg-eiken-red-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCategory === category.id
+                    ? 'bg-eiken-red-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                 >
                   {category.name}
                 </button>
@@ -366,7 +386,7 @@ const Home = () => {
               <p className="text-gray-600">No hay servicios disponibles en este momento.</p>
             </div>
           ) : null}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredServices.map((service) => (
               <div key={service.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
@@ -425,7 +445,7 @@ const Home = () => {
                         <div className="text-xs text-gray-500">Desde</div>
                       </div>
                       <div className="flex space-x-2">
-                        <button 
+                        <button
                           onClick={() => openQuoteModalWithService(service.id)}
                           className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50"
                         >
@@ -463,11 +483,10 @@ const Home = () => {
                 <button
                   key={`project-cat-${category === 'all' ? 'all' : category.id}`}
                   onClick={() => setSelectedProjectCategory(category === 'all' ? 'all' : category.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedProjectCategory === (category === 'all' ? 'all' : category.id)
-                      ? 'bg-eiken-orange-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedProjectCategory === (category === 'all' ? 'all' : category.id)
+                    ? 'bg-eiken-orange-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                 >
                   {category === 'all' ? 'Todos' : category.name}
                 </button>
@@ -511,8 +530,8 @@ const Home = () => {
                       </div>
                     )}
                   </div>
-      {/* Modal de imagen ampliada */}
-      <ImageModal isOpen={modalOpen} imageUrl={modalImageUrl} onClose={handleCloseModal} />
+                  {/* Modal de imagen ampliada */}
+                  <ImageModal isOpen={modalOpen} imageUrl={modalImageUrl} onClose={handleCloseModal} />
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
                     <p className="text-gray-600 text-sm mb-3">{project.description}</p>
@@ -554,12 +573,12 @@ const Home = () => {
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Nuestra Historia</h3>
               <p className="text-gray-600 mb-6">
-                Desde nuestros inicios en 2004, Eiken Design se ha establecido como líder en el diseño publicitario 
-                y gráfica vehicular en Argentina. Comenzamos como un pequeño estudio de diseño y hemos crecido hasta 
+                Desde nuestros inicios en 2004, Eiken Design se ha establecido como líder en el diseño publicitario
+                y gráfica vehicular en Argentina. Comenzamos como un pequeño estudio de diseño y hemos crecido hasta
                 convertirnos en una empresa reconocida en tres divisiones especializadas.
               </p>
               <p className="text-gray-600 mb-6">
-                Nuestro compromiso con la calidad, la innovación y la satisfacción del cliente nos ha permitido 
+                Nuestro compromiso con la calidad, la innovación y la satisfacción del cliente nos ha permitido
                 trabajar con empresas líderes y equipos de competición de primer nivel.
               </p>
               <div className="flex items-center space-x-8">
@@ -581,21 +600,21 @@ const Home = () => {
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">Misión</h4>
                 <p className="text-gray-600 text-sm">
-                  Transformar las ideas de nuestros clientes en soluciones visuales impactantes que comuniquen 
+                  Transformar las ideas de nuestros clientes en soluciones visuales impactantes que comuniquen
                   efectivamente su mensaje y fortalezcan su identidad de marca.
                 </p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">Visión</h4>
                 <p className="text-gray-600 text-sm">
-                  Ser la empresa líder en diseño publicitario y gráfica vehicular en Latinoamérica, reconocida 
+                  Ser la empresa líder en diseño publicitario y gráfica vehicular en Latinoamérica, reconocida
                   por nuestra innovación, calidad y excelencia en el servicio.
                 </p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">Valores</h4>
                 <p className="text-gray-600 text-sm">
-                  Creatividad, calidad, innovación, compromiso con el cliente y responsabilidad social son los 
+                  Creatividad, calidad, innovación, compromiso con el cliente y responsabilidad social son los
                   pilares que guían cada uno de nuestros proyectos.
                 </p>
               </div>
@@ -632,7 +651,7 @@ const Home = () => {
           </div>
 
           <div className="text-center mt-12">
-            <button 
+            <button
               onClick={openQuoteModal}
               className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto"
             >

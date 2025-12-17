@@ -125,6 +125,14 @@ export const publicAPI = {
     create: async (quoteData) => {
       const response = await publicApi.post('/quotes/public', quoteData);
       return response.data;
+    },
+    uploadImages: async (id, formData) => {
+      const response = await publicApi.post(`/quotes/${id}/images`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
     }
   },
 

@@ -6,9 +6,10 @@ import {
     getQuoteById as getQuoteByIdService,
     deleteQuote as deleteQuoteService,
     getQuotesByStatus as getQuotesByStatusService,
-    getQuotesByUrgency as getQuotesByUrgencyService,
     updateQuoteStatus as updateQuoteStatusService,
-    convertQuoteToProject as convertQuoteToProjectService
+    convertQuoteToProject as convertQuoteToProjectService,
+    uploadQuoteImages as uploadQuoteImagesService,
+    deleteQuoteImage as deleteQuoteImageService
 } from "../services/quote.service.js";
 import {
     handleErrorClient,
@@ -89,15 +90,6 @@ export const getQuotesByStatus = async (req, res) => {
     }
 };
 
-// Obtener cotizaciones por urgencia
-export const getQuotesByUrgency = async (req, res) => {
-    try {
-        const quotes = await getQuotesByUrgencyService(req.params.urgency);
-        res.status(200).json(quotes);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
 
 // Actualizar estado de cotización
 export const updateQuoteStatus = async (req, res) => {
@@ -131,9 +123,7 @@ export const replyQuote = async (req, res) => {
         const { id } = req.params;
         const { amount, message } = req.body;
 
-        // Import dynamically to avoid circular dependency issues if any, 
-        // though here we are importing from service at top.
-        // We need to add replyToQuote to the imports at the top first.
+
         const { replyToQuote: replyToQuoteService } = await import("../services/quote.service.js");
 
         const quote = await replyToQuoteService(id, amount, message);
@@ -165,5 +155,27 @@ export const deleteQuote = async (req, res) => {
         res.status(204).send();
     } catch (error) {
         res.status(400).json({ error: error.message });
+    }
+};
+
+// Subir imágenes de referencia
+export const uploadQuoteImages = async (req, res) => {
+    try {
+        const quoteId = req.params.id;
+        const result = await uploadQuoteImagesService(quoteId, req.files);
+        handleSuccess(res, 200, "Imágenes subidas correctamente", result);
+    } catch (error) {
+        handleErrorServer(res, 400, error.message);
+    }
+};
+
+// Eliminar una imagen de referencia
+export const deleteQuoteImage = async (req, res) => {
+    try {
+        const { id, filename } = req.params;
+        const result = await deleteQuoteImageService(id, filename);
+        handleSuccess(res, 200, result.mensaje);
+    } catch (error) {
+        handleErrorServer(res, 400, error.message);
     }
 };

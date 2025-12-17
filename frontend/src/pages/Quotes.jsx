@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { quotesAPI, projectsAPI, clientsAPI, divisionsAPI } from '../services/apiService';
-import { Quote, Search, X, FolderPlus, FolderCheck } from 'lucide-react';
+import { Quote, Search, X, FolderPlus, FolderCheck, Eye } from 'lucide-react';
 import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
 import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
+import QuoteDetailsModal from '../components/modals/QuoteDetailsModal';
 
 const getServiceTitle = (quote) => {
   if (quote.service?.name) {
@@ -24,11 +25,15 @@ const Quotes = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Reply modal state - Moved to top to avoid hook order issues
+  // Estado del modal de respuesta
   const [replyModalOpen, setReplyModalOpen] = useState(false);
   const [selectedQuoteForReply, setSelectedQuoteForReply] = useState(null);
   const [replyAmount, setReplyAmount] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
+
+  // Estado del modal de detalles
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedQuoteForDetails, setSelectedQuoteForDetails] = useState(null);
 
   // Eliminar cotización
   const handleDeleteQuote = async (id) => {
@@ -64,7 +69,7 @@ const Quotes = () => {
       const response = await quotesAPI.getAll();
       setQuotes(response.data || []);
     } catch {
-      // Error al cargar cotizaciones
+
     } finally {
       setLoading(false);
     }
@@ -76,7 +81,7 @@ const Quotes = () => {
 
       setQuotes(Array.isArray(quotes) ? quotes.map(quote =>
         quote.id === quoteId
-          ? { ...quote, status: newStatus } // newStatus ya viene en inglés
+          ? { ...quote, status: newStatus }
           : quote
       ) : []);
     } catch (error) {
@@ -301,6 +306,19 @@ const Quotes = () => {
                           {quote.urgency}
                         </span>
 
+                        {/* Botón Ver Detalles */}
+                        <button
+                          onClick={() => {
+                            setSelectedQuoteForDetails(quote);
+                            setDetailsModalOpen(true);
+                          }}
+                          className="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                          title="Ver Detalles Completos"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Detalles
+                        </button>
+
                         {/* Botón Responder */}
                         {(isAdmin || isManager) && (quote.status === 'Pendiente' || quote.status === 'Revisando' || quote.status === 'pending' || quote.status === 'reviewing') && (
                           <button
@@ -457,6 +475,15 @@ const Quotes = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de Detalles */}
+      <QuoteDetailsModal
+        isOpen={detailsModalOpen}
+        quote={selectedQuoteForDetails}
+        onClose={() => setDetailsModalOpen(false)}
+        getServiceTitle={getServiceTitle}
+        getStatusColor={getStatusColor}
+      />
     </div>
   );
 };

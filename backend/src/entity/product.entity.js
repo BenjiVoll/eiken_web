@@ -30,10 +30,10 @@ export const ProductSchema = new EntitySchema({
             default: 0,
             nullable: false,
         },
-        category: {
-            type: "varchar",
-            length: 100,
+        categoryId: {
+            type: "int",
             nullable: true,
+            name: "category_id",
         },
         image: {
             type: "varchar",
@@ -66,11 +66,22 @@ export const ProductSchema = new EntitySchema({
         },
         {
             name: "IDX_PRODUCT_CATEGORY",
-            columns: ["category"],
+            columns: ["categoryId"],
         },
         {
             name: "IDX_PRODUCT_ACTIVE",
             columns: ["isActive"],
         },
     ],
+    relations: {
+        category: {
+            target: "Category",
+            type: "many-to-one",
+            joinColumn: {
+                name: "category_id",
+                referencedColumnName: "id",
+            },
+            nullable: true,
+        },
+    },
 });

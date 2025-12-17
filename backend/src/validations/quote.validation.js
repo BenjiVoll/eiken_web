@@ -24,6 +24,7 @@ export const quoteBodyValidation = Joi.object({
       "any.required": "El teléfono es obligatorio."
     }),
   company: Joi.string().max(255).allow(null, ''),
+  clientId: Joi.number().integer().positive().allow(null),
   service: Joi.number().integer().allow(null),
   customServiceTitle: Joi.string().max(255).allow(null, ''),
   categoryId: Joi.number().integer().allow(null),
@@ -33,10 +34,7 @@ export const quoteBodyValidation = Joi.object({
     "string.min": "La descripción debe tener como mínimo 10 caracteres.",
     "any.required": "La descripción es obligatoria."
   }),
-  urgency: Joi.string().valid('Bajo', 'Medio', 'Alto', 'Urgente').required().messages({
-    "string.base": "La urgencia debe ser de tipo string.",
-    "any.only": "La urgencia debe ser uno de: Bajo, Medio, Alto, Urgente."
-  }),
+  requestedDeliveryDate: Joi.date().optional().allow(null, ''),
   status: Joi.string().valid('Pendiente', 'En Revisión', 'Cotizado', 'Aprobado', 'Rechazado', 'Convertido').required().messages({
     "string.base": "El estado debe ser de tipo string.",
     "any.only": "El estado debe ser uno de: Pendiente, En Revisión, Cotizado, Aprobado, Rechazado, Convertido."
@@ -96,6 +94,15 @@ export const quoteUpdateValidation = Joi.object({
       "string.base": "La empresa debe ser de tipo string.",
       "string.max": "La empresa no puede tener más de 255 caracteres.",
     }),
+  clientId: Joi.number()
+    .integer()
+    .positive()
+    .allow(null)
+    .messages({
+      "number.base": "El id del cliente debe ser un número.",
+      "number.integer": "El id del cliente debe ser un número entero.",
+      "number.positive": "El id del cliente debe ser un número positivo.",
+    }),
   categoryId: Joi.number()
     .integer()
     .positive()
@@ -104,11 +111,10 @@ export const quoteUpdateValidation = Joi.object({
       "number.integer": "El id de la categoría debe ser un número entero.",
       "number.positive": "El id de la categoría debe ser un número positivo.",
     }),
-  urgency: Joi.string()
-    .valid("Bajo", "Medio", "Alto", "Urgente")
+  requestedDeliveryDate: Joi.date()
+    .allow(null, '')
     .messages({
-      "string.base": "La urgencia debe ser de tipo string.",
-      "any.only": "La urgencia debe ser uno de: Bajo, Medio, Alto, Urgente.",
+      "date.base": "La fecha de entrega debe ser una fecha válida.",
     }),
   description: Joi.string()
     .min(10)

@@ -68,11 +68,11 @@ class MailService {
                   </tr>
                   <tr>
                     <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                      <span style="color: #718096; font-size: 14px; font-weight: 500;">Urgencia</span>
+                      <span style="color: #718096; font-size: 14px; font-weight: 500;">Fecha deseada de entrega</span>
                     </td>
                     <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                      <span style="background-color: ${quote.urgency === 'Urgente' ? '#FF6600' : '#f0f0f0'}; color: ${quote.urgency === 'Urgente' ? '#ffffff' : '#2b2b2b'}; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-                        ${quote.urgency}
+                      <span style="color: #2b2b2b; font-size: 14px; font-weight: 600;">
+                        ${quote.requestedDeliveryDate ? new Date(quote.requestedDeliveryDate).toLocaleDateString('es-CL') : 'No especificada'}
                       </span>
                     </td>
                   </tr>
@@ -225,11 +225,11 @@ class MailService {
                   </tr>
                   <tr>
                     <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
-                      <span style="color: #718096; font-size: 14px; font-weight: 500;">Urgencia</span>
+                      <span style="color: #718096; font-size: 14px; font-weight: 500;">Fecha deseada de entrega</span>
                     </td>
                     <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                      <span style="background-color: ${quote.urgency === 'Urgente' ? '#FF6600' : '#f0f0f0'}; color: ${quote.urgency === 'Urgente' ? '#ffffff' : '#2b2b2b'}; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-                        ${quote.urgency}
+                      <span style="color: #2b2b2b; font-size: 14px; font-weight: 600;">
+                        ${quote.requestedDeliveryDate ? new Date(quote.requestedDeliveryDate).toLocaleDateString('es-CL') : 'No especificada'}
                       </span>
                     </td>
                   </tr>

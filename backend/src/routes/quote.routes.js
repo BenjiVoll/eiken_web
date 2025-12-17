@@ -14,8 +14,11 @@ import {
   getQuotes,
   updateQuote,
   convertQuoteToProject,
-  replyQuote
+  replyQuote,
+  uploadQuoteImages,
+  deleteQuoteImage
 } from "../controllers/quote.controller.js";
+import upload from "../helpers/multer.helper.js";
 
 const router = Router();
 
@@ -23,6 +26,12 @@ const router = Router();
 router.post("/public",
   createBodyValidation(quoteBodyValidation),
   createQuote
+);
+
+// Ruta pública para subir imágenes de referencia
+router.post("/:id/images",
+  upload.array("images", 3),
+  uploadQuoteImages
 );
 
 // Todas las demás rutas requieren autenticación
@@ -59,6 +68,10 @@ router
   .delete("/:id",
     isAdminOrManager,
     deleteQuote
+  )
+  .delete("/:id/images/:filename",
+    isAdminOrManager,
+    deleteQuoteImage
   );
 
 export default router;

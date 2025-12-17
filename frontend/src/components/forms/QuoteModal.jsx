@@ -120,7 +120,7 @@ const QuoteModal = ({
                   if (errors.clientName) setErrors(prev => ({ ...prev, clientName: '' }));
                 }}
                 className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientName ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
-                // required eliminado, validación manual
+              // required eliminado, validación manual
               />
               {errors.clientName && <p className="text-red-600 text-sm mt-1">{errors.clientName}</p>}
             </div>
@@ -137,7 +137,7 @@ const QuoteModal = ({
                   if (errors.clientEmail) setErrors(prev => ({ ...prev, clientEmail: '' }));
                 }}
                 className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientEmail ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
-                // required eliminado, validación manual
+              // required eliminado, validación manual
               />
               {errors.clientEmail && <p className="text-red-600 text-sm mt-1">{errors.clientEmail}</p>}
             </div>
@@ -155,7 +155,7 @@ const QuoteModal = ({
                 }}
                 className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.clientPhone ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
                 placeholder="+56 9 xxxx xxxx"
-                // required eliminado, validación manual
+              // required eliminado, validación manual
               />
               {errors.clientPhone && <p className="text-red-600 text-sm mt-1">{errors.clientPhone}</p>}
             </div>
@@ -200,18 +200,46 @@ const QuoteModal = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                ¿Qué tan urgente es?
+                ¿Cuándo necesitas el trabajo? (Opcional)
               </label>
-              <select
-                value={formData.urgency}
-                onChange={e => setFormData({ ...formData, urgency: e.target.value })}
+              <input
+                type="date"
+                value={formData.requestedDeliveryDate || ''}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={e => setFormData({ ...formData, requestedDeliveryDate: e.target.value })}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
-              >
-                <option value="Bajo">No hay apuro</option>
-                <option value="Medio">En un par de semanas</option>
-                <option value="Alto">Lo antes posible</option>
-                <option value="Urgente">¡Urgente!</option>
-              </select>
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Indícanos tu fecha ideal de entrega
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Imágenes de referencia (Opcional)
+              </label>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(e) => {
+                  const files = Array.from(e.target.files).slice(0, 3);
+                  setFormData({ ...formData, selectedImages: files });
+                }}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Hasta 3 imágenes • JPG, PNG, WebP • Máx. 5MB cada una
+              </p>
+              {formData.selectedImages && formData.selectedImages.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {formData.selectedImages.map((file, idx) => (
+                    <span key={idx} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      {file.name} ({(file.size / 1024 / 1024).toFixed(2)}MB)
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -235,17 +263,17 @@ const QuoteModal = ({
               Cuéntanos más sobre tu proyecto *
             </label>
             <textarea
-                value={formData.description}
-                onChange={e => {
-                  setFormData({ ...formData, description: e.target.value });
-                  if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
-                }}
-                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.description ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
-                rows="4"
-                placeholder="Describe tu proyecto, qué necesitas, colores preferidos, tamaño del vehículo si aplica, etc."
-                
-              />
-              {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
+              value={formData.description}
+              onChange={e => {
+                setFormData({ ...formData, description: e.target.value });
+                if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
+              }}
+              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-eiken-red-500 ${errors.description ? 'border-red-500' : 'border-gray-300 border-[1px]'}`}
+              rows="4"
+              placeholder="Describe tu proyecto, qué necesitas, colores preferidos, tamaño del vehículo si aplica, etc."
+
+            />
+            {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
           </div>
 
           <div className="md:col-span-2">

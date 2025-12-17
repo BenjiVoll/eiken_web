@@ -11,7 +11,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -20,7 +20,7 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
-    // Limpiar error al escribir
+
     if (error) setError('');
   };
 
@@ -30,15 +30,13 @@ const Login = () => {
     setError('');
 
     try {
-      console.log('Intentando login con:', formData.email); // Debug
       const result = await login(formData.email, formData.password);
-      console.log('Resultado del login:', result); // Debug
-      
+
       if (result.success) {
-        console.log('Login exitoso, navegando a dashboard...'); // Debug
+
         navigate('/dashboard');
       } else {
-        console.log('Login falló:', result.error); // Debug
+
         setError(result.error || 'Error al iniciar sesión');
       }
     } catch (error) {
