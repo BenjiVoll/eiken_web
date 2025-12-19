@@ -1,0 +1,170 @@
+/* ===================================
+   SCROLL ANIMATIONS
+   =================================== */
+
+/* Variables de animación */
+:root {
+  --animation-duration: 0.6s;
+  --animation-delay-increment: 0.1s;
+  --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Keyframes - Fade In Up */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Keyframes - Fade In Down */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Keyframes - Fade In Left */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Keyframes - Fade In Right */
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Keyframes - Scale In */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Keyframes - Fade In */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Clase base para elementos animados */
+.animate-on-scroll {
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+/* Cuando el elemento se vuelve visible */
+.animate-on-scroll.animated {
+  animation-duration: var(--animation-duration);
+  animation-fill-mode: both;
+  animation-timing-function: var(--animation-easing);
+  opacity: 1;
+}
+
+/* Tipos de animación */
+.fade-in-up.animated {
+  animation-name: fadeInUp;
+}
+
+.fade-in-down.animated {
+  animation-name: fadeInDown;
+}
+
+.fade-in-left.animated {
+  animation-name: fadeInLeft;
+}
+
+.fade-in-right.animated {
+  animation-name: fadeInRight;
+}
+
+.scale-in.animated {
+  animation-name: scaleIn;
+}
+
+.fade-in.animated {
+  animation-name: fadeIn;
+}
+
+/* Delays para animaciones escalonadas (stagger) */
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-600 {
+  animation-delay: 0.6s;
+}
+
+/* Duración más larga para algunos elementos */
+.duration-800 {
+  animation-duration: 0.8s !important;
+}
+
+.duration-1000 {
+  animation-duration: 1s !important;
+}
+
+/* Accesibilidad - Respetar preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .animate-on-scroll,
+  .animate-on-scroll.animated {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Performance optimizations */
+.animate-on-scroll {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}

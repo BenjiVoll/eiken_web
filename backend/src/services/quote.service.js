@@ -9,12 +9,61 @@ import { mailService } from "./mail.service.js";
 
 const quoteRepository = AppDataSource.getRepository(QuoteSchema);
 
+async function findOrCreateClient(clientData) {
+  const clientRepository = AppDataSource.getRepository(ClientSchema);
+
+  let client = await clientRepository.findOne({
+    where: { email: clientData.clientEmail }
+  });
+
+  if (client) {
+    let updated = false;
+    if (clientData.clientName && !client.name) {
+      client.name = clientData.clientName;
+      updated = true;
+    }
+    if (clientData.clientPhone && !client.phone) {
+      client.phone = clientData.clientPhone;
+      updated = true;
+    }
+    if (clientData.company && !client.company) {
+      client.company = clientData.company;
+      updated = true;
+    }
+
+    if (updated) {
+      await clientRepository.save(client);
+    }
+    return client;
+  }
+
+  const newClient = clientRepository.create({
+    email: clientData.clientEmail,
+    name: clientData.clientName,
+    phone: clientData.clientPhone || null,
+    company: clientData.company || null,
+    rut: null,
+    address: null,
+    clientType: clientData.company ? "company" : "individual",
+    source: "quote",
+    isActive: true,
+  });
+
+  return await clientRepository.save(newClient);
+}
+
 export const createQuote = async (data) => {
   const { clientName, clientEmail, clientPhone, company, service, customServiceTitle, categoryId, description, requestedDeliveryDate, quotedAmount, notes } = data;
 
+  const client = await findOrCreateClient({
+    clientName,
+    clientEmail,
+    clientPhone,
+    company
+  });
+
   let serviceObj = null;
   if (service) {
-    // Si viene un objeto, usar el id. Si viene un id, buscar el objeto.
     if (typeof service === 'object' && service.id) {
       serviceObj = await AppDataSource.getRepository(ServiceSchema).findOneBy({ id: service.id });
     } else if (typeof service === 'number' || typeof service === 'string') {
@@ -23,10 +72,7 @@ export const createQuote = async (data) => {
   }
 
   const quote = quoteRepository.create({
-    clientName,
-    clientEmail,
-    clientPhone,
-    company,
+    clientId: client.id,
     service: serviceObj || null,
     customServiceTitle: customServiceTitle || null,
     category: categoryId ? { id: categoryId } : null,
@@ -39,9 +85,8 @@ export const createQuote = async (data) => {
 
   await quoteRepository.save(quote);
 
-  // Send email notifications asynchronously
-  mailService.sendQuoteNotification(quote);
-  mailService.sendNewQuoteAlert(quote);
+  mailService.sendQuoteNotification({ ...quote, client });
+  mailService.sendNewQuoteAlert({ ...quote, client });
 
   return quote;
 };
@@ -59,7 +104,7 @@ export const updateQuote = async (id, data) => {
 
 export const getQuotes = async () => {
   const quotes = await quoteRepository.find({
-    relations: ["service", "category"],
+    relations: ["client", "service", "category"],
     order: { createdAt: "DESC" }
   });
   return quotes;
@@ -68,7 +113,7 @@ export const getQuotes = async () => {
 export const getQuoteById = async (id) => {
   const quote = await quoteRepository.findOne({
     where: { id },
-    relations: ["service", "category"]
+    relations: ["client", "service", "category"]
   });
   return quote;
 };
@@ -81,7 +126,7 @@ export const getQuotesByStatus = async (status) => {
 
   const quotes = await quoteRepository.find({
     where: { status },
-    relations: ["service", "category"],
+    relations: ["client", "service", "category"],
     order: { createdAt: "DESC" }
   });
   return quotes;
@@ -108,7 +153,7 @@ export const updateQuoteStatus = async (id, newStatus) => {
 export const replyToQuote = async (id, amount, message) => {
   const quote = await quoteRepository.findOne({
     where: { id },
-    relations: ["service", "category"]
+    relations: ["client", "service", "category"]
   });
 
   if (!quote) {
@@ -117,12 +162,9 @@ export const replyToQuote = async (id, amount, message) => {
 
   quote.quotedAmount = amount;
   quote.status = "Cotizado";
-  // Optionally append the proposal message to notes or handle it differently.
-  // For now, we'll append it to notes for record keeping.
   quote.notes = quote.notes ? `${quote.notes}\n\n[Propuesta]: ${message}` : `[Propuesta]: ${message}`;
 
   await quoteRepository.save(quote);
-
 
   mailService.sendQuoteProposal(quote, message);
 
@@ -132,59 +174,36 @@ export const replyToQuote = async (id, amount, message) => {
 export const convertQuoteToProject = async (id) => {
   const quote = await quoteRepository.findOne({
     where: { id },
-    relations: ["service", "category"]
+    relations: ["client", "service", "category"]
   });
 
   if (!quote) {
     throw new Error("Cotización no encontrada");
   }
 
-  if (quote.status !== "Aprobado") {
-    throw new Error("Solo se pueden convertir cotizaciones aprobadas");
-  }
+  const projectRepository = AppDataSource.getRepository(ProjectSchema);
 
-
-  const existingProject = await AppDataSource.getRepository("Project").findOneBy({ quoteId: id });
-  if (existingProject) {
-    throw new Error("Esta cotización ya ha sido convertida a proyecto");
-  }
-
-  // Buscar o crear cliente
-  const clientRepository = AppDataSource.getRepository(ClientSchema);
-  let client = await clientRepository.findOneBy({ email: quote.clientEmail });
-
-  if (!client) {
-    client = clientRepository.create({
-      name: quote.clientName,
-      email: quote.clientEmail,
-      phone: quote.clientPhone,
-      company: quote.company
-    });
-    await clientRepository.save(client);
-  }
-
-  const projectRepository = AppDataSource.getRepository("Project");
-  const project = projectRepository.create({
-    title: quote.customServiceTitle || (quote.service ? quote.service.name : "Proyecto desde Cotización"),
+  const newProject = projectRepository.create({
+    title: quote.customServiceTitle || quote.service?.name || "Proyecto sin título",
     description: quote.description,
-    clientId: client.id,
-    projectType: quote.category ? quote.category.id : 1,
-    division: quote.service ? quote.service.division : 1,
-    status: "Completado",
+    clientId: quote.clientId,
+    projectType: quote.category?.id || null,
+    division: quote.service?.division || 1,
+    status: "Pendiente",
     priority: "Medio",
-    budgetAmount: quote.quotedAmount,
+    budgetAmount: quote.quotedAmount || 0,
     notes: quote.notes,
-    quoteId: quote.id
+    quoteId: quote.id,
   });
 
-  await projectRepository.save(project);
+  await projectRepository.save(newProject);
 
-  // Actualizar estado de cotización
   quote.status = "Convertido";
   await quoteRepository.save(quote);
 
-  return project;
+  return newProject;
 };
+
 
 export const deleteQuote = async (id) => {
   const quote = await quoteRepository.findOneBy({ id });

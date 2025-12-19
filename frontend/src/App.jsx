@@ -84,11 +84,7 @@ function AppContent() {
         />
         <Route
           path="/store"
-          element={
-            <ClientLayout>
-              <Store />
-            </ClientLayout>
-          }
+          element={<Store />}
         />
 
         <Route

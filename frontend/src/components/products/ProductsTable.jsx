@@ -46,7 +46,7 @@ const ProductsTable = ({ products, onEdit, onDelete, formatPrice, isManager, set
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
                             <span className="text-sm font-medium text-gray-500">Categoría:</span>
-                            <span className="text-sm text-gray-900">{product.category || 'Sin categoría'}</span>
+                            <span className="text-sm text-gray-900">{product.category?.name || 'Sin categoría'}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span className="text-sm font-medium text-gray-500 flex items-center">

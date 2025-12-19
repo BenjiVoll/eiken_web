@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getImageUrl } from '../../helpers/getImageUrl';
 import { showErrorAlert } from '../../helpers/sweetAlert';
+import { categoriesAPI } from '../../services/apiService';
 
 const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
     const [imageToDelete, setImageToDelete] = useState(false);
@@ -8,29 +9,41 @@ const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        category: '',
+        categoryId: '',
         price: '',
         stock: ''
     });
     const [imageFile, setImageFile] = useState(null);
     const [imageError, setImageError] = useState('');
     const [errors, setErrors] = useState({});
+    const [categories, setCategories] = useState([]);
 
-    // Categorías predefinidas para productos (puedes ajustar esto o traerlas de una API si existiera una tabla de categorías de productos)
-    const productCategories = [
-        'Merchandising',
-        'Accesorios',
-        'Ropa',
-        'Otros'
-    ];
+    // Cargar categorías al abrir el modal
+    useEffect(() => {
+        if (isOpen) {
+            loadCategories();
+        }
+    }, [isOpen]);
+
+    const loadCategories = async () => {
+        try {
+            const response = await categoriesAPI.getAll();
+            const categoriesData = response.data || response || [];
+            setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+        } catch (error) {
+            console.error('Error loading categories:', error);
+            setCategories([]);
+        }
+    };
 
     useEffect(() => {
         if (!isOpen) return;
         if (product) {
+            const categoryIdValue = product.category?.id || product.categoryId || '';
             setFormData({
                 name: product.name || '',
                 description: product.description || '',
-                category: product.category || '',
+                categoryId: categoryIdValue.toString(),
                 price: product.price ? Math.floor(Number(product.price)).toString() : '',
                 stock: product.stock ? product.stock.toString() : '0'
             });
@@ -40,7 +53,7 @@ const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
             setFormData({
                 name: '',
                 description: '',
-                category: '',
+                categoryId: '',
                 price: '',
                 stock: ''
             });
@@ -85,8 +98,8 @@ const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
         if (!formData.description || !formData.description.trim()) {
             newErrors.description = 'Por favor ingresa una descripción.';
         }
-        if (!formData.category) {
-            newErrors.category = 'Por favor selecciona una categoría.';
+        if (!formData.categoryId) {
+            newErrors.categoryId = 'Por favor selecciona una categoría.';
         }
         if (!formData.price || isNaN(formData.price) || Number(formData.price) < 0) {
             newErrors.price = 'Por favor ingresa un precio válido.';
@@ -156,18 +169,18 @@ const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
                             <select
-                                name="category"
-                                value={formData.category}
+                                name="categoryId"
+                                value={formData.categoryId}
                                 onChange={handleChange}
-                                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 ${errors.category ? 'border-red-500' : 'border-gray-300'}`}
+                                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 ${errors.categoryId ? 'border-red-500' : 'border-gray-300'}`}
                                 disabled={loading}
                             >
                                 <option value="">Selecciona una categoría</option>
-                                {productCategories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
                                 ))}
                             </select>
-                            {errors.category && <p className="text-red-600 text-sm mt-1">{errors.category}</p>}
+                            {errors.categoryId && <p className="text-red-600 text-sm mt-1">{errors.categoryId}</p>}
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>

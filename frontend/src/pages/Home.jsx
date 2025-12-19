@@ -21,6 +21,23 @@ const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState(null);
 
+  // Manejar navegación con hash (ej: /#servicios)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const sectionId = hash.replace('#', '');
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }, 100);
+    }
+  }, []);
+
   const handleImageClick = (imageUrl) => {
     setModalImageUrl(imageUrl);
     setModalOpen(true);
@@ -60,6 +77,7 @@ const Home = () => {
     loadCategories();
   }, []);
 
+
   // Estado y lógica para proyectos
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
@@ -88,6 +106,41 @@ const Home = () => {
     };
     loadProjects();
   }, []);
+
+  // Intersection Observer para animaciones de scroll
+  useEffect(() => {
+    // Esperar un momento para asegurar que el DOM esté completamente listo
+    const timeout = setTimeout(() => {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px' // Activa cuando está a 100px del viewport
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Agregar clase animated para activar la animación
+            entry.target.classList.add('animated');
+          } else {
+            // Remover clase cuando sale del viewport para que pueda animar de nuevo
+            entry.target.classList.remove('animated');
+          }
+        });
+      }, observerOptions);
+
+      // Observar todos los elementos con la clase .animate-on-scroll
+      const elements = document.querySelectorAll('.animate-on-scroll');
+      elements.forEach(el => observer.observe(el));
+
+      // Cleanup
+      return () => {
+        observer.disconnect();
+      };
+    }, 100); // Pequeño delay de 100ms
+
+    return () => clearTimeout(timeout);
+  }, []); // Sin dependencias - solo se ejecuta una vez al montar
+
 
   // Filtrado de servicios por categoría
   const filteredServices = Array.isArray(services) ? services.filter((service) => {
@@ -213,19 +266,19 @@ const Home = () => {
       <section className="bg-gradient-to-br from-eiken-red-50 via-white to-eiken-orange-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="animate-on-scroll fade-in-up text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               Transformamos tu{" "}
               <span className="text-transparent bg-clip-text bg-eiken-racing">
                 Visión
               </span>{" "}
               en Realidad
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="animate-on-scroll fade-in-up delay-100 text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Especialistas en diseño publicitario, gráfica vehicular y competición con más de 20 años de experiencia
             </p>
             <button
               onClick={openQuoteModal}
-              className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto mb-8"
+              className="animate-on-scroll fade-in-up scale-in delay-200 bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto mb-8"
             >
               Solicitar Cotización
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -233,11 +286,11 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
-            <div className="text-center">
+            <div className="animate-on-scroll scale-in delay-300 text-center">
               <div className="text-3xl font-bold text-eiken-red-500">20+</div>
               <div className="text-gray-600">Años de Experiencia</div>
             </div>
-            <div className="text-center">
+            <div className="animate-on-scroll scale-in delay-400 text-center">
               <div className="text-3xl font-bold text-eiken-orange-500">500+</div>
               <div className="text-gray-600">Proyectos Realizados</div>
             </div>
@@ -256,12 +309,12 @@ const Home = () => {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Nuestras Divisiones</h2>
-            <p className="text-gray-600">Especializados en tres áreas principales del diseño</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">Nuestras Divisiones</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Especializados en tres áreas principales del diseño</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
+            <div className="animate-on-scroll fade-in-up delay-200 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="bg-eiken-red-100 p-3 rounded-lg">
                   <Palette className="h-6 w-6 text-eiken-red-500" />
@@ -282,7 +335,7 @@ const Home = () => {
               </ul>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
+            <div className="animate-on-scroll fade-in-up delay-300 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="bg-eiken-orange-100 p-3 rounded-lg">
                   <Truck className="h-6 w-6 text-eiken-orange-500" />
@@ -303,7 +356,7 @@ const Home = () => {
               </ul>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
+            <div className="animate-on-scroll fade-in-up delay-400 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="bg-red-100 p-3 rounded-lg">
                   <Trophy className="h-6 w-6 text-red-600" />
@@ -330,11 +383,11 @@ const Home = () => {
       <section id="servicios" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Nuestros Servicios</h2>
-            <p className="text-gray-600">Soluciones profesionales para todas tus necesidades de diseño</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">Nuestros Servicios</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Soluciones profesionales para todas tus necesidades de diseño</p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="animate-on-scroll fade-in-up delay-200 flex flex-col sm:flex-row gap-4 mb-8">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
@@ -385,87 +438,93 @@ const Home = () => {
             <div className="text-center py-12">
               <p className="text-gray-600">No hay servicios disponibles en este momento.</p>
             </div>
+          ) : filteredServices.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No se encontraron servicios con los filtros seleccionados.</p>
+            </div>
           ) : null}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredServices.map((service) => (
-              <div key={service.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
-                <div className="p-6">
-                  <div className="relative mb-4">
-                    {service.image ? (
-                      <img
-                        src={getImageUrl(service.image)}
-                        alt={service.name}
-                        className="w-full h-48 object-cover rounded-lg cursor-pointer"
-                        onClick={() => handleImageClick(getImageUrl(service.image))}
-                      />
-                    ) : (
-                      <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400 text-lg">
-                        Sin imagen
-                      </div>
-                    )}
-                    {service.popular && (
-                      <span className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 text-xs rounded">
-                        Popular
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-2">{service.name}</h3>
-                    <p className="text-gray-600 text-sm mb-3">{service.description}</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                        <span className="text-sm font-medium">{service.rating || 4.5}</span>
-                        <span className="text-xs text-gray-500">(50+ reseñas)</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-900">Incluye:</h4>
-                      <ul className="text-xs text-gray-600 space-y-1">
-                        {(service.features || ["Servicio profesional", "Calidad garantizada"]).slice(0, 2).map((feature, index) => (
-                          <li key={index} className="flex items-center">
-                            <CheckCircle className="h-3 w-3 text-green-500 mr-2" />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div>
-                        <div className="text-2xl font-bold text-green-600">
-                          ${parseFloat(service.price || 0).toLocaleString()}
+          {filteredServices.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredServices.map((service) => (
+                <div key={service.id} className="animate-on-scroll fade-in-up bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
+                  <div className="p-6">
+                    <div className="relative mb-4">
+                      {service.image ? (
+                        <img
+                          src={getImageUrl(service.image)}
+                          alt={service.name}
+                          className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                          onClick={() => handleImageClick(getImageUrl(service.image))}
+                        />
+                      ) : (
+                        <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400 text-lg">
+                          Sin imagen
                         </div>
-                        <div className="text-xs text-gray-500">Desde</div>
+                      )}
+                      {service.popular && (
+                        <span className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 text-xs rounded">
+                          Popular
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold mb-2">{service.name}</h3>
+                      <p className="text-gray-600 text-sm mb-3">{service.description}</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1">
+                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                          <span className="text-sm font-medium">{service.rating || 4.5}</span>
+                          <span className="text-xs text-gray-500">(50+ reseñas)</span>
+                        </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => openQuoteModalWithService(service.id)}
-                          className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50"
-                        >
-                          Cotizar
-                        </button>
+
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-gray-900">Incluye:</h4>
+                        <ul className="text-xs text-gray-600 space-y-1">
+                          {(service.features || ["Servicio profesional", "Calidad garantizada"]).slice(0, 2).map((feature, index) => (
+                            <li key={index} className="flex items-center">
+                              <CheckCircle className="h-3 w-3 text-green-500 mr-2" />
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-4 border-t">
+                        <div>
+                          <div className="text-2xl font-bold text-green-600">
+                            ${parseFloat(service.price || 0).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-gray-500">Desde</div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => openQuoteModalWithService(service.id)}
+                            className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50"
+                          >
+                            Cotizar
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       <section id="portafolio" className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Proyectos Destacados</h2>
-            <p className="text-gray-600">Algunos de nuestros trabajos más representativos</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">Proyectos Destacados</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Algunos de nuestros trabajos más representativos</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <div className="relative flex-1">
@@ -514,7 +573,7 @@ const Home = () => {
           {/* Cards de proyectos */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProjects.map((project, idx) => (
-              <div key={project.id || idx} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
+              <div key={project.id || idx} className="animate-on-scroll fade-in-up bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
                 <div className="p-6">
                   <div className="relative mb-4">
                     {project.image ? (
@@ -565,12 +624,12 @@ const Home = () => {
       <section id="nosotros" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Sobre Nosotros</h2>
-            <p className="text-gray-600">Más de 20 años transformando ideas en realidad</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">Sobre Nosotros</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Más de 20 años transformando ideas en realidad</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="animate-on-scroll fade-in-left">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Nuestra Historia</h3>
               <p className="text-gray-600 mb-6">
                 Desde nuestros inicios en 2004, Eiken Design se ha establecido como líder en el diseño publicitario
@@ -596,7 +655,7 @@ const Home = () => {
                 </div>
               </div>
             </div>
-            <div className="space-y-6">
+            <div className="animate-on-scroll fade-in-right space-y-6">
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">Misión</h4>
                 <p className="text-gray-600 text-sm">
@@ -626,24 +685,24 @@ const Home = () => {
       <section id="contacto" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Listo para tu Proyecto?</h2>
-            <p className="text-gray-600">Contáctanos y hagamos realidad tu visión</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">¿Listo para tu Proyecto?</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Contáctanos y hagamos realidad tu visión</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow-sm text-center p-6">
+            <div className="animate-on-scroll scale-in delay-200 bg-white rounded-lg shadow-sm text-center p-6">
               <Phone className="h-8 w-8 text-eiken-red-500 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Teléfono</h3>
               <p className="text-gray-600">+54 11 1234-5678</p>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm text-center p-6">
+            <div className="animate-on-scroll scale-in delay-300 bg-white rounded-lg shadow-sm text-center p-6">
               <Mail className="h-8 w-8 text-eiken-red-500 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Email</h3>
               <p className="text-gray-600">eiken@eikendesign.cl</p>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm text-center p-6">
+            <div className="animate-on-scroll scale-in delay-400 bg-white rounded-lg shadow-sm text-center p-6">
               <MapPin className="h-8 w-8 text-eiken-red-500 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Ubicación</h3>
               <p className="text-gray-600">Los Angeles, Chile</p>
@@ -653,7 +712,7 @@ const Home = () => {
           <div className="text-center mt-12">
             <button
               onClick={openQuoteModal}
-              className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto"
+              className="animate-on-scroll fade-in-up scale-in delay-500 bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto"
             >
               Solicitar Cotización Gratuita
               <ArrowRight className="ml-2 h-5 w-5" />

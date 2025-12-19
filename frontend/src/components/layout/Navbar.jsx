@@ -127,17 +127,17 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-lg fixed w-full top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo y navegación principal */}
-          <div className="flex">
-            <div className="flex w-full items-center justify-between">
-              <div className="flex-shrink-0 flex items-center">
+          <div className="flex flex-1">
+            <div className="flex w-full items-center">
+              <div className="flex-shrink-0 flex items-center mr-8">
                 <Link to="/dashboard" className="flex items-center">
-                  <img src={eikenLogo} alt="Eiken Design Logo" className="h-10 w-auto mr-2 rounded shadow" />
+                  <img src={eikenLogo} alt="Eiken Design Logo" className="h-10 w-auto rounded shadow" />
                 </Link>
               </div>
-              <div className="relative hidden md:ml-6 md:flex md:space-x-8 overflow-x-auto flex-nowrap navbar-scroll overflow-visible">
+              <div className="relative hidden md:flex md:space-x-6 overflow-x-auto flex-nowrap navbar-scroll flex-1">
                 {filteredNavigation.map((item) => {
                   if (item.name === 'Servicios') {
                     const Icon = item.icon;
@@ -145,7 +145,7 @@ const Navbar = () => {
                     return (
                       <div key="servicios-dropdown" className="relative">
                         <button
-                          className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 focus:outline-none ${isActive
+                          className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 focus:outline-none whitespace-nowrap ${isActive
                             ? 'border-eiken-orange-500 text-gray-900'
                             : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                             }`}
@@ -157,12 +157,12 @@ const Navbar = () => {
                           <svg className="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         {isServicesDropdownOpen && (
-                          <div className="fixed left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-[100]" style={{ top: '4rem' }}>
-                            <Link to="/intranet/services" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setIsServicesDropdownOpen(false)}>Servicios</Link>
+                          <div className="fixed mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-[60]" style={{ top: '4rem', left: 'auto' }}>
+                            <Link to="/intranet/services" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-md" onClick={() => setIsServicesDropdownOpen(false)}>Servicios</Link>
                             {(isAdmin || isManager) && (
                               <>
-                                <Link to="/intranet/categories" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setIsServicesDropdownOpen(false)}>Categorías</Link>
-                                <Link to="/intranet/divisions" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setIsServicesDropdownOpen(false)}>Divisiones</Link>
+                                <Link to="/intranet/categories" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsServicesDropdownOpen(false)}>Categorías</Link>
+                                <Link to="/intranet/divisions" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-md" onClick={() => setIsServicesDropdownOpen(false)}>Divisiones</Link>
                               </>
                             )}
                           </div>
@@ -176,7 +176,7 @@ const Navbar = () => {
                       <Link
                         key={item.name}
                         to={item.href}
-                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 ${isActive
+                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap ${isActive
                           ? 'border-eiken-orange-500 text-gray-900'
                           : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                           }`}

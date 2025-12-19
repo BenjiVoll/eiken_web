@@ -43,7 +43,8 @@ const Products = () => {
             const productData = {
                 ...formData,
                 price: parseFloat(formData.price),
-                stock: parseInt(formData.stock)
+                stock: parseInt(formData.stock),
+                categoryId: formData.categoryId ? parseInt(formData.categoryId) : null
             };
 
             let savedProduct;
@@ -98,14 +99,17 @@ const Products = () => {
     };
 
     const handleDelete = async (id) => {
-        const result = await confirmAlert('¿Estás seguro de que quieres eliminar este producto?', 'Esta acción no se puede deshacer');
-        if (result.isConfirmed) {
+        const confirmed = await confirmAlert('¿Estás seguro de que quieres eliminar este producto?', 'Esta acción no se puede deshacer');
+
+        if (confirmed) {
             try {
                 await productsAPI.delete(id);
                 await loadProducts();
                 showSuccessAlert('¡Eliminado!', 'El producto ha sido eliminado correctamente');
-            } catch {
-                showErrorAlert('Error', 'No se pudo eliminar el producto');
+            } catch (error) {
+                console.error('Error al eliminar producto:', error);
+                const errorMessage = error.response?.data?.message || error.message || 'No se pudo eliminar el producto';
+                showErrorAlert('Error', errorMessage);
             }
         }
     };
@@ -117,7 +121,7 @@ const Products = () => {
 
     const filteredProducts = Array.isArray(products) ? products.filter(product =>
         product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category?.toLowerCase().includes(searchTerm.toLowerCase())
+        product.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     ) : [];
 
     const formatPrice = (price) => {

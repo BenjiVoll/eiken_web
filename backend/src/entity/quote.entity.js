@@ -11,32 +11,9 @@ export const QuoteSchema = new EntitySchema({
       generated: "increment",
     },
 
-    clientName: {
-      type: "varchar",
-      length: 255,
-      nullable: false,
-      name: "client_name",
-    },
-    clientEmail: {
-      type: "varchar",
-      length: 255,
-      nullable: false,
-      name: "client_email",
-    },
-    clientPhone: {
-      type: "varchar",
-      length: 50,
-      nullable: false,
-      name: "client_phone",
-    },
-    company: {
-      type: "varchar",
-      length: 255,
-      nullable: true,
-    },
     clientId: {
       type: "int",
-      nullable: true,
+      nullable: false,
       name: "client_id",
     },
     customServiceTitle: {
@@ -133,8 +110,8 @@ export const QuoteSchema = new EntitySchema({
       columns: ["status"],
     },
     {
-      name: "IDX_QUOTE_EMAIL",
-      columns: ["clientEmail"],
+      name: "IDX_QUOTE_CLIENT",
+      columns: ["clientId"],
     },
   ],
 });

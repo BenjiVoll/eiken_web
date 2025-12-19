@@ -29,19 +29,19 @@ const QuoteDetailsModal = ({ isOpen, quote, onClose, getServiceTitle, getStatusC
                                         <div className="grid grid-cols-1 gap-2 text-sm">
                                             <div>
                                                 <span className="text-gray-500">Nombre:</span>
-                                                <p className="font-medium">{quote.clientName}</p>
+                                                <p className="font-medium">{quote.client?.name || 'No especificado'}</p>
                                             </div>
                                             <div>
                                                 <span className="text-gray-500">Empresa:</span>
-                                                <p className="font-medium">{quote.company || 'N/A'}</p>
+                                                <p className="font-medium">{quote.client?.company || 'N/A'}</p>
                                             </div>
                                             <div>
                                                 <span className="text-gray-500">Email:</span>
-                                                <p className="font-medium text-blue-600">{quote.clientEmail}</p>
+                                                <p className="font-medium text-blue-600">{quote.client?.email || 'No especificado'}</p>
                                             </div>
                                             <div>
                                                 <span className="text-gray-500">Teléfono:</span>
-                                                <p className="font-medium">{quote.clientPhone}</p>
+                                                <p className="font-medium">{quote.client?.phone || 'No especificado'}</p>
                                             </div>
                                         </div>
                                     </div>

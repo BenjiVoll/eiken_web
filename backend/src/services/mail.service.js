@@ -17,7 +17,7 @@ class MailService {
     try {
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
-        to: quote.clientEmail,
+        to: quote.client?.email,
         subject: `✅ Solicitud Recibida - Cotización #${quote.id || 'Nueva'}`,
         html: this.getHtmlTemplate('Confirmación de Cotización', `
           <!-- Header con colores Eiken Design -->
@@ -46,7 +46,7 @@ class MailService {
               </h2>
               
               <p style="color: #4a5568; font-size: 16px; line-height: 1.8; margin: 0 0 30px 0; text-align: center;">
-                Hola <strong style="color: #FF6600;">${quote.clientName}</strong>,<br>
+                Hola <strong style="color: #FF6600;">${quote.client?.name}</strong>,<br>
                 Hemos recibido tu solicitud de cotización. Nuestro equipo la revisará y te contactará pronto.
               </p>
 
@@ -133,7 +133,7 @@ class MailService {
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
         to: adminEmail,
-        subject: `🔔 Nueva Cotización: ${quote.clientName}`,
+        subject: `🔔 Nueva Cotización: ${quote.client?.name}`,
         html: this.getHtmlTemplate('Nueva Cotización Recibida', `
           <!-- Header con colores Eiken Design -->
           <tr>
@@ -161,7 +161,7 @@ class MailService {
               </h2>
               
               <p style="color: #4a5568; font-size: 16px; line-height: 1.8; margin: 0 0 30px 0; text-align: center;">
-                Se ha recibido una nueva solicitud de <strong style="color: #FF6600;">${quote.clientName}</strong>
+                Se ha recibido una nueva solicitud de <strong style="color: #FF6600;">${quote.client?.name}</strong>
               </p>
 
               <!-- Card con información del cliente -->
@@ -177,7 +177,7 @@ class MailService {
                       <span style="color: #718096; font-size: 14px; font-weight: 500;">Nombre</span>
                     </td>
                     <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                      <span style="color: #2b2b2b; font-size: 14px; font-weight: 600;">${quote.clientName}</span>
+                      <span style="color: #2b2b2b; font-size: 14px; font-weight: 600;">${quote.client?.name}</span>
                     </td>
                   </tr>
                   <tr>
@@ -185,7 +185,7 @@ class MailService {
                       <span style="color: #718096; font-size: 14px; font-weight: 500;">Email</span>
                     </td>
                     <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                      <a href="mailto:${quote.clientEmail}" style="color: #FF6600; font-size: 14px; font-weight: 600; text-decoration: none;">${quote.clientEmail}</a>
+                      <a href="mailto:${quote.client?.email}" style="color: #FF6600; font-size: 14px; font-weight: 600; text-decoration: none;">${quote.client?.email}</a>
                     </td>
                   </tr>
                   <tr>
@@ -193,7 +193,7 @@ class MailService {
                       <span style="color: #718096; font-size: 14px; font-weight: 500;">Teléfono</span>
                     </td>
                     <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
-                      <span style="color: #2b2b2b; font-size: 14px; font-weight: 600;">${quote.clientPhone}</span>
+                      <span style="color: #2b2b2b; font-size: 14px; font-weight: 600;">${quote.client?.phone}</span>
                     </td>
                   </tr>
                   <tr>
@@ -201,7 +201,7 @@ class MailService {
                       <span style="color: #718096; font-size: 14px; font-weight: 500;">Empresa</span>
                     </td>
                     <td style="padding: 12px 0; text-align: right;">
-                      <span style="color: #2b2b2b; font-size: 14px; font-weight: 600;">${quote.company || 'N/A'}</span>
+                      <span style="color: #2b2b2b; font-size: 14px; font-weight: 600;">${quote.client?.company || 'N/A'}</span>
                     </td>
                   </tr>
                 </table>
@@ -280,7 +280,7 @@ class MailService {
     try {
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
-        to: quote.clientEmail,
+        to: quote.client?.email,
         subject: `Propuesta de Cotización - Eiken Design`,
         html: this.getHtmlTemplate('Propuesta de Cotización', `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
@@ -288,7 +288,7 @@ class MailService {
               <h1 style="color: #ffffff; margin: 0;">Eiken Design</h1>
             </div>
             <div style="padding: 20px; border: 1px solid #e2e8f0; border-top: none;">
-              <h2 style="color: #2d3748;">Hola ${quote.clientName},</h2>
+              <h2 style="color: #2d3748;">Hola ${quote.client?.name},</h2>
               <p style="line-height: 1.6;">Hemos analizado tu solicitud y tenemos la siguiente propuesta para ti:</p>
               
               <div style="background-color: #f0fff4; padding: 20px; border-radius: 5px; border-left: 5px solid #48bb78; margin: 20px 0;">

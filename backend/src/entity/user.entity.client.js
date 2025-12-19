@@ -54,6 +54,12 @@ export const ClientSchema = new EntitySchema({
       nullable: false,
       name: "is_active",
     },
+    source: {
+      type: "enum",
+      enum: ["quote", "manual", "order"],
+      default: "quote",
+      nullable: false,
+    },
     createdAt: {
       type: "timestamp",
       createDate: true,

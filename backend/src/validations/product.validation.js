@@ -40,11 +40,13 @@ export const productBodyValidation = Joi.object({
             "number.min": "El stock no puede ser negativo.",
             "any.required": "El stock es obligatorio.",
         }),
-    category: Joi.string()
-        .required()
+    categoryId: Joi.number()
+        .integer()
+        .allow(null)
+        .optional()
         .messages({
-            "string.empty": "La categoría no puede estar vacía.",
-            "any.required": "La categoría es obligatoria.",
+            "number.base": "La categoría debe ser un número.",
+            "number.integer": "La categoría debe ser un número entero.",
         }),
     image: Joi.string()
         .allow(null, "")
@@ -84,9 +86,13 @@ export const productUpdateValidation = Joi.object({
             "number.integer": "El stock debe ser un número entero.",
             "number.min": "El stock no puede ser negativo.",
         }),
-    category: Joi.string()
+    categoryId: Joi.number()
+        .integer()
+        .allow(null)
+        .optional()
         .messages({
-            "string.empty": "La categoría no puede estar vacía.",
+            "number.base": "La categoría debe ser un número.",
+            "number.integer": "La categoría debe ser un número entero.",
         }),
     image: Joi.string()
         .allow(null, "")

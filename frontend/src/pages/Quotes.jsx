@@ -152,8 +152,8 @@ const Quotes = () => {
       const searchLower = searchTerm.toLowerCase();
       const serviceTitle = getServiceTitle(quote);
       return (
-        (quote.clientName && quote.clientName.toLowerCase().includes(searchLower)) ||
-        (quote.company && quote.company.toLowerCase().includes(searchLower)) ||
+        (quote.client?.name && quote.client.name.toLowerCase().includes(searchLower)) ||
+        (quote.client?.company && quote.client.company.toLowerCase().includes(searchLower)) ||
         serviceTitle.toLowerCase().includes(searchLower)
       );
     })
@@ -297,7 +297,7 @@ const Quotes = () => {
                           {getServiceTitle(quote)}
                         </p>
                         <p className="text-sm text-gray-500">
-                          {quote.clientName} - {quote.company} • {quote.clientEmail}
+                          {quote.client?.name || 'Cliente'} {quote.client?.company ? `- ${quote.client.company}` : ''} • {quote.client?.email || 'Sin email'}
                         </p>
                       </div>
                       <div className="ml-2 flex-shrink-0 flex items-center space-x-2">
@@ -368,7 +368,7 @@ const Quotes = () => {
                       <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
                         <div className="flex items-center space-x-4">
                           <span className="text-sm text-gray-600">
-                            Tel: {quote.clientPhone}
+                            Tel: {quote.client?.phone || 'No especificado'}
                           </span>
                           {quote.quotedAmount && (
                             <span className="text-sm font-bold text-green-600">
