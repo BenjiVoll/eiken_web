@@ -64,7 +64,7 @@ const ProjectsTable = ({ projects, isManager, isAdmin, onEdit, onDelete, getStat
             <div className="flex items-center text-sm text-gray-600">
               <Tag className="h-4 w-4 mr-2 text-gray-400" />
               <span className="font-medium">Tipo:</span>
-              <span className="ml-2">{project.category?.name || project.projectType}</span>
+              <span className="ml-2">{project.category?.name || 'Sin categoría'}</span>
             </div>
             <div className="flex items-center text-sm">
               <Clock className="h-4 w-4 mr-2 text-gray-400" />

@@ -52,11 +52,6 @@ export const InventorySchema = new EntitySchema({
       nullable: false,
       name: "min_stock",
     },
-    supplierId: {
-      type: "int",
-      nullable: true,
-      name: "supplier_id",
-    },
     isActive: {
       type: "boolean",
       default: true,
@@ -76,7 +71,7 @@ export const InventorySchema = new EntitySchema({
       name: "updated_at",
     },
   },
-  
+
   indices: [
     {
       name: "IDX_INVENTORY_TYPE",
@@ -95,14 +90,4 @@ export const InventorySchema = new EntitySchema({
       columns: ["isActive"],
     },
   ],
-  
-  relations: {
-    supplier: {
-      type: "many-to-one",
-      target: "Supplier",
-      joinColumn: { name: "supplier_id", referencedColumnName: "id" },
-      inverseSide: "inventoryItems",
-      nullable: true,
-    },
-  },
 });

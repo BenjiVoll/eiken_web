@@ -320,6 +320,128 @@ class MailService {
     }
   }
 
+  async sendLowStockAlert(lowStockItems) {
+    try {
+      if (!lowStockItems || lowStockItems.length === 0) {
+        return { success: false, message: 'No hay items con stock bajo' };
+      }
+
+      const adminEmail = process.env.ADMIN_EMAIL || 'admin@eiken.com';
+
+      // Generar HTML de la tabla de items
+      const itemsHTML = lowStockItems.map(item => `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 12px; font-weight: 500;">${item.name}</td>
+          <td style="padding: 12px;">${item.type}</td>
+          <td style="padding: 12px;">${item.color || 'N/A'}</td>
+          <td style="padding: 12px; color: #dc2626; font-weight: 600;">${item.quantity} ${item.unit}</td>
+          <td style="padding: 12px; color: #059669;">${item.minStock} ${item.unit}</td>
+        </tr>
+      `).join('');
+
+      const mailOptions = {
+        from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
+        to: adminEmail,
+        subject: `⚠️ Alerta de Stock Bajo - ${lowStockItems.length} Material(es) Crítico(s)`,
+        html: this.getHtmlTemplate('Alerta de Stock Bajo', `
+          <!-- Header con colores Eiken Design -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); padding: 40px; text-align: center;">
+              <img src="https://www.eikendesign.cl/fondo.jpg" 
+                   alt="Eiken Design" 
+                   style="max-width: 180px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;"
+              />
+            </td>
+          </tr>
+          
+          <!-- Contenido principal -->
+          <tr>
+            <td style="padding: 50px 40px;">
+              <!-- Icono de alerta -->
+              <div style="text-align: center; margin-bottom: 30px;">
+                <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); border-radius: 50%; line-height: 80px;">
+                  <span style="color: white; font-size: 40px; font-weight: bold;">⚠️</span>
+                </div>
+              </div>
+
+              <h2 style="color: #2b2b2b; font-size: 28px; font-weight: 700; margin: 0 0 20px 0; text-align: center;">
+                Alerta de Stock Bajo
+              </h2>
+              
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.8; margin: 0 0 30px 0; text-align: center;">
+                Se han detectado <strong style="color: #dc2626;">${lowStockItems.length} material(es)</strong> con stock bajo o crítico.
+              </p>
+
+              <!-- Tabla de materiales -->
+              <div style="background: #f7f7f7; border-radius: 12px; padding: 30px; margin-bottom: 30px; border-left: 4px solid #dc2626;">
+                <h3 style="color: #2b2b2b; font-size: 18px; font-weight: 600; margin: 0 0 20px 0;">
+                  <span style="background: #dc2626; width: 6px; height: 24px; display: inline-block; margin-right: 12px; border-radius: 3px;"></span>
+                  Materiales que Requieren Atención
+                </h3>
+                
+                <table style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr style="background: #e5e7eb;">
+                      <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Material</th>
+                      <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Tipo</th>
+                      <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Color</th>
+                      <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Stock Actual</th>
+                      <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Mínimo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${itemsHTML}
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mensaje de acción -->
+              <div style="background-color: #fef3c7; border-radius: 12px; padding: 20px; margin-bottom: 30px; border: 1px solid #fbbf24;">
+                <p style="color: #92400e; font-size: 14px; line-height: 1.6; margin: 0;">
+                  <strong>⚡ Acción requerida:</strong> Por favor, revisar los materiales listados y realizar pedidos de reabastecimiento para evitar interrupciones en la producción.
+                </p>
+              </div>
+
+              <!-- Botón CTA -->
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/inventory" 
+                   style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
+                  Ver Inventario Completo
+                </a>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #2b2b2b; padding: 30px 40px; text-align: center;">
+              <p style="color: #ffffff; font-size: 14px; margin: 0 0 10px 0;">
+                <strong style="color: #FF6600;">Eiken Design</strong> - Sistema de Gestión
+              </p>
+              <p style="color: #a0aec0; font-size: 12px; margin: 0;">
+                © ${new Date().getFullYear()} Eiken Design. Todos los derechos reservados.
+              </p>
+            </td>
+          </tr>
+        `),
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('✅ Low stock alert sent: %s', info.messageId);
+      return {
+        success: true,
+        message: 'Email enviado correctamente',
+        itemCount: lowStockItems.length
+      };
+    } catch (error) {
+      console.error('❌ Error sending low stock alert:', error);
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  }
+
   getHtmlTemplate(title, content) {
     return `
       <!DOCTYPE html>

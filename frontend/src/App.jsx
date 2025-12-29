@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
-import Navbar from './components/layout/Navbar';
+import Sidebar from './components/layout/Sidebar';
+import TopHeader from './components/layout/TopHeader';
 import ClientNavbar from './components/layout/ClientNavbar';
 import Login from './pages/Login';
 import Home from './pages/Home';
@@ -11,7 +12,7 @@ import Categories from './pages/Categories';
 import Divisions from './pages/Divisions';
 import Services from './pages/Services';
 import Inventory from './pages/Inventory';
-import Suppliers from './pages/Suppliers';
+
 import Projects from './pages/Projects';
 import Quotes from './pages/Quotes';
 import Users from './pages/Users';
@@ -47,12 +48,17 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 };
 
 const AppLayout = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <main className="pt-16">
-        {children}
-      </main>
+      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300">
+        <TopHeader onMenuClick={() => setIsSidebarOpen(true)} />
+        <main className="flex-1 p-6">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };
@@ -208,16 +214,7 @@ function AppContent() {
           }
         />
 
-        <Route
-          path="/intranet/suppliers"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <Suppliers />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
+
 
         <Route
           path="/intranet/projects"
@@ -256,7 +253,7 @@ function AppContent() {
         <Route path="/services" element={<Navigate to="/intranet/services" />} />
         <Route path="/inventory" element={<Navigate to="/intranet/inventory" />} />
         <Route path="/products" element={<Navigate to="/intranet/products" />} />
-        <Route path="/suppliers" element={<Navigate to="/intranet/suppliers" />} />
+
         <Route path="/projects" element={<Navigate to="/intranet/projects" />} />
         <Route path="/quotes" element={<Navigate to="/intranet/quotes" />} />
         <Route path="/users" element={<Navigate to="/intranet/users" />} />

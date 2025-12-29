@@ -13,6 +13,8 @@ import {
   getInventory,
   getInventories,
   updateInventory,
+  checkLowStockAlerts,
+  getLowStockItemsCount
 } from "../controllers/inventory.controller.js";
 
 const router = Router();
@@ -21,27 +23,38 @@ router.use(authenticateJwt);
 
 // Rutas para gestión de inventario
 router
-  .post("/", 
+  .post("/",
     isAdminOrManager,
-    createBodyValidation(inventoryBodyValidation), 
+    createBodyValidation(inventoryBodyValidation),
     createInventory
   )
-  .get("/", 
+  .get("/",
     isAnyUser,
     getInventories
   )
-  .get("/:id", 
+  .get("/:id",
     isAnyUser,
     getInventory
   )
-  .patch("/:id", 
+  .patch("/:id",
     isAdminOrManager,
-    createBodyValidation(inventoryBodyValidation), 
+    createBodyValidation(inventoryBodyValidation),
     updateInventory
   )
-  .delete("/:id", 
+  .delete("/:id",
     isAdminOrManager,
     deleteInventory
+  );
+
+// Rutas para alertas de stock bajo
+router
+  .post("/alerts/check",
+    isAdminOrManager,
+    checkLowStockAlerts
+  )
+  .get("/alerts/count",
+    isAnyUser,
+    getLowStockItemsCount
   );
 
 export default router;

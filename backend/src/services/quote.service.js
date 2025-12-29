@@ -187,7 +187,7 @@ export const convertQuoteToProject = async (id) => {
     title: quote.customServiceTitle || quote.service?.name || "Proyecto sin título",
     description: quote.description,
     clientId: quote.clientId,
-    projectType: quote.category?.id || null,
+    category: quote.category?.id || null,
     division: quote.service?.division || 1,
     status: "Pendiente",
     priority: "Medio",

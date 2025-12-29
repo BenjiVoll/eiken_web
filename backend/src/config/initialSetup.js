@@ -4,7 +4,7 @@
 import User from "../entity/user.entity.js";
 import { ServiceSchema } from "../entity/service.entity.js";
 import { InventorySchema } from "../entity/inventory.entity.js";
-import { SupplierSchema } from "../entity/supplier.entity.js";
+
 import { ProjectSchema } from "../entity/project.entity.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
@@ -20,7 +20,7 @@ async function createInitialData() {
     const categoryRepository = AppDataSource.getRepository(CategorySchema);
     const divisionRepository = AppDataSource.getRepository(DivisionSchema);
     const inventoryRepository = AppDataSource.getRepository(InventorySchema);
-    const supplierRepository = AppDataSource.getRepository(SupplierSchema);
+
     const projectRepository = AppDataSource.getRepository(ProjectSchema);
     const quoteRepository = AppDataSource.getRepository(QuoteSchema);
     const clientRepository = AppDataSource.getRepository(ClientSchema);
@@ -298,59 +298,6 @@ async function createInitialData() {
       console.log("Inventario ya existe, omitiendo creación.");
     }
 
-    const supplierCount = await supplierRepository.count();
-    if (supplierCount === 0) {
-      await Promise.all([
-        supplierRepository.save(
-          supplierRepository.create({
-            name: "3M Chile S.A.",
-            contactPerson: "Juan Pérez",
-            phone: "+56 2 2620 2000",
-            email: "contacto@3m.cl",
-            address: "Av. Apoquindo 4700, Las Condes, Santiago",
-            rut: "90.123.000-7",
-            isActive: true,
-          })
-        ),
-        supplierRepository.save(
-          supplierRepository.create({
-            name: "Avery Dennison Chile",
-            contactPerson: "María Gómez",
-            phone: "+56 2 2555 1234",
-            email: "ventas@averydennison.cl",
-            address: "Av. Nueva Providencia 1860, Providencia, Santiago",
-            rut: "91.456.000-2",
-            isActive: true,
-          })
-        ),
-        supplierRepository.save(
-          supplierRepository.create({
-            name: "Oracal Chile SpA",
-            contactPerson: "Carlos Rojas",
-            phone: "+56 2 2777 5678",
-            email: "info@oracal.cl",
-            address: "Av. Las Industrias 2500, Maipú, Santiago",
-            rut: "92.789.000-5",
-            isActive: true,
-          })
-        ),
-        supplierRepository.save(
-          supplierRepository.create({
-            name: "Distribuidora Vinilos Sur",
-            contactPerson: "Ana Valdés",
-            phone: "+56 41 254 7890",
-            email: "contacto@vinilossur.cl",
-            address: "Calle O'Higgins 1234, Concepción",
-            rut: "93.234.000-8",
-            isActive: true,
-          })
-        ),
-      ]);
-      console.log("✅ Proveedores creados exitosamente.");
-    } else {
-      console.log("ℹ️  Proveedores ya existen, omitiendo creación.");
-    }
-
     // Crear clientes
     const clientCount = await clientRepository.count();
     if (clientCount === 0) {
@@ -421,7 +368,7 @@ async function createInitialData() {
             title: "Wrap Completo Flota Transportes Bio-Bío",
             description: "Diseño e instalación de wrap completo para 25 camiones de carga",
             clientId: 1,
-            projectType: vehicularCategory.id,
+            category: vehicularCategory.id,
             division: truckDivision.id,
             status: "Completado",
             priority: "Alto",
@@ -460,7 +407,7 @@ async function createInitialData() {
             title: "Cuerpo de Bomberos Concepción - Equipamiento Gráfico",
             description: "Diseño e instalación de gráficas para carros bomba y equipamiento",
             clientId: 4,
-            projectType: vehicularCategory.id,
+            category: vehicularCategory.id,
             division: designDivision.id,
             status: "Completado",
             priority: "Alto",
@@ -473,7 +420,7 @@ async function createInitialData() {
             title: "Flota Express Chilexpress",
             description: "Wrap completo para 40 vehículos de reparto",
             clientId: 1,
-            projectType: vehicularCategory.id,
+            category: vehicularCategory.id,
             division: truckDivision.id,
             status: "En Proceso",
             priority: "Alto",

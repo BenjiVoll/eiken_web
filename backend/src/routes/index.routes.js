@@ -7,7 +7,7 @@ import publicServiceRoutes from "./public.service.routes.js";
 import publicProjectRoutes from "./public.project.routes.js";
 import quoteRoutes from "./quote.routes.js";
 import inventoryRoutes from "./inventory.routes.js";
-import supplierRoutes from "./supplier.routes.js";
+
 import projectRoutes from "./project.routes.js";
 import categoryRoutes from "./category.routes.js";
 import divisionRoutes from "./division.routes.js";
@@ -31,7 +31,7 @@ router
     .use("/public/products", publicProductRoutes)
     .use("/quotes", quoteRoutes)
     .use("/inventory", inventoryRoutes)
-    .use("/suppliers", supplierRoutes)
+
     .use("/projects", projectRoutes)
     .use("/categories", categoryRoutes)
     .use("/divisions", divisionRoutes)

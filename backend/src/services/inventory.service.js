@@ -1,21 +1,11 @@
 "use strict";
 import { AppDataSource } from "../config/configDb.js";
 import { InventorySchema } from "../entity/inventory.entity.js";
-import { SupplierSchema } from "../entity/supplier.entity.js";
 
 const inventoryRepository = AppDataSource.getRepository(InventorySchema);
-const supplierRepository = AppDataSource.getRepository(SupplierSchema);
 
 export const createInventoryItem = async (data) => {
-  const { name, type, color, quantity, unit, width, brand, model, minStock, unitCost, supplierId } = data;
-
-  // Si se proporciona supplierId, verificar que el proveedor existe
-  if (supplierId) {
-    const supplier = await supplierRepository.findOneBy({ id: supplierId });
-    if (!supplier) {
-      throw new Error("Proveedor no encontrado");
-    }
-  }
+  const { name, type, color, quantity, unit, width, brand, model, minStock, unitCost } = data;
 
   const item = inventoryRepository.create({
     name,
@@ -28,7 +18,6 @@ export const createInventoryItem = async (data) => {
     model,
     minStock: minStock || 5,
     unitCost,
-    supplierId,
     isActive: true
   });
 
@@ -42,14 +31,6 @@ export const updateInventoryItem = async (id, data) => {
     throw new Error("Item de inventario no encontrado");
   }
 
-  // Si se está cambiando el proveedor, verificar que existe
-  if (data.supplierId && data.supplierId !== item.supplierId) {
-    const supplier = await supplierRepository.findOneBy({ id: data.supplierId });
-    if (!supplier) {
-      throw new Error("Proveedor no encontrado");
-    }
-  }
-
   Object.assign(item, data);
   await inventoryRepository.save(item);
   return item;
@@ -58,7 +39,6 @@ export const updateInventoryItem = async (id, data) => {
 export const getInventoryItems = async () => {
   const items = await inventoryRepository.find({
     where: { isActive: true },
-    relations: ["supplier"],
     order: { name: "ASC" }
   });
   return items;
@@ -67,7 +47,7 @@ export const getInventoryItems = async () => {
 export const getInventoryItemById = async (id) => {
   const item = await inventoryRepository.findOne({
     where: { id, isActive: true },
-    relations: ["supplier", "movements", "projectUsages"]
+    relations: ["movements", "projectUsages"]
   });
   return item;
 };
@@ -75,7 +55,6 @@ export const getInventoryItemById = async (id) => {
 export const getInventoryByType = async (type) => {
   const items = await inventoryRepository.find({
     where: { type, isActive: true },
-    relations: ["supplier"],
     order: { name: "ASC" }
   });
   return items;
@@ -84,20 +63,10 @@ export const getInventoryByType = async (type) => {
 export const getLowStockItems = async () => {
   const items = await inventoryRepository
     .createQueryBuilder("inventory")
-    .leftJoinAndSelect("inventory.supplier", "supplier")
     .where("inventory.isActive = :isActive", { isActive: true })
     .andWhere("inventory.quantity <= inventory.minStock")
     .orderBy("inventory.quantity", "ASC")
     .getMany();
-  return items;
-};
-
-export const getInventoryBySupplier = async (supplierId) => {
-  const items = await inventoryRepository.find({
-    where: { supplierId, isActive: true },
-    relations: ["supplier"],
-    order: { name: "ASC" }
-  });
   return items;
 };
 

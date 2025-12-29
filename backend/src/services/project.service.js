@@ -30,7 +30,7 @@ export const createProject = async (data) => {
     title,
     description,
     clientId,
-    projectType: categoryId,
+    category: categoryId,
     division,
     status,
     priority,
@@ -69,9 +69,9 @@ export const updateProject = async (id, data) => {
     }
   }
 
-  // Si se actualiza categoryId, mapear a projectType
+  // Si se actualiza categoryId, mapear a category
   if (data.categoryId) {
-    project.projectType = data.categoryId;
+    project.category = data.categoryId;
     delete data.categoryId;
   }
   // Asignar el resto de campos

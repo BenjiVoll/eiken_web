@@ -13,9 +13,10 @@ import {
   Boxes,
   Receipt,
   UserPlus,
-  Info
+  Info,
+  AlertTriangle
 } from 'lucide-react';
-import { servicesAPI, inventoryAPI, suppliersAPI, projectsAPI, quotesAPI, usersAPI, activitiesAPI, dashboardAPI } from '../services/apiService';
+import { servicesAPI, inventoryAPI, projectsAPI, quotesAPI, usersAPI, activitiesAPI, dashboardAPI } from '../services/apiService';
 
 const Dashboard = () => {
   const { user, isAdmin, isManager } = useAuth();
@@ -23,9 +24,9 @@ const Dashboard = () => {
     users: 0,
     services: 0,
     inventory: 0,
-    suppliers: 0,
     projects: 0,
-    quotes: 0
+    quotes: 0,
+    lowStockItems: 0
   });
   const [loading, setLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -75,7 +76,6 @@ const Dashboard = () => {
         const promises = [
           servicesAPI.getAll().catch(() => ({ data: [] })),
           inventoryAPI.getAll().catch(() => ({ data: [] })),
-          suppliersAPI.getAll().catch(() => ({ data: [] })),
           projectsAPI.getAll().catch(() => ({ data: [] })),
           quotesAPI.getAll().catch(() => ({ data: [] }))
         ];
@@ -86,13 +86,17 @@ const Dashboard = () => {
 
         const results = await Promise.all(promises);
 
+        // Fetch low stock count
+        const lowStockResponse = await inventoryAPI.get('/alerts/count');
+        const lowStockCount = lowStockResponse.data?.data?.count || 0;
+
         setStats({
           services: results[0]?.data?.length || 0,
           inventory: results[1]?.data?.length || 0,
-          suppliers: results[2]?.data?.length || 0,
-          projects: results[3]?.data?.length || 0,
-          quotes: results[4]?.data?.length || 0,
-          users: isManager ? (results[5]?.data?.length || 0) : 0
+          projects: results[2]?.data?.length || 0,
+          quotes: results[3]?.data?.length || 0,
+          users: isManager ? (results[4]?.data?.length || 0) : 0,
+          lowStockItems: lowStockCount
         });
 
         const activityData = await activitiesAPI.getRecent(10);
@@ -134,13 +138,6 @@ const Dashboard = () => {
       href: '/inventory'
     },
     {
-      title: 'Proveedores',
-      value: stats.suppliers,
-      icon: Briefcase,
-      color: 'bg-purple-500',
-      href: '/suppliers'
-    },
-    {
       title: 'Proyectos',
       value: stats.projects,
       icon: FileText,
@@ -153,6 +150,14 @@ const Dashboard = () => {
       icon: Quote,
       color: 'bg-pink-500',
       href: '/quotes'
+    },
+    {
+      title: 'Materiales Críticos',
+      value: stats.lowStockItems,
+      icon: AlertTriangle,
+      color: 'bg-red-600',
+      href: '/inventory',
+      badge: stats.lowStockItems > 0 ? 'Stock Bajo' : 'OK'
     }
   ];
 

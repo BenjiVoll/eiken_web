@@ -62,12 +62,6 @@ const Navbar = () => {
       requiresRole: null
     },
     {
-      name: 'Proveedores',
-      href: '/intranet/suppliers',
-      icon: Briefcase,
-      requiresRole: null
-    },
-    {
       name: 'Proyectos',
       href: '/intranet/projects',
       icon: FileText,
