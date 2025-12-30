@@ -44,8 +44,19 @@ const UserModal = ({ isOpen, onClose, onSave, user = null, loading = false }) =>
     if (!formData.name.trim()) newErrors.name = 'El nombre es requerido';
     if (!formData.email.trim()) newErrors.email = 'El email es requerido';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Email no válido';
-    if (!user && !formData.password.trim()) newErrors.password = 'La contraseña es requerida';
-    if (formData.password && formData.password.length > 0 && formData.password.length < 6) newErrors.password = 'Mínimo 6 caracteres';
+
+    // Validación de contraseña
+    if (!user && !formData.password.trim()) {
+      newErrors.password = 'La contraseña es requerida';
+    } else if (formData.password && formData.password.length > 0) {
+      const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]+$/;
+      if (formData.password.length < 8) {
+        newErrors.password = 'Mínimo 8 caracteres';
+      } else if (!passwordRegex.test(formData.password)) {
+        newErrors.password = 'Debe contener al menos letras y números';
+      }
+    }
+
     if (!formData.role) newErrors.role = 'El rol es requerido';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -56,8 +67,6 @@ const UserModal = ({ isOpen, onClose, onSave, user = null, loading = false }) =>
     if (validateForm()) {
       const submitData = { ...formData };
       if (!submitData.password) delete submitData.password; // No enviar password vacío
-      // Solo enviar isActive si es edición
-      if (!user) delete submitData.isActive;
       onSave(submitData);
     }
   };
@@ -122,8 +131,11 @@ const UserModal = ({ isOpen, onClose, onSave, user = null, loading = false }) =>
               disabled={loading}
               autoComplete="new-password"
               placeholder={user ? 'Nueva contraseña (opcional)' : 'Contraseña'}
-              minLength={user ? 0 : 6}
+              minLength={user ? 0 : 8}
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Mínimo 8 caracteres con letras y números (ej: admin2025, Manager2025)
+            </p>
             {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password}</p>}
           </div>
           <div>

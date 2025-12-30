@@ -78,6 +78,11 @@ export const productsAPI = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   deleteImage: (id) => api.delete(`/products/${id}/image`),
+  // Product Materials
+  getMaterials: (productId) => api.get(`/products/${productId}/materials`),
+  addMaterial: (productId, data) => api.post(`/products/${productId}/materials`, data),
+  updateMaterial: (materialId, data) => api.put(`/products/materials/${materialId}`, data),
+  deleteMaterial: (materialId) => api.delete(`/products/materials/${materialId}`),
 };
 
 export const ordersAPI = {
@@ -86,6 +91,10 @@ export const ordersAPI = {
   getByEmail: (email) => api.get(`/orders/email/${email}`),
   updateStatus: (id, status) => api.patch(`/orders/${id}/status`, { status }),
   delete: (id) => api.delete(`/orders/${id}`),
+  // Material usage
+  getMaterials: (orderId) => api.get(`/orders/${orderId}/materials`),
+  registerMaterials: (orderId, materials) => api.post(`/orders/${orderId}/materials`, { materials }),
+  deleteMaterial: (usageId) => api.delete(`/orders/materials/${usageId}`),
 };
 
 export const publicAPI = {
@@ -194,6 +203,11 @@ export const inventoryAPI = {
 
   delete: async (id) => {
     const response = await api.delete(`/inventory/${id}`);
+    return response.data;
+  },
+
+  getLowStockCount: async () => {
+    const response = await api.get('/inventory/alerts/count');
     return response.data;
   }
 };

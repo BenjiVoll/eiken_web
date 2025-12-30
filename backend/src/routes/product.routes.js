@@ -5,8 +5,9 @@ import {
     isAnyUser
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { createBodyValidation } from "../middlewares/validations.middleware.js";
+import { createBodyValidation, createParamsValidation } from "../middlewares/validations.middleware.js";
 import { productBodyValidation, productUpdateValidation } from "../validations/product.validation.js";
+import { idParamValidation } from "../validations/common.validation.js";
 import upload from "../helpers/multer.helper.js";
 import {
     createProduct,
@@ -18,6 +19,12 @@ import {
     deleteProductImage,
     getActiveProducts
 } from "../controllers/product.controller.js";
+import {
+    addMaterialController,
+    getProductMaterialsController,
+    updateMaterialController,
+    removeMaterialController
+} from "../controllers/productMaterial.controller.js";
 
 const router = Router();
 
@@ -45,25 +52,47 @@ router
     )
     .get("/:id",
         isAnyUser,
+        createParamsValidation(idParamValidation),
         getProduct
     )
     .patch("/:id",
         isAdminOrManager,
+        createParamsValidation(idParamValidation),
         createBodyValidation(productUpdateValidation),
         updateProduct
     )
     .delete("/:id",
         isAdminOrManager,
+        createParamsValidation(idParamValidation),
         deleteProduct
     )
     .post("/:id/image",
         isAdminOrManager,
+        createParamsValidation(idParamValidation),
         upload.single("image"),
         uploadProductImage
     )
     .delete("/:id/image",
         isAdminOrManager,
+        createParamsValidation(idParamValidation),
         deleteProductImage
+    )
+    // Rutas para materiales de productos
+    .post("/:productId/materials",
+        isAdminOrManager,
+        addMaterialController
+    )
+    .get("/:productId/materials",
+        isAnyUser,
+        getProductMaterialsController
+    )
+    .put("/materials/:materialId",
+        isAdminOrManager,
+        updateMaterialController
+    )
+    .delete("/materials/:materialId",
+        isAdminOrManager,
+        removeMaterialController
     );
 
 export default router;

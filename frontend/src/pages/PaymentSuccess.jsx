@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { useCart } from '@/context/CartContext';
 import axios from 'axios';
 
 const PaymentSuccess = () => {

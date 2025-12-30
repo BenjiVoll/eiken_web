@@ -50,6 +50,8 @@ export const productBodyValidation = Joi.object({
         }),
     image: Joi.string()
         .allow(null, "")
+        .optional(),
+    isActive: Joi.boolean()
         .optional()
 }).messages({
     "object.unknown": "No se permiten propiedades adicionales.",

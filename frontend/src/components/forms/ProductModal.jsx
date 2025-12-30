@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { getImageUrl } from '../../helpers/getImageUrl';
-import { showErrorAlert } from '../../helpers/sweetAlert';
-import { categoriesAPI } from '../../services/apiService';
+﻿import { useState, useEffect } from 'react';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import { showErrorAlert } from '@/helpers/sweetAlert';
+import { categoriesAPI } from '@/services/apiService';
+import ProductMaterialsSection from '@/components/products/ProductMaterialsSection';
 
 const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
     const [imageToDelete, setImageToDelete] = useState(false);
@@ -45,7 +46,8 @@ const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
                 description: product.description || '',
                 categoryId: categoryIdValue.toString(),
                 price: product.price ? Math.floor(Number(product.price)).toString() : '',
-                stock: product.stock ? product.stock.toString() : '0'
+                stock: product.stock ? product.stock.toString() : '0',
+                isActive: product.isActive !== undefined ? product.isActive : true
             });
             setImagePreview(product.image ? getImageUrl(product.image) : null);
             setImageToDelete(false);
@@ -55,7 +57,8 @@ const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
                 description: '',
                 categoryId: '',
                 price: '',
-                stock: ''
+                stock: '',
+                isActive: true
             });
             setImageFile(null);
             setImageError('');
@@ -236,6 +239,27 @@ const ProductModal = ({ isOpen, onClose, onSave, product, loading }) => {
                             />
                             {imageError && <p className="text-red-600 text-sm mt-1">{imageError}</p>}
                         </div>
+
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                name="isActive"
+                                checked={formData.isActive}
+                                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                disabled={loading}
+                                id="header-isActive"
+                            />
+                            <label htmlFor="header-isActive" className="ml-2 block text-sm text-gray-700">
+                                Producto activo (visible en tienda)
+                            </label>
+                        </div>
+
+                        {/* Sección de Materiales - Solo si el producto ya existe */}
+                        {product && product.id && (
+                            <ProductMaterialsSection productId={product.id} />
+                        )}
+
                         <div className="flex justify-end space-x-3 pt-4">
                             <button
                                 type="button"

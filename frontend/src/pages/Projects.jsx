@@ -1,14 +1,14 @@
-import { useAuth } from '../context/AuthContext';
+﻿import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
-import ImageModal from '../components/forms/ImageModal';
-import { projectsAPI, clientsAPI } from '../services/apiService';
+import ImageModal from '@/components/forms/ImageModal';
+import { projectsAPI, clientsAPI } from '@/services/apiService';
 import { FileText } from 'lucide-react';
-import ProjectsHeader from '../components/projects/ProjectsHeader';
-import ProjectsSearchBar from '../components/projects/ProjectsSearchBar';
-import ProjectsTable from '../components/projects/ProjectsTable';
-import ProjectModal from '../components/forms/ProjectModal';
-import { getImageUrl } from '../helpers/getImageUrl';
-import { showSuccessAlert, showErrorAlert, deleteDataAlert } from '../helpers/sweetAlert';
+import ProjectsHeader from '@/components/projects/ProjectsHeader';
+import ProjectsSearchBar from '@/components/projects/ProjectsSearchBar';
+import ProjectsTable from '@/components/projects/ProjectsTable';
+import ProjectModal from '@/components/forms/ProjectModal';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import { showSuccessAlert, showErrorAlert, deleteDataAlert } from '@/helpers/sweetAlert';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);

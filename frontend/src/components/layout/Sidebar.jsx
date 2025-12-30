@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import {
     Home,
     Settings,
@@ -18,17 +18,12 @@ import {
     Layers
 } from 'lucide-react';
 
-const Sidebar = ({ isOpen, setIsOpen }) => {
+const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
     const { isAdmin } = useAuth();
-    const [isCollapsed, setIsCollapsed] = useState(() => {
-        const saved = localStorage.getItem('sidebarCollapsed');
-        return saved === 'true';
-    });
     const [expandedGroups, setExpandedGroups] = useState({
-        gestion: true,
-        servicios: true,
-        proyectos: true,
+        'productos-tienda': true,
+        'servicios-proyectos': true,
         admin: true
     });
 
@@ -54,9 +49,9 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         },
         {
             type: 'group',
-            id: 'gestion',
-            name: 'Gestión',
-            icon: Boxes,
+            id: 'productos-tienda',
+            name: 'Productos & Tienda',
+            icon: ShoppingBag,
             items: [
                 { name: 'Productos', href: '/intranet/products', icon: Package },
                 { name: 'Inventario', href: '/intranet/inventory', icon: Boxes },
@@ -65,28 +60,20 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         },
         {
             type: 'group',
-            id: 'servicios',
-            name: 'Servicios',
+            id: 'servicios-proyectos',
+            name: 'Servicios & Proyectos',
             icon: Settings,
             items: [
                 { name: 'Servicios', href: '/intranet/services', icon: Settings },
+                { name: 'Proyectos', href: '/intranet/projects', icon: FileText },
+                { name: 'Cotizaciones', href: '/intranet/quotes', icon: Quote },
                 { name: 'Categorías', href: '/intranet/categories', icon: Tag },
                 { name: 'Divisiones', href: '/intranet/divisions', icon: Layers }
-            ]
-        },
-        {
-            type: 'group',
-            id: 'proyectos',
-            name: 'Proyectos',
-            icon: FileText,
-            items: [
-                { name: 'Proyectos', href: '/intranet/projects', icon: FileText },
-                { name: 'Cotizaciones', href: '/intranet/quotes', icon: Quote }
             ]
         }
     ];
 
-    // Add admin group if user is admin
+    // Agregar grupo de administración si el usuario es admin
     if (isAdmin) {
         navigationGroups.push({
             type: 'group',

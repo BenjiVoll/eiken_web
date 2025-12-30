@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { inventoryAPI } from '../services/apiService';
+﻿import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { inventoryAPI } from '@/services/apiService';
 import { Plus, Edit, Trash2, Search, Package, AlertTriangle, X } from 'lucide-react';
 import {
   deleteDataAlert,
@@ -8,7 +8,7 @@ import {
   showErrorAlert,
   createDataAlert,
   updateDataAlert
-} from '../helpers';
+} from '@/helpers';
 
 const Inventory = () => {
   const { isManager, isAdmin } = useAuth();
@@ -132,9 +132,12 @@ const Inventory = () => {
 
 
   const getStockStatus = (item) => {
-    if (item.quantity <= item.minStock) {
+    const quantity = parseFloat(item.quantity);
+    const minStock = parseFloat(item.minStock);
+
+    if (quantity <= minStock) {
       return { status: 'low', color: 'text-red-600', bg: 'bg-red-100' };
-    } else if (item.quantity <= item.minStock * 2) {
+    } else if (quantity <= minStock * 2) {
       return { status: 'medium', color: 'text-yellow-600', bg: 'bg-yellow-100' };
     }
     return { status: 'good', color: 'text-green-600', bg: 'bg-green-100' };

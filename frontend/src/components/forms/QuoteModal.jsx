@@ -1,5 +1,5 @@
-import React from 'react';
-import ServiceInfoAlert from '../alerts/ServiceInfoAlert';
+﻿import React from 'react';
+import ServiceInfoAlert from '@/components/alerts/ServiceInfoAlert';
 import { X } from 'lucide-react';
 
 const QuoteModal = ({

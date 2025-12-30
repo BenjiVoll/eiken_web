@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { quotesAPI, projectsAPI, clientsAPI, divisionsAPI } from '../services/apiService';
+﻿import React, { useState, useEffect } from 'react';
+import { quotesAPI, projectsAPI, clientsAPI, divisionsAPI } from '@/services/apiService';
 import { Quote, Search, X, FolderPlus, FolderCheck, Eye } from 'lucide-react';
-import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
+import { showSuccessAlert, showErrorAlert, confirmAlert } from '@/helpers/sweetAlert';
 import Swal from 'sweetalert2';
-import { useAuth } from '../context/AuthContext';
-import QuoteDetailsModal from '../components/modals/QuoteDetailsModal';
+import { useAuth } from '@/context/AuthContext';
+import QuoteDetailsModal from '@/components/modals/QuoteDetailsModal';
 
 const getServiceTitle = (quote) => {
   if (quote.service?.name) {

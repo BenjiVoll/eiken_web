@@ -58,7 +58,27 @@ export const getProducts = async () => {
         relations: ['category'],
         order: { name: "ASC" }
     });
-    return products;
+
+    // Cargar materiales para cada producto
+    const ProductMaterialSchema = (await import("../entity/productMaterial.entity.js")).ProductMaterialSchema;
+    const productMaterialRepo = AppDataSource.getRepository(ProductMaterialSchema);
+
+    const productsWithMaterials = await Promise.all(
+        products.map(async (product) => {
+            const materials = await productMaterialRepo.find({
+                where: { productId: product.id },
+                relations: ['inventory']
+            });
+
+            return {
+                ...product,
+                materials,
+                materialsCount: materials.length
+            };
+        })
+    );
+
+    return productsWithMaterials;
 };
 
 export const getActiveProducts = async () => {

@@ -42,12 +42,16 @@ export const InventorySchema = new EntitySchema({
       nullable: false,
     },
     quantity: {
-      type: "int",
+      type: "decimal",
+      precision: 10,
+      scale: 2,
       nullable: false,
       default: 0,
     },
     minStock: {
-      type: "int",
+      type: "decimal",
+      precision: 10,
+      scale: 2,
       default: 5,
       nullable: false,
       name: "min_stock",

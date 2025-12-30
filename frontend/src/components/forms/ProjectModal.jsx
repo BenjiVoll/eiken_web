@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { categoriesAPI, divisionsAPI } from '../../services/apiService';
-import { getImageUrl } from '../../helpers/getImageUrl';
-import { showErrorAlert, showSuccessAlert } from '../../helpers/sweetAlert';
+﻿import React, { useState, useEffect } from 'react';
+import { categoriesAPI, divisionsAPI } from '@/services/apiService';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import { showErrorAlert, showSuccessAlert } from '@/helpers/sweetAlert';
 import { X } from 'lucide-react';
 
 const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false, clients = [], onImageUpload, noClientsMessage }) => {

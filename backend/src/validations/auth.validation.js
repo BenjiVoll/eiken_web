@@ -12,15 +12,17 @@ export const authValidation = Joi.object({
       "string.email": "Debe ser un correo electrónico válido.",
     }),
   password: Joi.string()
-    .min(6)
-    .max(50)
+    .min(8)
+    .max(100)
+    .pattern(/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]+$/)
     .required()
     .messages({
       "string.empty": "La contraseña no puede estar vacía.",
       "any.required": "La contraseña es obligatoria.",
       "string.base": "La contraseña debe ser de tipo texto.",
-      "string.min": "La contraseña debe tener al menos 6 caracteres.",
-      "string.max": "La contraseña debe tener como máximo 50 caracteres.",
+      "string.min": "La contraseña debe tener al menos 8 caracteres.",
+      "string.max": "La contraseña debe tener como máximo 100 caracteres.",
+      "string.pattern.base": "La contraseña debe contener al menos letras y números."
     }),
 }).unknown(false).messages({
   "object.unknown": "No se permiten propiedades adicionales.",
@@ -50,15 +52,17 @@ export const registerValidation = Joi.object({
       "string.email": "Debe ser un correo electrónico válido.",
     }),
   password: Joi.string()
-    .min(6)
-    .max(50)
+    .min(8)
+    .max(100)
+    .pattern(/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]+$/)
     .required()
     .messages({
       "string.empty": "La contraseña no puede estar vacía.",
       "any.required": "La contraseña es obligatoria.",
       "string.base": "La contraseña debe ser de tipo texto.",
-      "string.min": "La contraseña debe tener al menos 6 caracteres.",
-      "string.max": "La contraseña debe tener como máximo 50 caracteres.",
+      "string.min": "La contraseña debe tener al menos 8 caracteres.",
+      "string.max": "La contraseña debe tener como máximo 100 caracteres.",
+      "string.pattern.base": "La contraseña debe contener al menos letras y números."
     }),
   role: Joi.string()
     .valid("admin", "manager", "designer", "operator")
@@ -69,5 +73,5 @@ export const registerValidation = Joi.object({
 })
   .unknown(false)
   .messages({
-  "object.unknown": "No se permiten propiedades adicionales.",
-});
+    "object.unknown": "No se permiten propiedades adicionales.",
+  });

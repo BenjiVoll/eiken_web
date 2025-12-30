@@ -18,6 +18,8 @@ import dashboardRoutes from "./dashboard.routes.js";
 import orderRoutes from "./order.routes.js";
 import paymentRoutes from "./payment.routes.js";
 import uploadsRoutes from "./uploads.routes.js";
+import webhookRoutes from "./webhook.routes.js";
+import testRoutes from "./test.routes.js";
 
 const router = Router();
 
@@ -40,6 +42,8 @@ router
     .use("/orders", orderRoutes)
     .use("/payments", paymentRoutes)
     .use("/dashboard", dashboardRoutes)
-    .use("/uploads", uploadsRoutes);
+    .use("/uploads", uploadsRoutes)
+    .use("/webhooks", webhookRoutes)
+    .use("/test", testRoutes);
 
 export default router;

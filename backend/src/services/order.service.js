@@ -4,12 +4,16 @@ import { OrderSchema, OrderItemSchema } from "../entity/order.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
 import { ServiceSchema } from "../entity/service.entity.js";
 import { ProductSchema } from "../entity/product.entity.js";
+import { InventorySchema } from "../entity/inventory.entity.js";
+import { getProductMaterials } from "./productMaterial.service.js";
+import { checkAndAlertLowStock } from "./alert.service.js";
 
 const orderRepository = AppDataSource.getRepository(OrderSchema);
 const orderItemRepository = AppDataSource.getRepository(OrderItemSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 const serviceRepository = AppDataSource.getRepository(ServiceSchema);
 const productRepository = AppDataSource.getRepository(ProductSchema);
+const inventoryRepository = AppDataSource.getRepository(InventorySchema);
 
 export const createOrder = async (data) => {
   const { clientId, clientEmail, clientName, items, notes } = data;
@@ -192,9 +196,64 @@ export const updateOrderStatus = async (id, newStatus) => {
           throw new Error(`Stock insuficiente para el producto ${product.name}. Disponible: ${product.stock}, Requerido: ${orderItem.quantity}`);
         }
 
-        // Descontar stock
+        // Descontar stock del producto
         product.stock -= orderItem.quantity;
         await productRepository.save(product);
+
+        console.log(`📦 Product stock descontado: ${product.name} -${orderItem.quantity}`);
+
+        // NUEVO: Descontar materiales del inventario automáticamente
+        const materials = await getProductMaterials(orderItem.productId);
+
+        if (materials && materials.length > 0) {
+          console.log(`🔧 Descontando ${materials.length} materiales para ${product.name}...`);
+
+          for (const material of materials) {
+            const inventoryItem = await inventoryRepository.findOneBy({
+              id: material.inventoryId
+            });
+
+            if (!inventoryItem) {
+              console.warn(`⚠️ Material de inventario ${material.inventoryId} no encontrado`);
+              continue;
+            }
+
+            // Calcular cantidad total necesaria
+            const totalNeeded = material.quantityNeeded * orderItem.quantity;
+
+            // Validar stock suficiente
+            if (inventoryItem.quantity < totalNeeded) {
+              throw new Error(
+                `Stock insuficiente de ${inventoryItem.name}. ` +
+                `Disponible: ${inventoryItem.quantity} ${inventoryItem.unit}, ` +
+                `Necesario: ${totalNeeded} ${inventoryItem.unit}`
+              );
+            }
+
+            // Descontar del inventario
+            inventoryItem.quantity -= totalNeeded;
+            await inventoryRepository.save(inventoryItem);
+
+            console.log(
+              `  ✅ ${inventoryItem.name}: ` +
+              `-${totalNeeded} ${inventoryItem.unit} ` +
+              `(quedan ${inventoryItem.quantity} ${inventoryItem.unit})`
+            );
+
+            // Verificar si llegó al stock mínimo y enviar alerta
+            if (inventoryItem.quantity <= inventoryItem.minStock) {
+              console.log(`⚠️ Stock bajo detectado para ${inventoryItem.name}`);
+              try {
+                await checkAndAlertLowStock();
+              } catch (alertError) {
+                console.error("Error enviando alerta de stock bajo:", alertError);
+                // No lanzar error, solo log
+              }
+            }
+          }
+        } else {
+          console.log(`ℹ️ Producto ${product.name} no tiene materiales asociados`);
+        }
       }
     }
   }

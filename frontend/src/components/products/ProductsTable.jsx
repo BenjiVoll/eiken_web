@@ -21,8 +21,22 @@ const ProductsTable = ({ products, onEdit, onDelete, formatPrice, isManager, set
                     )}
                 </div>
                 <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
+                    <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                                {!product.isActive && (
+                                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-full">
+                                        🚫 Inactivo
+                                    </span>
+                                )}
+                                {product.materialsCount > 0 && (
+                                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded-full">
+                                        🔧 {product.materialsCount} {product.materialsCount === 1 ? 'material' : 'materiales'}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
                         {isManager && (
                             <div className="flex space-x-2">
                                 <button
@@ -43,6 +57,23 @@ const ProductsTable = ({ products, onEdit, onDelete, formatPrice, isManager, set
                     <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                         {product.description}
                     </p>
+
+                    {/* Lista de materiales */}
+                    {product.materials && product.materials.length > 0 && (
+                        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                            <h4 className="text-xs font-semibold text-orange-800 mb-2 flex items-center gap-1">
+                                🔧 Materiales ({product.materials.length})
+                            </h4>
+                            <ul className="space-y-1">
+                                {product.materials.map((material, idx) => (
+                                    <li key={idx} className="text-xs text-gray-700">
+                                        • {material.inventory?.name || 'Material'}: {material.quantityNeeded} {material.inventory?.unit}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
                             <span className="text-sm font-medium text-gray-500">Categoría:</span>

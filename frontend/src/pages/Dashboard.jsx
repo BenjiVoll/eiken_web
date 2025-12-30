@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+﻿import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import {
   Users,
   Settings,
   Package,
-  Briefcase,
   FileText,
   Quote,
   TrendingUp,
@@ -16,7 +15,10 @@ import {
   Info,
   AlertTriangle
 } from 'lucide-react';
-import { servicesAPI, inventoryAPI, projectsAPI, quotesAPI, usersAPI, activitiesAPI, dashboardAPI } from '../services/apiService';
+import { servicesAPI, inventoryAPI, projectsAPI, quotesAPI, usersAPI, activitiesAPI, dashboardAPI, ordersAPI } from '@/services/apiService';
+import OrderStatusChart from '@/components/charts/OrderStatusChart';
+import TopProductsChart from '@/components/charts/TopProductsChart';
+import MonthlySalesChart from '@/components/charts/MonthlySalesChart';
 
 const Dashboard = () => {
   const { user, isAdmin, isManager } = useAuth();
@@ -30,6 +32,7 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -87,21 +90,23 @@ const Dashboard = () => {
         const results = await Promise.all(promises);
 
         // Fetch low stock count
-        const lowStockResponse = await inventoryAPI.get('/alerts/count');
+        const lowStockResponse = await inventoryAPI.getLowStockCount();
         const lowStockCount = lowStockResponse.data?.data?.count || 0;
 
         setStats({
-          services: results[0]?.data?.length || 0,
-          inventory: results[1]?.data?.length || 0,
-          projects: results[2]?.data?.length || 0,
-          quotes: results[3]?.data?.length || 0,
-          users: isManager ? (results[4]?.data?.length || 0) : 0,
+          services: results[0]?.data?.data?.length || results[0]?.data?.length || 0,
+          inventory: results[1]?.data?.data?.inventory?.length || results[1]?.data?.inventory?.length || results[1]?.data?.length || 0,
+          projects: results[2]?.data?.projects?.length || results[2]?.data?.length || 0,
+          quotes: results[3]?.data?.quotes?.length || results[3]?.data?.length || 0,
+          users: isManager ? (results[4]?.data?.users?.length || results[4]?.data?.length || 0) : 0,
           lowStockItems: lowStockCount
         });
 
         const activityData = await activitiesAPI.getRecent(10);
-        if (activityData && activityData.data) {
-          const activities = activityData.data.map(act => ({
+        console.log('Activity data:', activityData);
+        const activitiesArray = activityData?.data?.data || activityData?.data || [];
+        if (activitiesArray && activitiesArray.length > 0) {
+          const activities = activitiesArray.map(act => ({
             id: act.id,
             type: act.type,
             message: act.type === 'cotización' || act.type === 'quote'
@@ -111,6 +116,11 @@ const Dashboard = () => {
           }));
           setRecentActivity(activities);
         }
+
+        // Fetch orders for charts
+        const ordersResponse = await ordersAPI.getAll();
+        const ordersData = ordersResponse?.data?.data || ordersResponse?.data || [];
+        setOrders(Array.isArray(ordersData) ? ordersData : []);
 
       } catch (error) {
         console.error('Error loading dashboard data:', error);
@@ -269,7 +279,18 @@ const Dashboard = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Charts Section */}
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <OrderStatusChart orders={orders} />
+        <TopProductsChart orders={orders} />
+      </div>
+
+      {/* Monthly Sales Chart - Full Width */}
+      <div className="mt-6">
+        <MonthlySalesChart orders={orders} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-2">
           <div className="bg-white shadow rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">

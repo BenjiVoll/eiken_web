@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { categoriesAPI, divisionsAPI } from '../../services/apiService';
-import { getImageUrl } from '../../helpers/getImageUrl';
-import { showErrorAlert } from '../../helpers/sweetAlert';
+﻿import { useState, useEffect } from 'react';
+import { categoriesAPI, divisionsAPI } from '@/services/apiService';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import { showErrorAlert } from '@/helpers/sweetAlert';
 
 const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
   const [imageToDelete, setImageToDelete] = useState(false);

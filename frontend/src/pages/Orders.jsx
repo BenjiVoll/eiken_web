@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { ordersAPI } from '../services/apiService';
-import { Package, Search, Filter, Eye, Trash2 } from 'lucide-react';
-import { showSuccessAlert, showErrorAlert, showConfirmAlert } from '../helpers/sweetAlert';
+﻿import React, { useState, useEffect } from 'react';
+import { ordersAPI } from '@/services/apiService';
+import { Package, Search, Filter, Eye, Trash2, Box } from 'lucide-react';
+import { showSuccessAlert, showErrorAlert, showConfirmAlert } from '@/helpers/sweetAlert';
+import MaterialUsageModal from '@/components/orders/MaterialUsageModal';
 
 const Orders = () => {
     const [orders, setOrders] = useState([]);
@@ -10,6 +11,8 @@ const Orders = () => {
     const [selectedStatus, setSelectedStatus] = useState('all');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [showMaterialModal, setShowMaterialModal] = useState(false);
+    const [orderMaterials, setOrderMaterials] = useState([]);
 
     const statuses = ['all', 'pending', 'processing', 'completed', 'cancelled'];
     const statusLabels = {
@@ -102,8 +105,47 @@ const Orders = () => {
             const response = await ordersAPI.getById(orderId);
             setSelectedOrder(response.data.data);
             setShowDetailModal(true);
+            // Cargar materiales si la orden está completada
+            if (response.data.data.status === 'completed') {
+                loadOrderMaterials(orderId);
+            }
         } catch (error) {
             showErrorAlert('Error', 'No se pudieron cargar los detalles');
+        }
+    };
+
+    const loadOrderMaterials = async (orderId) => {
+        try {
+            const response = await ordersAPI.getMaterials(orderId);
+            setOrderMaterials(response.data.data || []);
+        } catch (error) {
+            console.error('Error loading materials:', error);
+            setOrderMaterials([]);
+        }
+    };
+
+    const handleMaterialSuccess = () => {
+        if (selectedOrder) {
+            loadOrderMaterials(selectedOrder.id);
+            showSuccessAlert('¡Registrado!', 'Los materiales han sido registrados exitosamente');
+        }
+    };
+
+    const handleDeleteMaterial = async (usageId) => {
+        const confirmed = await showConfirmAlert(
+            '¿Eliminar registro?',
+            'Esto restaurará el stock del material'
+        );
+        if (confirmed) {
+            try {
+                await ordersAPI.deleteMaterial(usageId);
+                showSuccessAlert('¡Eliminado!', 'El material ha sido eliminado y el stock restaurado');
+                if (selectedOrder) {
+                    loadOrderMaterials(selectedOrder.id);
+                }
+            } catch (error) {
+                showErrorAlert('Error', 'No se pudo eliminar el registro');
+            }
         }
     };
 
@@ -138,8 +180,8 @@ const Orders = () => {
                                 key={status}
                                 onClick={() => setSelectedStatus(status)}
                                 className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${selectedStatus === status
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
                             >
                                 {statusLabels[status]}
@@ -281,11 +323,83 @@ const Orders = () => {
                                         </table>
                                     </div>
                                 </div>
+
+                                {/* Materials Used Section - Only for completed orders */}
+                                {selectedOrder.status === 'completed' && (
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h3 className="font-semibold text-gray-700">Materiales Consumidos</h3>
+                                            <button
+                                                onClick={() => setShowMaterialModal(true)}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700"
+                                            >
+                                                <Box className="h-4 w-4" />
+                                                Registrar Materiales
+                                            </button>
+                                        </div>
+
+                                        {orderMaterials.length > 0 ? (
+                                            <div className="border rounded-lg overflow-hidden">
+                                                <table className="min-w-full">
+                                                    <thead className="bg-gray-50">
+                                                        <tr>
+                                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Material</th>
+                                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Cantidad</th>
+                                                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Registrado por</th>
+                                                            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Acciones</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y">
+                                                        {orderMaterials.map((material) => (
+                                                            <tr key={material.id}>
+                                                                <td className="px-4 py-2">
+                                                                    <div className="font-medium">{material.inventory.name}</div>
+                                                                    <div className="text-xs text-gray-500">{material.inventory.type}</div>
+                                                                    {material.notes && (
+                                                                        <div className="text-xs text-gray-400 mt-1">{material.notes}</div>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-4 py-2">
+                                                                    <span className="font-semibold">{material.quantityUsed}</span> {material.inventory.unit}
+                                                                </td>
+                                                                <td className="px-4 py-2 text-sm text-gray-600">
+                                                                    {material.registeredBy?.name || 'N/A'}
+                                                                </td>
+                                                                <td className="px-4 py-2 text-right">
+                                                                    <button
+                                                                        onClick={() => handleDeleteMaterial(material.id)}
+                                                                        className="text-red-600 hover:text-red-900 text-sm"
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                                <Box className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                                                <p>No se han registrado materiales para esta orden</p>
+                                                <p className="text-sm mt-1">Haz click en "Registrar Materiales" para comenzar</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* Material Usage Modal */}
+            <MaterialUsageModal
+                isOpen={showMaterialModal}
+                onClose={() => setShowMaterialModal(false)}
+                orderId={selectedOrder?.id}
+                onSuccess={handleMaterialSuccess}
+            />
         </div>
     );
 };

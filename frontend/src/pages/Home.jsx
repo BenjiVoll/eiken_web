@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ImageModal from '../components/forms/ImageModal';
+import ImageModal from '@/components/forms/ImageModal';
 import {
   Star,
   Phone,
@@ -12,10 +12,10 @@ import {
   ArrowRight,
   CheckCircle
 } from 'lucide-react';
-import { publicAPI } from '../services/apiService';
-import { showSuccessAlert, showErrorAlert } from '../helpers/sweetAlert';
-import { getImageUrl } from '../helpers/getImageUrl';
-import QuoteModal from '../components/forms/QuoteModal';
+import { publicAPI } from '@/services/apiService';
+import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import QuoteModal from '@/components/forms/QuoteModal';
 
 const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);

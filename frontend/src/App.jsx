@@ -1,28 +1,28 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { CartProvider } from './context/CartContext';
-import Sidebar from './components/layout/Sidebar';
-import TopHeader from './components/layout/TopHeader';
-import ClientNavbar from './components/layout/ClientNavbar';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
-import Categories from './pages/Categories';
-import Divisions from './pages/Divisions';
-import Services from './pages/Services';
-import Inventory from './pages/Inventory';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
+import Sidebar from '@/components/layout/Sidebar';
+import TopHeader from '@/components/layout/TopHeader';
+import ClientNavbar from '@/components/layout/ClientNavbar';
+import Login from '@/pages/Login';
+import Home from '@/pages/Home';
+import Dashboard from '@/pages/Dashboard';
+import Categories from '@/pages/Categories';
+import Divisions from '@/pages/Divisions';
+import Services from '@/pages/Services';
+import Inventory from '@/pages/Inventory';
 
-import Projects from './pages/Projects';
-import Quotes from './pages/Quotes';
-import Users from './pages/Users';
-import Store from './pages/Store';
-import Products from './pages/Products';
-import Orders from './pages/Orders';
-import Checkout from './pages/Checkout';
-import PaymentSuccess from './pages/PaymentSuccess';
-import PaymentFailure from './pages/PaymentFailure';
-import PaymentPending from './pages/PaymentPending';
+import Projects from '@/pages/Projects';
+import Quotes from '@/pages/Quotes';
+import Users from '@/pages/Users';
+import Store from '@/pages/Store';
+import Products from '@/pages/Products';
+import Orders from '@/pages/Orders';
+import Checkout from '@/pages/Checkout';
+import PaymentSuccess from '@/pages/PaymentSuccess';
+import PaymentFailure from '@/pages/PaymentFailure';
+import PaymentPending from '@/pages/PaymentPending';
 
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -49,11 +49,21 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 
 const AppLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300">
+      <Sidebar
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+      />
+      <div className={`flex flex-col min-h-screen transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
+        }`}>
         <TopHeader onMenuClick={() => setIsSidebarOpen(true)} />
         <main className="flex-1 p-6">
           {children}

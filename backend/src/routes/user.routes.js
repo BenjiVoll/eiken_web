@@ -1,11 +1,12 @@
 "use strict";
 import { Router } from "express";
-import { 
+import {
   isAdmin
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { createBodyValidation } from "../middlewares/validations.middleware.js";
+import { createBodyValidation, createParamsValidation } from "../middlewares/validations.middleware.js";
 import { userBodyValidation } from "../validations/user.validation.js";
+import { idParamValidation } from "../validations/common.validation.js";
 import {
   createUserController,
   deleteUserController,
@@ -22,26 +23,29 @@ router.use(authenticateJwt);
 
 // CRUD de usuarios solo para admin
 router
-  .post("/", 
-    isAdmin, 
-    createBodyValidation(userBodyValidation), 
+  .post("/",
+    isAdmin,
+    createBodyValidation(userBodyValidation),
     createUserController
   ) // Solo admin puede crear usuarios
-  .get("/", 
-    isAdmin, 
+  .get("/",
+    isAdmin,
     getUsersController
   ) // Solo admin puede ver lista de usuarios
-  .get("/:id", 
+  .get("/:id",
     isAdmin,
+    createParamsValidation(idParamValidation),
     getUserController
   )
-  .patch("/:id", 
+  .patch("/:id",
     isAdmin,
-    createBodyValidation(userBodyValidation), 
+    createParamsValidation(idParamValidation),
+    createBodyValidation(userBodyValidation),
     updateUserController
   )
-  .delete("/:id", 
-    isAdmin, 
+  .delete("/:id",
+    isAdmin,
+    createParamsValidation(idParamValidation),
     deleteUserController
   ); // Solo admin puede eliminar usuarios
 

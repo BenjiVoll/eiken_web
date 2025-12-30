@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+﻿import React, { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { Menu, Bell, User, LogOut, ChevronDown } from 'lucide-react';
 
 const TopHeader = ({ onMenuClick }) => {

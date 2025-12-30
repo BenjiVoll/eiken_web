@@ -1,7 +1,7 @@
-import React from 'react';
+﻿import React from 'react';
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
-import { useCart } from '../../context/CartContext';
-import { getImageUrl } from '../../helpers/getImageUrl';
+import { useCart } from '@/context/CartContext';
+import { getImageUrl } from '@/helpers/getImageUrl';
 import { useNavigate } from 'react-router-dom';
 
 const CartDrawer = ({ isOpen, onClose }) => {

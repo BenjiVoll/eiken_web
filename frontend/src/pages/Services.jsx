@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import ServicesHeader from '../components/services/ServicesHeader';
-import ServicesSearchBar from '../components/services/ServicesSearchBar';
-import ServicesTable from '../components/services/ServicesTable';
-import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
-import ImageModal from '../components/forms/ImageModal';
-import { useAuth } from '../context/AuthContext';
-import { servicesAPI, categoriesAPI, divisionsAPI } from '../services/apiService';
+import ServicesHeader from '@/components/services/ServicesHeader';
+import ServicesSearchBar from '@/components/services/ServicesSearchBar';
+import ServicesTable from '@/components/services/ServicesTable';
+import { showSuccessAlert, showErrorAlert, confirmAlert } from '@/helpers/sweetAlert';
+import ImageModal from '@/components/forms/ImageModal';
+import { useAuth } from '@/context/AuthContext';
+import { servicesAPI, categoriesAPI, divisionsAPI } from '@/services/apiService';
 import { Plus, Edit, Trash2, Search, Settings, DollarSign } from 'lucide-react';
-import { getImageUrl } from '../helpers/getImageUrl';
-import ServiceModal from '../components/forms/ServiceModal';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import ServiceModal from '@/components/forms/ServiceModal';
 
 const Services = () => {
 

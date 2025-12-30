@@ -178,16 +178,7 @@ export const inventoryUpdateValidation = Joi.object({
       "number.integer": "El stock mínimo debe ser un número entero.",
       "number.min": "El stock mínimo no puede ser negativo.",
     }),
-  // unitCost eliminado completamente
-  supplierId: Joi.number()
-    .integer()
-    .positive()
-    .allow(null)
-    .messages({
-      "number.base": "El id del proveedor debe ser un número.",
-      "number.integer": "El id del proveedor debe ser un número entero.",
-      "number.positive": "El id del proveedor debe ser un número positivo.",
-    }),
+  // supplierId eliminado - feature de suppliers removido
   isActive: Joi.boolean()
     .messages({
       "boolean.base": "El estado activo debe ser de tipo boolean.",

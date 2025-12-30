@@ -5,8 +5,10 @@ import {
   isAnyUser
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { createBodyValidation } from "../middlewares/validations.middleware.js";
+import { createBodyValidation, createParamsValidation } from "../middlewares/validations.middleware.js";
 import { quoteBodyValidation, quoteUpdateValidation } from "../validations/quote.validation.js";
+import { idParamValidation } from "../validations/common.validation.js";
+import { sanitizeBody } from "../middlewares/sanitize.middleware.js";
 import {
   createQuote,
   deleteQuote,
@@ -24,12 +26,14 @@ const router = Router();
 
 // Ruta pública para crear cotizaciones (para clientes)
 router.post("/public",
+  sanitizeBody,
   createBodyValidation(quoteBodyValidation),
   createQuote
 );
 
 // Ruta pública para subir imágenes de referencia
 router.post("/:id/images",
+  createParamsValidation(idParamValidation),
   upload.array("images", 3),
   uploadQuoteImages
 );
@@ -50,10 +54,13 @@ router
   )
   .get("/:id",
     isAnyUser,
+    createParamsValidation(idParamValidation),
     getQuote
   )
   .patch("/:id",
     isAdminOrManager,
+    createParamsValidation(idParamValidation),
+    sanitizeBody,
     createBodyValidation(quoteUpdateValidation),
     updateQuote
   )
@@ -67,6 +74,7 @@ router
   )
   .delete("/:id",
     isAdminOrManager,
+    createParamsValidation(idParamValidation),
     deleteQuote
   )
   .delete("/:id/images/:filename",

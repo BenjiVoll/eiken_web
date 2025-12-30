@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { showSuccessAlert, showErrorAlert } from '../helpers/sweetAlert';
-import { getImageUrl } from '../helpers/getImageUrl';
+import { useCart } from '@/context/CartContext';
+import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
+import { getImageUrl } from '@/helpers/getImageUrl';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import axios from 'axios';
 
