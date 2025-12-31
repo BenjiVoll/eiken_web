@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ImageModal from '@/components/forms/ImageModal';
 import {
-  Star,
   Phone,
   Mail,
   MapPin,
@@ -119,11 +118,10 @@ const Home = () => {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Agregar clase animated para activar la animación
+            // Agregar clase animated para activar la animación (solo la primera vez)
             entry.target.classList.add('animated');
-          } else {
-            // Remover clase cuando sale del viewport para que pueda animar de nuevo
-            entry.target.classList.remove('animated');
+            // Dejar de observar una vez que ya animó (one-shot)
+            observer.unobserve(entry.target);
           }
         });
       }, observerOptions);
@@ -175,49 +173,35 @@ const Home = () => {
         return;
       }
 
-      // Construir el payload sin las imágenes
+      // 1. Preparar cotización sin imágenes para la creación inicial
       const { selectedImages, ...quoteData } = formData;
       const payload = {
         ...quoteData,
-        service: formData.service ? formData.service : null,
+        service: formData.service || null,
         customServiceTitle: formData.customServiceTitle || '',
         status: 'Pendiente',
       };
 
-
       const createdQuote = await publicAPI.quotes.create(payload);
 
-      // Si hay imágenes seleccionadas, subirlas
-      if (selectedImages && selectedImages.length > 0) {
-        const imageFormData = new FormData();
-        selectedImages.forEach(file => {
-          imageFormData.append('images', file);
-        });
-
+      // 2. Si la cotización se creó y hay imágenes, subirlas
+      if (selectedImages && selectedImages.length > 0 && createdQuote?.data?.id) {
         try {
+          // Asumiendo que publicAPI.quotes.uploadImages espera un FormData
+          const imageFormData = new FormData();
+          selectedImages.forEach(file => imageFormData.append('images', file));
           await publicAPI.quotes.uploadImages(createdQuote.data.id, imageFormData);
         } catch (imageError) {
-          console.error('Error al subir imágenes:', imageError);
-          // No fallar si las imágenes no se suben, la cotización ya está creada
+          console.error('Error uploading images but quote was created:', imageError);
+          // Opcional: Notificar que las imágenes fallaron pero el resto se guardó
         }
       }
 
-      showSuccessAlert('¡Cotización enviada!', 'Nos pondremos en contacto contigo pronto.');
+      showSuccessAlert('¡Solicitud Recibida!', 'Nos pondremos en contacto contigo pronto.');
       resetForm();
     } catch (error) {
-      console.error('Error al crear cotización:', error);
-      let errorMessage = 'Error al enviar la cotización. Por favor intenta nuevamente.';
-      if (error.response?.data?.details) {
-        const validationErrors = error.response.data.details;
-        if (typeof validationErrors === 'string') {
-          errorMessage = validationErrors;
-        } else if (validationErrors.length > 0) {
-          errorMessage = validationErrors[0].message || validationErrors[0];
-        }
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      }
-      showErrorAlert('Error', errorMessage);
+      console.error('Error submitting quote:', error);
+      showErrorAlert('Error', 'No se pudo enviar la cotización. Por favor reintenta.');
     }
   };
 
@@ -287,20 +271,20 @@ const Home = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
             <div className="animate-on-scroll scale-in delay-300 text-center">
-              <div className="text-3xl font-bold text-eiken-red-500">20+</div>
+              <div className="text-3xl font-bold text-eiken-orange-500">20+</div>
               <div className="text-gray-600">Años de Experiencia</div>
             </div>
             <div className="animate-on-scroll scale-in delay-400 text-center">
               <div className="text-3xl font-bold text-eiken-orange-500">500+</div>
               <div className="text-gray-600">Proyectos Realizados</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-eiken-red-600">4.9</div>
-              <div className="text-gray-600">Calificación Promedio</div>
+            <div className="animate-on-scroll scale-in delay-500 text-center">
+              <div className="text-3xl font-bold text-eiken-orange-500">Avery Dennison</div>
+              <div className="text-gray-600">Installer Certificado</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-eiken-orange-600">15+</div>
-              <div className="text-gray-600">Premios Obtenidos</div>
+            <div className="animate-on-scroll scale-in delay-600 text-center">
+              <div className="text-3xl font-bold text-eiken-orange-500">Materiales</div>
+              <div className="text-gray-600">100% Premium</div>
             </div>
           </div>
         </div>
@@ -447,7 +431,7 @@ const Home = () => {
           {filteredServices.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredServices.map((service) => (
-                <div key={service.id} className="animate-on-scroll fade-in-up bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
+                <div key={service.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
                   <div className="p-6">
                     <div className="relative mb-4">
                       {service.image ? (
@@ -456,6 +440,7 @@ const Home = () => {
                           alt={service.name}
                           className="w-full h-48 object-cover rounded-lg cursor-pointer"
                           onClick={() => handleImageClick(getImageUrl(service.image))}
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400 text-lg">
@@ -475,13 +460,7 @@ const Home = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                          <span className="text-sm font-medium">{service.rating || 4.5}</span>
-                          <span className="text-xs text-gray-500">(50+ reseñas)</span>
-                        </div>
-                      </div>
+
 
                       <div className="space-y-2">
                         <h4 className="text-sm font-medium text-gray-900">Incluye:</h4>
@@ -573,7 +552,7 @@ const Home = () => {
           {/* Cards de proyectos */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProjects.map((project, idx) => (
-              <div key={project.id || idx} className="animate-on-scroll fade-in-up bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
+              <div key={project.id || idx} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
                 <div className="p-6">
                   <div className="relative mb-4">
                     {project.image ? (
@@ -582,6 +561,7 @@ const Home = () => {
                         alt={project.title}
                         className="w-full h-48 object-cover rounded-lg cursor-pointer"
                         onClick={() => handleImageClick(getImageUrl(project.image))}
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400 text-lg">
@@ -640,20 +620,7 @@ const Home = () => {
                 Nuestro compromiso con la calidad, la innovación y la satisfacción del cliente nos ha permitido
                 trabajar con empresas líderes y equipos de competición de primer nivel.
               </p>
-              <div className="flex items-center space-x-8">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-eiken-red-500">500+</div>
-                  <div className="text-sm text-gray-600">Clientes Satisfechos</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-eiken-orange-500">20+</div>
-                  <div className="text-sm text-gray-600">Años de Experiencia</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-eiken-red-600">15+</div>
-                  <div className="text-sm text-gray-600">Premios Obtenidos</div>
-                </div>
-              </div>
+
             </div>
             <div className="animate-on-scroll fade-in-right space-y-6">
               <div className="bg-gray-50 p-6 rounded-lg">
@@ -748,8 +715,8 @@ const Home = () => {
               <h4 className="font-semibold mb-4">Divisiones</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>Eiken Design</li>
-                <li>Truck Design</li>
-                <li>Racing Design</li>
+                <li>Eiken Truck Design</li>
+                <li>Eiken Racing Design</li>
               </ul>
             </div>
 

@@ -1,8 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Quote, Eye } from 'lucide-react';
+import ImageModal from '../forms/ImageModal';
 
 const QuoteDetailsModal = ({ isOpen, quote, onClose, getServiceTitle, getStatusColor }) => {
+    const [imgModalOpen, setImgModalOpen] = useState(false);
+    const [selectedImg, setSelectedImg] = useState(null);
+
     if (!isOpen || !quote) return null;
+
+    const handleImageClick = (imageUrl) => {
+        setSelectedImg(imageUrl);
+        setImgModalOpen(true);
+    };
 
     const API_URL = import.meta.env.VITE_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
 
@@ -79,18 +88,21 @@ const QuoteDetailsModal = ({ isOpen, quote, onClose, getServiceTitle, getStatusC
                                             </h4>
                                             <div className="grid grid-cols-2 gap-3">
                                                 {quote.referenceImages.map((image, idx) => (
-                                                    <div key={idx} className="relative group">
+                                                    <div
+                                                        key={idx}
+                                                        className="relative group cursor-pointer"
+                                                        onClick={() => handleImageClick(`${API_URL}/uploads/${image}`)}
+                                                    >
                                                         <img
-                                                            src={`${API_URL}/api/uploads/quotes/${image}`}
+                                                            src={`${API_URL}/uploads/${image}`}
                                                             alt={`Referencia ${idx + 1}`}
-                                                            className="w-full h-32 object-cover rounded-md border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                                                            onClick={() => window.open(`${API_URL}/api/uploads/quotes/${image}`, '_blank')}
+                                                            className="w-full h-32 object-cover rounded-md border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                                                             onError={(e) => {
                                                                 console.error('Error loading image:', `${API_URL}/uploads/${image}`);
                                                                 e.target.style.display = 'none';
                                                             }}
                                                         />
-                                                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-md transition-opacity flex items-center justify-center">
+                                                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-md transition-opacity flex items-center justify-center pointer-events-none">
                                                             <Eye className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                                                         </div>
                                                     </div>
@@ -150,6 +162,13 @@ const QuoteDetailsModal = ({ isOpen, quote, onClose, getServiceTitle, getStatusC
                     </div>
                 </div>
             </div>
+
+            {/* Modal de imagen ampliada */}
+            <ImageModal
+                isOpen={imgModalOpen}
+                imageUrl={selectedImg}
+                onClose={() => setImgModalOpen(false)}
+            />
         </div>
     );
 };

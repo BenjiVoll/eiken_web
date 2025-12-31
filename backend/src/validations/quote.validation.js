@@ -35,9 +35,9 @@ export const quoteBodyValidation = Joi.object({
     "any.required": "La descripción es obligatoria."
   }),
   requestedDeliveryDate: Joi.date().optional().allow(null, ''),
-  status: Joi.string().valid('Pendiente', 'En Revisión', 'Cotizado', 'Aprobado', 'Rechazado', 'Convertido').required().messages({
+  status: Joi.string().valid('Pendiente', 'Revisando', 'En Revisión', 'Cotizado', 'Aprobado', 'Rechazado', 'Convertido').required().messages({
     "string.base": "El estado debe ser de tipo string.",
-    "any.only": "El estado debe ser uno de: Pendiente, En Revisión, Cotizado, Aprobado, Rechazado, Convertido."
+    "any.only": "El estado debe ser uno de: Pendiente, Revisando, En Revisión, Cotizado, Aprobado, Rechazado, Convertido."
   }),
   quotedAmount: Joi.number().precision(2).allow(null),
   notes: Joi.string().allow(null, ''),

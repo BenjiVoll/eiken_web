@@ -175,6 +175,7 @@ const Quotes = () => {
         return 'bg-red-100 text-red-800';
       case 'reviewing':
       case 'Revisando':
+      case 'En Revisión':
         return 'bg-blue-100 text-blue-800';
       case 'quoted':
       case 'Cotizado':
@@ -184,20 +185,7 @@ const Quotes = () => {
     }
   };
 
-  const getUrgencyColor = (urgency) => {
-    switch (urgency) {
-      case 'Urgente':
-        return 'text-red-600';
-      case 'Alto':
-        return 'text-orange-600';
-      case 'Medio':
-        return 'text-yellow-600';
-      case 'Bajo':
-        return 'text-green-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
+
 
   const StatusSelector = ({ quote }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -302,9 +290,6 @@ const Quotes = () => {
                       </div>
                       <div className="ml-2 flex-shrink-0 flex items-center space-x-2">
                         <StatusSelector quote={quote} />
-                        <span className={`text-xs font-medium ${getUrgencyColor(quote.urgency)}`}>
-                          {quote.urgency}
-                        </span>
 
                         {/* Botón Ver Detalles */}
                         <button

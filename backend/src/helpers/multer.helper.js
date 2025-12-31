@@ -11,7 +11,8 @@ const storage = multer.diskStorage({
     const id = req.body.id || req.params.id || req.query.id || 'nuevo';
     // Detectar si es proyecto o servicio por la ruta
     const tipo = req.baseUrl && req.baseUrl.includes('project') ? 'proyecto' :
-      req.baseUrl && req.baseUrl.includes('product') ? 'producto' : 'servicio';
+      req.baseUrl && req.baseUrl.includes('product') ? 'producto' :
+        req.baseUrl && (req.baseUrl.includes('quote') || req.path.includes('quote')) ? 'cotizacion' : 'servicio';
     const timestamp = Date.now();
     cb(null, `${tipo}-${id}-${timestamp}${ext}`);
   }

@@ -73,6 +73,8 @@ const AppLayout = ({ children }) => {
   );
 };
 
+import WhatsAppButton from '@/components/layout/WhatsAppButton';
+
 const ClientLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-white">
@@ -80,6 +82,7 @@ const ClientLayout = ({ children }) => {
       <main>
         {children}
       </main>
+      <WhatsAppButton />
     </div>
   );
 };
