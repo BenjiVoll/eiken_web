@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
 import { getImageUrl } from '@/helpers/getImageUrl';
+import { settingsAPI } from '@/services/apiService';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
+import { MapPin } from 'lucide-react';
 import axios from 'axios';
 
 const Checkout = () => {
@@ -11,6 +13,11 @@ const Checkout = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [preferenceId, setPreferenceId] = useState(null);
+    const [pickupDetails, setPickupDetails] = useState({
+        address: 'Cargando...',
+        city: '',
+        hours: ''
+    });
     const [formData, setFormData] = useState({
         clientName: '',
         clientEmail: '',
@@ -22,6 +29,23 @@ const Checkout = () => {
     useEffect(() => {
         const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY || 'APP_USR-c4ec0886-95f6-40db-8fe4-c182be58f494';
         initMercadoPago(publicKey);
+
+        // Cargar configuración de la tienda
+        const fetchSettings = async () => {
+            try {
+                const response = await settingsAPI.get();
+                if (response.data) {
+                    setPickupDetails({
+                        address: response.data.pickupAddress,
+                        city: response.data.pickupCity,
+                        hours: response.data.pickupHours
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching store settings:", error);
+            }
+        };
+        fetchSettings();
     }, []);
 
     const formatPrice = (price) => {
@@ -156,6 +180,28 @@ const Checkout = () => {
                                     {errors.clientEmail && (
                                         <p className="text-red-600 text-sm mt-1">{errors.clientEmail}</p>
                                     )}
+                                </div>
+
+                                {/* Lugar de Retiro (Estático) */}
+                                <div className="mt-6">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-3">Lugar de retiro</h3>
+                                    <p className="text-sm text-gray-500 mb-3">Hay 1 sucursal con existencias cerca de ti</p>
+
+                                    <div className="border-2 border-indigo-600 bg-indigo-50 rounded-lg p-4 flex justify-between items-start cursor-default">
+                                        <div className="flex gap-3">
+                                            <div className="mt-0.5">
+                                                <MapPin className="w-5 h-5 text-indigo-600" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900">{pickupDetails.address}</h4>
+                                                <p className="text-sm text-gray-600">{pickupDetails.city}</p>
+                                                <p className="text-xs text-gray-500 mt-1">{pickupDetails.hours}</p>
+                                            </div>
+                                        </div>
+                                        <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded uppercase">
+                                            GRATIS
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div>

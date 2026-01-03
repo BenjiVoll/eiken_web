@@ -1,6 +1,7 @@
 "use strict";
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 import { AppDataSource } from "../config/configDb.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
@@ -161,6 +162,8 @@ export const replyToQuote = async (id, amount, message) => {
     throw new Error("Cotización no encontrada");
   }
 
+  const token = crypto.randomBytes(32).toString('hex');
+  quote.acceptanceToken = token;
   quote.quotedAmount = amount;
   quote.status = "Cotizado";
   quote.notes = quote.notes ? `${quote.notes}\n\n[Propuesta]: ${message}` : `[Propuesta]: ${message}`;
@@ -170,6 +173,29 @@ export const replyToQuote = async (id, amount, message) => {
   mailService.sendQuoteProposal(quote, message);
 
   return quote;
+};
+
+export const acceptQuoteByToken = async (token) => {
+  const quote = await quoteRepository.findOne({
+    where: { acceptanceToken: token },
+    relations: ["client", "service"]
+  });
+
+  if (!quote) throw new Error("Token de cotización inválido o expirado");
+
+  // Si ya estaba aprobado, avisar pero no error
+  if (quote.status === "Aprobado" || quote.status === "Convertido") {
+    return { success: true, message: "La cotización ya fue aprobada anteriormente", quote };
+  }
+
+  quote.status = "Aprobado";
+  quote.acceptanceToken = null; // Invalidar token (un solo uso)
+  await quoteRepository.save(quote);
+
+  // Notificar al admin de la aceptación
+  mailService.sendQuoteAcceptedAlert(quote);
+
+  return { success: true, message: "Cotización aprobada correctamente", quote };
 };
 
 export const convertQuoteToProject = async (id) => {

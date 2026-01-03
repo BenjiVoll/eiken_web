@@ -7,6 +7,7 @@ import publicServiceRoutes from "./public.service.routes.js";
 import publicProjectRoutes from "./public.project.routes.js";
 import quoteRoutes from "./quote.routes.js";
 import inventoryRoutes from "./inventory.routes.js";
+import inventoryMovementRoutes from "./inventoryMovement.routes.js";
 
 import projectRoutes from "./project.routes.js";
 import categoryRoutes from "./category.routes.js";
@@ -20,6 +21,8 @@ import paymentRoutes from "./payment.routes.js";
 import uploadsRoutes from "./uploads.routes.js";
 import webhookRoutes from "./webhook.routes.js";
 import testRoutes from "./test.routes.js";
+import settingsRoutes from "./storeSettings.routes.js";
+import publicQuoteRoutes from "./public.quote.routes.js";
 
 const router = Router();
 
@@ -31,6 +34,7 @@ router
     .use("/public/services", publicServiceRoutes)
     .use("/public/projects", publicProjectRoutes)
     .use("/public/products", publicProductRoutes)
+    .use("/public/quotes", publicQuoteRoutes)
     .use("/quotes", quoteRoutes)
     .use("/inventory", inventoryRoutes)
 
@@ -44,6 +48,8 @@ router
     .use("/dashboard", dashboardRoutes)
     .use("/uploads", uploadsRoutes)
     .use("/webhooks", webhookRoutes)
+    .use("/settings", settingsRoutes)
+    .use("/inventory-movements", inventoryMovementRoutes)
     .use("/test", testRoutes);
 
 export default router;

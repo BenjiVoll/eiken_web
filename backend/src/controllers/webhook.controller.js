@@ -1,6 +1,7 @@
 "use strict";
 import { Payment, MercadoPagoConfig } from "mercadopago";
 import { updateOrderStatus, getOrderById } from "../services/order.service.js";
+import { mailService } from "../services/mail.service.js";
 import { validateWebhookSignature } from "../utils/webhookSecurity.js";
 import {
     MERCADOPAGO_ACCESS_TOKEN_TEST,
@@ -165,10 +166,16 @@ export const mercadoPagoWebhook = async (req, res) => {
                 if (newOrderStatus === "completed") {
                     console.log(`📦 Stock descontado para orden ${orderId}`);
                 }
-            });
+                // Enviar notificaciones por email
+                if (newOrderStatus === "completed" && order.status !== "completed") {
+                    console.log(`📧 Enviando notificaciones de nueva orden...`);
+                    // Notificar al cliente
+                    await mailService.sendOrderCompletedEmail({ ...order, status: newOrderStatus });
+                    // Notificar al admin
+                    await mailService.sendNewOrderAlert({ ...order, status: newOrderStatus });
+                }
 
-            // TODO: Enviar notificación por email al cliente
-            // await sendOrderStatusEmail(orderId, newOrderStatus);
+            });
 
         } catch (updateError) {
             console.error(`❌ Error actualizando orden ${orderId}:`, updateError.message);

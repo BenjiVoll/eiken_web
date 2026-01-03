@@ -57,7 +57,8 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
             icon: ShoppingCart,
             items: [
                 { name: 'Órdenes', href: '/intranet/orders', icon: ShoppingBag },
-                { name: 'Productos', href: '/intranet/products', icon: Package }
+                { name: 'Productos', href: '/intranet/products', icon: Package },
+                { name: 'Datos Tienda', href: '/intranet/settings', icon: Settings }
             ]
         },
         {

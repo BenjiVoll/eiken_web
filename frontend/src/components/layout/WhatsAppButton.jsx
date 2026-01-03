@@ -1,7 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
+import { settingsAPI } from '@/services/apiService';
 
-const WhatsAppButton = ({ phoneNumber = "56930000000", message = "Hola! Me gustaría solicitar una cotización." }) => {
+const WhatsAppButton = ({ message = "Hola! Me gustaría solicitar una cotización." }) => {
+    const [phoneNumber, setPhoneNumber] = useState(null);
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const response = await settingsAPI.get();
+                if (response.data && response.data.whatsappNumber) {
+                    setPhoneNumber(response.data.whatsappNumber);
+                }
+            } catch (error) {
+                console.error("Error fetching WhatsApp number:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    if (!phoneNumber) return null;
+
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
     return (

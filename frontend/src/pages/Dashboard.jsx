@@ -26,7 +26,8 @@ const Dashboard = () => {
     services: 0,
     inventory: 0,
     projects: 0,
-    quotes: 0
+    quotes: 0,
+    lowStock: 0
   });
   const [loading, setLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -94,7 +95,8 @@ const Dashboard = () => {
           inventory: results[1]?.data?.data?.inventory?.length || results[1]?.data?.inventory?.length || results[1]?.data?.length || 0,
           projects: results[2]?.data?.projects?.length || results[2]?.data?.length || 0,
           quotes: results[3]?.data?.quotes?.length || results[3]?.data?.length || 0,
-          users: isManager ? (results[4]?.data?.users?.length || results[4]?.data?.length || 0) : 0
+          users: isManager ? (results[4]?.data?.users?.length || results[4]?.data?.length || 0) : 0,
+          lowStock: data?.summary?.lowStockItems || 0
         });
 
         const activityData = await activitiesAPI.getRecent(10);
@@ -139,7 +141,8 @@ const Dashboard = () => {
       value: stats.inventory,
       icon: Package,
       color: 'bg-green-500',
-      href: '/inventory'
+      href: '/inventory',
+      alert: stats.lowStock > 0 ? `${stats.lowStock} Alertas` : null
     },
     {
       title: 'Proyectos',
@@ -246,6 +249,11 @@ const Dashboard = () => {
                       <dd className="text-lg font-medium text-gray-900">
                         {card.value}
                       </dd>
+                      {card.alert && (
+                        <div className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                          {card.alert}
+                        </div>
+                      )}
                     </dl>
                   </div>
                 </div>

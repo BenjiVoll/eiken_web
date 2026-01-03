@@ -2,7 +2,8 @@
 import { AppDataSource } from "../config/configDb.js";
 import { InventoryMovementSchema } from "../entity/inventoryMovement.entity.js";
 import { InventorySchema } from "../entity/inventory.entity.js";
-import { UserSchema } from "../entity/user.entity.js";
+import UserSchema from "../entity/user.entity.js";
+import { checkAndAlertLowStock } from "./alert.service.js";
 
 const movementRepository = AppDataSource.getRepository(InventoryMovementSchema);
 const inventoryRepository = AppDataSource.getRepository(InventorySchema);
@@ -10,7 +11,7 @@ const userRepository = AppDataSource.getRepository(UserSchema);
 
 export const createInventoryMovement = async (data) => {
   const { inventoryId, movementType, quantity, reason, referenceId, referenceType, createdById, notes } = data;
-  
+
   // Verificar que el item de inventario existe
   const inventoryItem = await inventoryRepository.findOneBy({ id: inventoryId });
   if (!inventoryItem) {
@@ -51,14 +52,18 @@ export const createInventoryMovement = async (data) => {
       inventoryItem.quantity -= quantity;
       break;
     case "ajuste":
-      inventoryItem.quantity = quantity; // En ajuste, la cantidad es el valor final
+      inventoryItem.quantity = quantity;
       break;
     case "transferencia":
-      // Para transferencia, manejar lógica específica si es necesario
       break;
   }
 
   await inventoryRepository.save(inventoryItem);
+
+  // Verificar si hay stock bajo y enviar alerta
+  if (movementType === "salida" || movementType === "ajuste") {
+    await checkAndAlertLowStock();
+  }
 
   return movement;
 };
@@ -147,7 +152,7 @@ export const deleteInventoryMovement = async (id) => {
     where: { id },
     relations: ["inventory"]
   });
-  
+
   if (!movement) {
     throw new Error("Movimiento de inventario no encontrado");
   }
@@ -164,7 +169,6 @@ export const deleteInventoryMovement = async (id) => {
     case "ajuste":
       throw new Error("No se puede eliminar un movimiento de ajuste");
     case "transferencia":
-      // Manejar lógica de transferencia si es necesario
       break;
   }
 
@@ -174,6 +178,6 @@ export const deleteInventoryMovement = async (id) => {
 
   await inventoryRepository.save(inventoryItem);
   await movementRepository.remove(movement);
-  
+
   return { mensaje: "Movimiento de inventario eliminado exitosamente" };
 };
