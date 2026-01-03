@@ -60,6 +60,13 @@ export const ProjectSchema = new EntitySchema({
       nullable: true,
     },
 
+    isFeatured: {
+      type: "boolean",
+      default: false,
+      nullable: false,
+      name: "is_featured",
+    },
+
     notes: {
       type: "text",
       nullable: true,
@@ -101,6 +108,10 @@ export const ProjectSchema = new EntitySchema({
     {
       name: "IDX_PROJECT_DIVISION",
       columns: ["division"],
+    },
+    {
+      name: "IDX_PROJECT_FEATURED",
+      columns: ["isFeatured"],
     },
   ],
 

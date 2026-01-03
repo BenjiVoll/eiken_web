@@ -15,15 +15,18 @@ import {
     Menu,
     X,
     Tag,
-    Layers
+    Layers,
+    Sliders,
+    ShoppingCart
 } from 'lucide-react';
 
 const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
     const { isAdmin } = useAuth();
     const [expandedGroups, setExpandedGroups] = useState({
-        'productos-tienda': true,
-        'servicios-proyectos': true,
+        'e-commerce': true,
+        'gestion-interna': true,
+        'configuracion': true,
         admin: true
     });
 
@@ -49,24 +52,32 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
         },
         {
             type: 'group',
-            id: 'productos-tienda',
-            name: 'Productos & Tienda',
-            icon: ShoppingBag,
+            id: 'e-commerce',
+            name: 'E-Commerce',
+            icon: ShoppingCart,
             items: [
-                { name: 'Productos', href: '/intranet/products', icon: Package },
-                { name: 'Inventario', href: '/intranet/inventory', icon: Boxes },
-                { name: 'Órdenes', href: '/intranet/orders', icon: ShoppingBag }
+                { name: 'Órdenes', href: '/intranet/orders', icon: ShoppingBag },
+                { name: 'Productos', href: '/intranet/products', icon: Package }
             ]
         },
         {
             type: 'group',
-            id: 'servicios-proyectos',
-            name: 'Servicios & Proyectos',
-            icon: Settings,
+            id: 'gestion-interna',
+            name: 'Gestión Interna',
+            icon: FileText,
             items: [
-                { name: 'Servicios', href: '/intranet/services', icon: Settings },
-                { name: 'Proyectos', href: '/intranet/projects', icon: FileText },
                 { name: 'Cotizaciones', href: '/intranet/quotes', icon: Quote },
+                { name: 'Inventario', href: '/intranet/inventory', icon: Boxes },
+                { name: 'Proyectos', href: '/intranet/projects', icon: FileText },
+                { name: 'Servicios', href: '/intranet/services', icon: Settings }
+            ]
+        },
+        {
+            type: 'group',
+            id: 'configuracion',
+            name: 'Configuración',
+            icon: Sliders,
+            items: [
                 { name: 'Categorías', href: '/intranet/categories', icon: Tag },
                 { name: 'Divisiones', href: '/intranet/divisions', icon: Layers }
             ]
@@ -94,105 +105,106 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
             {/* Mobile backdrop */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
                     onClick={() => setIsOpen(false)}
                 />
             )}
 
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out
-          ${isCollapsed ? 'w-16' : 'w-64'}
+                className={`fixed top-0 left-0 z-50 h-screen bg-slate-900 border-r border-slate-800 transition-all duration-300 ease-in-out shadow-2xl
+          ${isCollapsed ? 'w-20' : 'w-72'}
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
         `}
             >
-                <div className="flex flex-col h-full">
+                <div className="flex flex-col h-full text-slate-300">
                     {/* Logo Section */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between p-6 border-b border-slate-800">
                         {!isCollapsed && (
-                            <Link to="/intranet/dashboard" className="flex items-center space-x-2">
-                                <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-bold text-lg">E</span>
+                            <Link to="/intranet/dashboard" className="flex items-center space-x-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-900/20">
+                                    <span className="text-white font-bold text-xl">E</span>
                                 </div>
-                                <span className="font-bold text-xl text-gray-900">Eiken</span>
+                                <div>
+                                    <span className="block font-bold text-xl text-white tracking-tight">Eiken</span>
+                                    <span className="block text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Intranet</span>
+                                </div>
                             </Link>
                         )}
                         {isCollapsed && (
-                            <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg flex items-center justify-center mx-auto">
-                                <span className="text-white font-bold text-lg">E</span>
+                            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto shadow-lg shadow-orange-900/20">
+                                <span className="text-white font-bold text-xl">E</span>
                             </div>
                         )}
 
                         {/* Mobile close button */}
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="lg:hidden p-1 rounded-md hover:bg-gray-100"
+                            className="lg:hidden p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
                         >
-                            <X className="h-5 w-5 text-gray-600" />
+                            <X className="h-6 w-6" />
                         </button>
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 overflow-y-auto py-4 px-2">
-                        <div className="space-y-1">
+                    <nav className="flex-1 overflow-y-auto py-6 px-3 custom-scrollbar">
+                        <div className="space-y-2">
                             {navigationGroups.map((group, idx) => (
                                 <div key={idx}>
                                     {group.type === 'single' ? (
                                         <Link
                                             to={group.href}
-                                            className={`flex items-center px-3 py-2 rounded-lg transition-colors
+                                            className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group
                         ${isActive(group.href)
-                                                    ? 'bg-orange-50 text-orange-600 font-medium'
-                                                    : 'text-gray-700 hover:bg-gray-100'
+                                                    ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-md shadow-orange-900/30'
+                                                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                                                 }
                       `}
                                             title={isCollapsed ? group.name : ''}
                                         >
-                                            <group.icon className={`h-5 w-5 ${isCollapsed ? 'mx-auto' : 'mr-3'} flex-shrink-0`} />
-                                            {!isCollapsed && <span>{group.name}</span>}
+                                            <group.icon className={`h-5 w-5 ${isCollapsed ? 'mx-auto' : 'mr-3'} flex-shrink-0 transition-colors ${isActive(group.href) ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+                                            {!isCollapsed && <span className="font-medium">{group.name}</span>}
                                         </Link>
                                     ) : (
-                                        <div>
+                                        <div className="mb-2">
                                             {/* Group Header */}
                                             <button
                                                 onClick={() => toggleGroup(group.id)}
-                                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors
-                          ${isGroupActive(group.items)
-                                                        ? 'bg-orange-50 text-orange-600'
-                                                        : 'text-gray-700 hover:bg-gray-100'
+                                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group
+                          ${isGroupActive(group.items) && isCollapsed
+                                                        ? 'bg-slate-800 text-orange-400'
+                                                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                                                     }
                         `}
                                                 title={isCollapsed ? group.name : ''}
                                             >
                                                 <div className="flex items-center">
-                                                    <group.icon className={`h-5 w-5 ${isCollapsed ? 'mx-auto' : 'mr-3'} flex-shrink-0`} />
+                                                    <group.icon className={`h-5 w-5 ${isCollapsed ? 'mx-auto' : 'mr-3'} flex-shrink-0 transition-colors ${isGroupActive(group.items) ? 'text-orange-400' : 'text-slate-400 group-hover:text-white'}`} />
                                                     {!isCollapsed && <span className="font-medium">{group.name}</span>}
                                                 </div>
                                                 {!isCollapsed && (
-                                                    expandedGroups[group.id] ? (
-                                                        <ChevronDown className="h-4 w-4" />
-                                                    ) : (
-                                                        <ChevronRight className="h-4 w-4" />
-                                                    )
+                                                    <div className={`transition-transform duration-200 ${expandedGroups[group.id] ? 'rotate-180' : ''}`}>
+                                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                                    </div>
                                                 )}
                                             </button>
 
                                             {/* Group Items */}
                                             {!isCollapsed && expandedGroups[group.id] && (
-                                                <div className="mt-1 ml-4 space-y-1">
+                                                <div className="mt-1 ml-4 pl-4 border-l border-slate-700 space-y-1">
                                                     {group.items.map((item, itemIdx) => (
                                                         <Link
                                                             key={itemIdx}
                                                             to={item.href}
-                                                            className={`flex items-center px-3 py-2 rounded-lg text-sm transition-colors
+                                                            className={`flex items-center px-4 py-2.5 rounded-lg text-sm transition-all duration-200
                                 ${isActive(item.href)
-                                                                    ? 'bg-orange-50 text-orange-600 font-medium'
-                                                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                                                    ? 'bg-slate-800 text-orange-400 font-medium'
+                                                                    : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
                                                                 }
                               `}
                                                         >
-                                                            <item.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                                                            <div className={`w-1.5 h-1.5 rounded-full mr-3 ${isActive(item.href) ? 'bg-orange-400' : 'bg-slate-600'}`}></div>
                                                             <span>{item.name}</span>
                                                         </Link>
                                                     ))}
@@ -206,14 +218,20 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
                     </nav>
 
                     {/* Collapse Toggle - Desktop only */}
-                    <div className="hidden lg:block p-4 border-t border-gray-200">
+                    <div className="hidden lg:block p-4 border-t border-slate-800">
                         <button
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="w-full flex items-center justify-center px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="w-full flex items-center justify-center px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl transition-all duration-200 group"
                             title={isCollapsed ? 'Expandir' : 'Contraer'}
                         >
-                            <Menu className="h-5 w-5" />
-                            {!isCollapsed && <span className="ml-3">Contraer</span>}
+                            {isCollapsed ? (
+                                <ChevronRight className="h-5 w-5" />
+                            ) : (
+                                <>
+                                    <Menu className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
+                                    <span className="font-medium">Contraer Menú</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>

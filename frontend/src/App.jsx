@@ -24,6 +24,7 @@ import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailure from '@/pages/PaymentFailure';
 import PaymentPending from '@/pages/PaymentPending';
 
+import WhatsAppButton from '@/components/layout/WhatsAppButton';
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, loggingOut } = useAuth();
@@ -55,14 +56,14 @@ const AppLayout = ({ children }) => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <Sidebar
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
         isCollapsed={isSidebarCollapsed}
         setIsCollapsed={setIsSidebarCollapsed}
       />
-      <div className={`flex flex-col min-h-screen transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-16' : 'lg:pl-64'
+      <div className={`flex flex-col min-h-screen transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'
         }`}>
         <TopHeader onMenuClick={() => setIsSidebarOpen(true)} />
         <main className="flex-1 p-6">
@@ -72,8 +73,6 @@ const AppLayout = ({ children }) => {
     </div>
   );
 };
-
-import WhatsAppButton from '@/components/layout/WhatsAppButton';
 
 const ClientLayout = ({ children }) => {
   return (

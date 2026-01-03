@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, X, Filter, Search } from 'lucide-react';
 import { Range, getTrackBackground } from 'react-range';
 
 const StoreSidebarFilters = ({
@@ -10,13 +10,16 @@ const StoreSidebarFilters = ({
     maxPrice = 100000,
     priceRange,
     onPriceChange,
-    onClearFilters
+    onClearFilters,
+    searchTerm,
+    onSearchChange
 }) => {
     const [showCategories, setShowCategories] = useState(true);
     const [showPrice, setShowPrice] = useState(true);
 
     const hasActiveFilters = selectedCategories.length > 0 ||
-        (priceRange[0] !== minPrice || priceRange[1] !== maxPrice);
+        (priceRange[0] !== minPrice || priceRange[1] !== maxPrice) ||
+        searchTerm !== '';
 
     const formatPrice = (value) => {
         return new Intl.NumberFormat('es-CL', {
@@ -27,52 +30,66 @@ const StoreSidebarFilters = ({
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            {/* Search Bar in Sidebar */}
+            <div className="mb-6">
+                <div className="relative group">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 group-focus-within:text-indigo-500 transition-colors" />
+                    <input
+                        type="text"
+                        placeholder="Buscar productos..."
+                        value={searchTerm}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder-gray-400 text-gray-700"
+                    />
+                </div>
+            </div>
+
             {/* Header with Clear Filters */}
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Filtrar</h3>
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-50">
+                <h3 className="text-gray-900 font-bold flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-indigo-500" />
+                    Filtros
+                </h3>
                 {hasActiveFilters && (
                     <button
                         onClick={onClearFilters}
-                        className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        className="text-xs font-semibold text-red-500 hover:text-red-600 bg-red-50 px-2 py-1 rounded-md transition-colors"
                     >
-                        <X className="h-4 w-4" />
-                        Limpiar
+                        Limpiar todo
                     </button>
                 )}
             </div>
 
             {/* Categories Filter */}
-            <div className="border-b border-gray-200 pb-4 mb-4">
+            <div className="mb-6">
                 <button
                     onClick={() => setShowCategories(!showCategories)}
-                    className="flex items-center justify-between w-full text-left"
+                    className="flex items-center justify-between w-full text-left mb-3 group"
                 >
-                    <span className="font-medium text-gray-900">Categorías</span>
-                    {showCategories ? (
-                        <ChevronUp className="h-5 w-5 text-gray-500" />
-                    ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-500" />
-                    )}
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Categorías</span>
+                    <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${showCategories ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showCategories && (
-                    <div className="mt-3 space-y-2">
+                    <div className="space-y-2 pl-1">
                         {categories.length === 0 ? (
-                            <p className="text-sm text-gray-500">Sin categorías disponibles</p>
+                            <p className="text-sm text-gray-400 italic">Sin categorías</p>
                         ) : (
                             categories.map((category) => (
                                 <label
                                     key={category}
-                                    className="flex items-center gap-2 cursor-pointer group"
+                                    className="flex items-center gap-3 cursor-pointer group py-1"
                                 >
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedCategories.includes(category)}
-                                        onChange={() => onCategoryChange(category)}
-                                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    />
-                                    <span className="text-sm text-gray-700 group-hover:text-gray-900">
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedCategories.includes(category)}
+                                            onChange={() => onCategoryChange(category)}
+                                            className="peer h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all"
+                                        />
+                                    </div>
+                                    <span className={`text-sm transition-colors ${selectedCategories.includes(category) ? 'text-indigo-700 font-medium' : 'text-gray-600 group-hover:text-gray-900'}`}>
                                         {category}
                                     </span>
                                 </label>
@@ -82,36 +99,20 @@ const StoreSidebarFilters = ({
                 )}
             </div>
 
-            {/* Price Range Filter with Slider */}
-            <div className="pb-4">
+            {/* Price Range Filter */}
+            <div className="mb-2">
                 <button
                     onClick={() => setShowPrice(!showPrice)}
-                    className="flex items-center justify-between w-full text-left"
+                    className="flex items-center justify-between w-full text-left mb-4 group"
                 >
-                    <span className="font-medium text-gray-900">Precio</span>
-                    {showPrice ? (
-                        <ChevronUp className="h-5 w-5 text-gray-500" />
-                    ) : (
-                        <ChevronDown className="h-5 w-5 text-gray-500" />
-                    )}
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wide group-hover:text-indigo-600 transition-colors">Precio</span>
+                    <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${showPrice ? 'rotate-180' : ''}`} />
                 </button>
 
                 {showPrice && (
-                    <div className="mt-4 space-y-4">
-                        {/* Price Values Display */}
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex flex-col">
-                                <span className="text-xs text-gray-600">Mínimo</span>
-                                <span className="font-semibold text-gray-900">{formatPrice(priceRange[0])}</span>
-                            </div>
-                            <div className="flex flex-col text-right">
-                                <span className="text-xs text-gray-600">Máximo</span>
-                                <span className="font-semibold text-gray-900">{formatPrice(priceRange[1])}</span>
-                            </div>
-                        </div>
-
+                    <div className="space-y-6 px-1">
                         {/* Range Slider */}
-                        <div className="px-2 py-4">
+                        <div className="px-1 py-2">
                             <Range
                                 values={priceRange}
                                 step={1000}
@@ -132,12 +133,12 @@ const StoreSidebarFilters = ({
                                         <div
                                             ref={props.ref}
                                             style={{
-                                                height: '6px',
+                                                height: '4px',
                                                 width: '100%',
-                                                borderRadius: '4px',
+                                                borderRadius: '2px',
                                                 background: getTrackBackground({
                                                     values: priceRange,
-                                                    colors: ['#E5E7EB', '#EF4444', '#E5E7EB'],
+                                                    colors: ['#F3F4F6', '#6366F1', '#F3F4F6'],
                                                     min: minPrice,
                                                     max: maxPrice
                                                 }),
@@ -153,65 +154,39 @@ const StoreSidebarFilters = ({
                                         {...props}
                                         style={{
                                             ...props.style,
-                                            height: '20px',
-                                            width: '20px',
+                                            height: '18px',
+                                            width: '18px',
                                             borderRadius: '50%',
-                                            backgroundColor: '#EF4444',
+                                            backgroundColor: '#fff',
                                             display: 'flex',
                                             justifyContent: 'center',
                                             alignItems: 'center',
-                                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-                                            outline: 'none',
-                                            border: '3px solid white'
+                                            boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
+                                            border: '2px solid #6366F1',
+                                            outline: 'none'
                                         }}
                                     >
-                                        <div
-                                            style={{
-                                                height: '8px',
-                                                width: '8px',
-                                                backgroundColor: isDragged ? '#DC2626' : '#EF4444'
-                                            }}
-                                        />
+                                        {isDragged && <div className="w-2 h-2 bg-indigo-500 rounded-full" />}
                                     </div>
                                 )}
                             />
                         </div>
 
-                        {/* Range Display */}
-                        <div className="text-xs text-gray-600 text-center">
-                            {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                        {/* Price Values Inputs/Display */}
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 w-full text-center">
+                                <span className="block text-[10px] text-gray-400 uppercase font-semibold">Mín</span>
+                                <span className="text-sm font-bold text-gray-800">{formatPrice(priceRange[0])}</span>
+                            </div>
+                            <div className="text-gray-300">-</div>
+                            <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 w-full text-center">
+                                <span className="block text-[10px] text-gray-400 uppercase font-semibold">Máx</span>
+                                <span className="text-sm font-bold text-gray-800">{formatPrice(priceRange[1])}</span>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
-
-            {/* Active Filters Summary */}
-            {hasActiveFilters && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-sm font-medium text-gray-900 mb-2">Filtros activos:</p>
-                    <div className="flex flex-wrap gap-2">
-                        {selectedCategories.map((cat) => (
-                            <span
-                                key={cat}
-                                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
-                            >
-                                {cat}
-                                <button
-                                    onClick={() => onCategoryChange(cat)}
-                                    className="hover:bg-blue-200 rounded-full p-0.5"
-                                >
-                                    <X className="h-3 w-3" />
-                                </button>
-                            </span>
-                        ))}
-                        {(priceRange[0] !== minPrice || priceRange[1] !== maxPrice) && (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">
-                                {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                            </span>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

@@ -25,8 +25,8 @@ const Products = () => {
 
     // Estados de filtros
     const [selectedCategories, setSelectedCategories] = useState([]);
-    const [stockStatus, setStockStatus] = useState('all'); // all, out, low, in
-    const [visibility, setVisibility] = useState('all'); // all, active, inactive
+    const [stockStatus, setStockStatus] = useState('all');
+    const [visibility, setVisibility] = useState('all');
 
     useEffect(() => {
         loadProducts();

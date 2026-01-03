@@ -49,8 +49,8 @@ const Orders = () => {
 
     const filteredOrders = orders.filter(order => {
         const matchesSearch =
-            order.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.clientEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            order.client?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            order.client?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             order.id.toString().includes(searchTerm);
         const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus;
         return matchesSearch && matchesStatus;
@@ -221,8 +221,8 @@ const Orders = () => {
                                         #{order.id}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">{order.clientName}</div>
-                                        <div className="text-sm text-gray-500">{order.clientEmail}</div>
+                                        <div className="text-sm font-medium text-gray-900">{order.client?.name || 'Cliente'}</div>
+                                        <div className="text-sm text-gray-500">{order.client?.email}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {formatDate(order.orderDate)}
@@ -284,8 +284,8 @@ const Orders = () => {
                             <div className="space-y-4">
                                 <div>
                                     <h3 className="font-semibold text-gray-700 mb-2">Información del Cliente</h3>
-                                    <p><span className="font-medium">Nombre:</span> {selectedOrder.clientName}</p>
-                                    <p><span className="font-medium">Email:</span> {selectedOrder.clientEmail}</p>
+                                    <p><span className="font-medium">Nombre:</span> {selectedOrder.client?.name || 'Cliente desconocido'}</p>
+                                    <p><span className="font-medium">Email:</span> {selectedOrder.client?.email || 'N/A'}</p>
                                     <p><span className="font-medium">Fecha:</span> {formatDate(selectedOrder.orderDate)}</p>
                                     {selectedOrder.notes && (
                                         <p><span className="font-medium">Notas:</span> {selectedOrder.notes}</p>

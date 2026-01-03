@@ -35,6 +35,10 @@ export const addMaterialToProduct = async (productId, materialData) => {
         throw new Error("Este material ya está asociado a este producto");
     }
 
+    if (parseFloat(quantityNeeded) <= 0) {
+        throw new Error("La cantidad necesaria debe ser mayor a cero");
+    }
+
     // Crear la asociación
     const productMaterial = productMaterialRepository.create({
         productId,

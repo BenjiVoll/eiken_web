@@ -1,21 +1,28 @@
-﻿import React, { useState, useEffect } from 'react';
-import { quotesAPI, projectsAPI, clientsAPI, divisionsAPI } from '@/services/apiService';
-import { Quote, Search, X, FolderPlus, FolderCheck, Eye } from 'lucide-react';
-import { showSuccessAlert, showErrorAlert, confirmAlert } from '@/helpers/sweetAlert';
+﻿import React, { useState, useEffect, useRef } from 'react';
+import { quotesAPI } from '@/services/apiService';
+import {
+  Quote,
+  Search,
+  X,
+  FolderPlus,
+  FolderCheck,
+  Eye,
+  MoreVertical,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  MessageSquare
+} from 'lucide-react';
+import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
 import Swal from 'sweetalert2';
 import { useAuth } from '@/context/AuthContext';
 import QuoteDetailsModal from '@/components/modals/QuoteDetailsModal';
 
 const getServiceTitle = (quote) => {
-  if (quote.service?.name) {
-    return quote.service.name;
-  }
-  if (quote.customServiceTitle) {
-    return quote.customServiceTitle;
-  }
-  if (quote.category?.name) {
-    return quote.category.name;
-  }
+  if (quote.service?.name) return quote.service.name;
+  if (quote.customServiceTitle) return quote.customServiceTitle;
+  if (quote.category?.name) return quote.category.name;
   return 'Sin servicio especificado';
 };
 
@@ -24,6 +31,7 @@ const Quotes = () => {
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
 
   // Estado del modal de respuesta
   const [replyModalOpen, setReplyModalOpen] = useState(false);
@@ -35,7 +43,35 @@ const Quotes = () => {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedQuoteForDetails, setSelectedQuoteForDetails] = useState(null);
 
-  // Eliminar cotización
+  // Estado para el menú desplegable (kebab menu)
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    loadQuotes();
+
+    // Cerrar dropdown al hacer click fuera
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const loadQuotes = async () => {
+    try {
+      setLoading(true);
+      const response = await quotesAPI.getAll();
+      setQuotes(response.data || []);
+    } catch {
+      // Error handling silencioso o toast
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteQuote = async (id) => {
     const result = await Swal.fire({
       title: '¿Eliminar cotización?',
@@ -44,8 +80,8 @@ const Quotes = () => {
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
     });
     if (result.isConfirmed) {
       try {
@@ -58,59 +94,35 @@ const Quotes = () => {
     }
   };
 
-  useEffect(() => {
-    loadQuotes();
-  }, []);
-
-
-  const loadQuotes = async () => {
-    try {
-      setLoading(true);
-      const response = await quotesAPI.getAll();
-      setQuotes(response.data || []);
-    } catch {
-
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const updateQuoteStatus = async (quoteId, newStatus) => {
     try {
       await quotesAPI.updateStatus(quoteId, newStatus);
-
-      setQuotes(Array.isArray(quotes) ? quotes.map(quote =>
-        quote.id === quoteId
-          ? { ...quote, status: newStatus }
-          : quote
-      ) : []);
+      setQuotes(prev => prev.map(q => q.id === quoteId ? { ...q, status: newStatus } : q));
     } catch (error) {
       console.error('Error al actualizar estado:', error);
     }
   };
 
   const convertQuoteToProject = async (quote) => {
+    /* ... lógica existente ... */
     try {
-      const confirmed = await confirmAlert(
-        'Convertir a Proyecto',
-        '¿Deseas convertir esta cotización aprobada en un proyecto?'
-      );
-      if (!confirmed.isConfirmed) return;
+      const result = await Swal.fire({
+        title: 'Convertir a Proyecto',
+        text: '¿Deseas convertir esta cotización aprobada en un proyecto?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, convertir',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#10b981',
+      });
+
+      if (!result.isConfirmed) return;
 
       await quotesAPI.convert(quote.id);
-
-      showSuccessAlert(
-        '¡Proyecto Creado!',
-        'La cotización ha sido convertida exitosamente en un proyecto'
-      );
+      showSuccessAlert('¡Proyecto Creado!', 'La cotización ha sido convertida exitosamente');
       loadQuotes();
     } catch (error) {
-      console.error('Error converting quote to project:', error);
-      if (error?.response?.data?.message) {
-        showErrorAlert('Error', error.response.data.message);
-      } else {
-        showErrorAlert('Error', 'No se pudo convertir la cotización en proyecto');
-      }
+      showErrorAlert('Error', error.response?.data?.message || 'No se pudo convertir');
     }
   };
 
@@ -119,105 +131,54 @@ const Quotes = () => {
     setReplyAmount(quote.quotedAmount || '');
     setReplyMessage('');
     setReplyModalOpen(true);
-  };
-
-  const handleCloseReply = () => {
-    setReplyModalOpen(false);
-    setSelectedQuoteForReply(null);
-    setReplyAmount('');
-    setReplyMessage('');
+    setActiveDropdown(null);
   };
 
   const handleSubmitReply = async (e) => {
     e.preventDefault();
     if (!selectedQuoteForReply) return;
-
     try {
       await quotesAPI.reply(selectedQuoteForReply.id, {
         amount: parseFloat(replyAmount),
         message: replyMessage
       });
-
-      showSuccessAlert('Respuesta Enviada', 'La cotización ha sido enviada al cliente.');
-      handleCloseReply();
+      showSuccessAlert('Respuesta Enviada', 'Cotización enviada al cliente.');
+      setReplyModalOpen(false);
       loadQuotes();
     } catch (error) {
-      console.error('Error replying to quote:', error);
       showErrorAlert('Error', 'No se pudo enviar la respuesta.');
     }
   };
 
-  const filteredQuotes = Array.isArray(quotes)
-    ? quotes.filter(quote => {
-      const searchLower = searchTerm.toLowerCase();
-      const serviceTitle = getServiceTitle(quote);
-      return (
-        (quote.client?.name && quote.client.name.toLowerCase().includes(searchLower)) ||
-        (quote.client?.company && quote.client.company.toLowerCase().includes(searchLower)) ||
-        serviceTitle.toLowerCase().includes(searchLower)
-      );
-    })
-    : [];
-
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved':
-      case 'Aprobado':
-        return 'bg-green-100 text-green-800';
-      case 'converted':
-      case 'Convertido':
-        return 'bg-indigo-100 text-indigo-800';
-      case 'pending':
-      case 'Pendiente':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'rejected':
-      case 'Rechazado':
-        return 'bg-red-100 text-red-800';
-      case 'reviewing':
-      case 'Revisando':
-      case 'En Revisión':
-        return 'bg-blue-100 text-blue-800';
-      case 'quoted':
-      case 'Cotizado':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'approved': case 'Aprobado': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'converted': case 'Convertido': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'pending': case 'Pendiente': return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'rejected': case 'Rechazado': return 'bg-red-100 text-red-800 border-red-200';
+      case 'reviewing': case 'Revisando': case 'En Revisión': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+      case 'quoted': case 'Cotizado': return 'bg-purple-100 text-purple-800 border-purple-200';
+      default: return 'bg-slate-100 text-slate-800 border-slate-200';
     }
   };
 
-
-
   const StatusSelector = ({ quote }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [selectedStatus, setSelectedStatus] = useState(quote.status);
-
-    const statusOptions = [
-      'Pendiente',
-      'Revisando',
-      'Cotizado',
-      'Aprobado',
-      'Rechazado'
-    ];
-
-    const handleStatusChange = async (newStatus) => {
-      if (newStatus !== quote.status) {
-        await updateQuoteStatus(quote.id, newStatus);
-        setSelectedStatus(newStatus);
-      }
-      setIsEditing(false);
-    };
 
     if ((isAdmin || isManager) && isEditing) {
       return (
         <select
-          value={selectedStatus}
-          onChange={(e) => handleStatusChange(e.target.value)}
+          value={quote.status}
+          onChange={async (e) => {
+            await updateQuoteStatus(quote.id, e.target.value);
+            setIsEditing(false);
+          }}
           onBlur={() => setIsEditing(false)}
-          className="text-xs font-medium border border-gray-300 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="text-xs font-medium border-slate-300 rounded-lg py-1 pl-2 pr-8 focus:ring-orange-500 focus:border-orange-500"
           autoFocus
         >
-          {statusOptions.map(status => (
-            <option key={status} value={status}>{status}</option>
+          {['Pendiente', 'Revisando', 'Cotizado', 'Aprobado', 'Rechazado'].map(s => (
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       );
@@ -225,243 +186,265 @@ const Quotes = () => {
 
     return (
       <span
-        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${((isAdmin || isManager) ? 'cursor-pointer hover:opacity-80 hover:ring-2 hover:ring-blue-300 transition-all duration-200' : 'cursor-not-allowed opacity-60')} ${getStatusColor(selectedStatus)}`}
         onClick={() => (isAdmin || isManager) && setIsEditing(true)}
-        title={isAdmin || isManager ? "Click para cambiar estado" : "Solo admin y manager pueden cambiar el estado"}
+        className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(quote.status)} 
+          ${(isAdmin || isManager) ? 'cursor-pointer hover:shadow-sm transition-all' : ''}`}
       >
-        {selectedStatus} {isAdmin || isManager ? '✏️' : ''}
+        {quote.status}
       </span>
     );
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  const tabs = [
+    { id: 'all', label: 'Todos' },
+    { id: 'pending', label: 'Pendientes' },
+    { id: 'reviewing', label: 'En Revisión' },
+    { id: 'quoted', label: 'Cotizados' },
+    { id: 'approved', label: 'Aprobados' },
+    { id: 'rejected', label: 'Rechazados' },
+  ];
+
+  const filteredQuotes = quotes.filter(quote => {
+    const matchesSearch = getServiceTitle(quote).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      quote.client?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    if (activeTab === 'all') return true;
+    if (activeTab === 'pending') return ['Pending', 'Pendiente'].includes(quote.status);
+    if (activeTab === 'reviewing') return ['Reviewing', 'Revisando', 'En Revisión'].includes(quote.status);
+    if (activeTab === 'quoted') return ['Quoted', 'Cotizado'].includes(quote.status);
+    if (activeTab === 'approved') return ['Approved', 'Aprobado', 'Convertido'].includes(quote.status);
+    if (activeTab === 'rejected') return ['Rejected', 'Rechazado'].includes(quote.status);
+
+    return true;
+  });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <Quote className="h-8 w-8 mr-3 text-pink-600" />
-              Cotizaciones
-            </h1>
-            <p className="mt-2 text-gray-600">Solicitudes de cotización de clientes</p>
-          </div>
-          {/* Botón de nueva cotización deshabilitado en intranet */}
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <Quote className="h-7 w-7 text-orange-600" />
+            Gestión de Cotizaciones
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm">Administra las solicitudes y proyectos potenciales</p>
         </div>
-      </div>
 
-      <div className="mb-6">
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-gray-400" />
-          </div>
+        {/* Search Bar */}
+        <div className="relative w-full md:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Buscar cotizaciones..."
+            placeholder="Buscar por cliente o servicio..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
           />
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          {filteredQuotes.map((quote) => (
-            <li key={quote.id}>
-              <div className="px-4 py-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-indigo-600 truncate">
-                          {getServiceTitle(quote)}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {quote.client?.name || 'Cliente'} {quote.client?.company ? `- ${quote.client.company}` : ''} • {quote.client?.email || 'Sin email'}
-                        </p>
-                      </div>
-                      <div className="ml-2 flex-shrink-0 flex items-center space-x-2">
-                        <StatusSelector quote={quote} />
-
-                        {/* Botón Ver Detalles */}
-                        <button
-                          onClick={() => {
-                            setSelectedQuoteForDetails(quote);
-                            setDetailsModalOpen(true);
-                          }}
-                          className="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                          title="Ver Detalles Completos"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          Detalles
-                        </button>
-
-                        {/* Botón Responder */}
-                        {(isAdmin || isManager) && (quote.status === 'Pendiente' || quote.status === 'Revisando' || quote.status === 'pending' || quote.status === 'reviewing') && (
-                          <button
-                            onClick={() => handleOpenReply(quote)}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                            title="Responder / Cotizar"
-                          >
-                            <Quote className="h-3 w-3 mr-1" />
-                            Responder
-                          </button>
-                        )}
-
-                        {(isAdmin || isManager) && (quote.status === 'Aprobado' || quote.status === 'approved') && quote.status !== 'Convertido' && quote.status !== 'converted' ? (
-                          <button
-                            onClick={() => convertQuoteToProject(quote)}
-                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-                            title="Convertir a Proyecto"
-                          >
-                            <FolderPlus className="h-3 w-3 mr-1" />
-                            Proyecto
-                          </button>
-                        ) : null}
-                        {(quote.status === 'Convertido' || quote.status === 'converted') && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
-                            <FolderCheck className="h-3 w-3 mr-1" />
-                            Convertido
-                          </span>
-                        )}
-                        {/* Botón eliminar cotización */}
-                        {isManager && (
-                          <button
-                            onClick={() => handleDeleteQuote(quote.id)}
-                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                            title="Eliminar cotización"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <div className="sm:flex">
-                        <p className="flex items-center text-sm text-gray-500">
-                          {quote.description}
-                        </p>
-                      </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                        <div className="flex items-center space-x-4">
-                          <span className="text-sm text-gray-600">
-                            Tel: {quote.client?.phone || 'No especificado'}
-                          </span>
-                          {quote.quotedAmount && (
-                            <span className="text-sm font-bold text-green-600">
-                              {new Intl.NumberFormat('es-CL', {
-                                style: 'currency',
-                                currency: 'CLP'
-                              }).format(quote.quotedAmount)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    {quote.notes && (
-                      <div className="mt-2">
-                        <p className="text-sm text-gray-600 italic whitespace-pre-wrap">{quote.notes}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-1">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative
+              ${activeTab === tab.id
+                ? 'text-orange-600 bg-orange-50 after:absolute after:bottom-[-5px] after:left-0 after:w-full after:h-[2px] after:bg-orange-500'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+              }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {filteredQuotes.length === 0 && (
-        <div className="text-center py-12">
-          <Quote className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No se encontraron cotizaciones</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {searchTerm ? 'Intenta con otros términos de búsqueda.' : 'No hay cotizaciones registradas.'}
-          </p>
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600"></div>
+        </div>
+      ) : (
+        /* Quotes Grid/List */
+        <div className="space-y-4">
+          {filteredQuotes.length > 0 ? filteredQuotes.map(quote => (
+            <div key={quote.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md transition-shadow relative">
+              {/* Card Header & Status */}
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800 text-lg leading-tight">
+                      {getServiceTitle(quote)}
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      ID: #{quote.id.toString().padStart(4, '0')} • {new Date(quote.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <StatusSelector quote={quote} />
+              </div>
+
+              {/* Card Content */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-12 mb-2">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Cliente</p>
+                  <p className="text-sm font-medium text-slate-700">{quote.client?.name}</p>
+                  <p className="text-xs text-slate-500">{quote.client?.company}</p>
+                  <p className="text-xs text-slate-400 mt-1">{quote.client?.email}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Detalles</p>
+                  <p className="text-sm text-slate-600 line-clamp-2">{quote.description}</p>
+                  {quote.quotedAmount && (
+                    <p className="mt-2 font-bold text-slate-900 text-base">
+                      {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(quote.quotedAmount)}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions Footer */}
+              <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-50 ml-12">
+                {/* Primary Action Button (Conditioned) */}
+                <div>
+                  {['Pendiente', 'Revisando', 'pending'].includes(quote.status) && (isAdmin || isManager) && (
+                    <button
+                      onClick={() => handleOpenReply(quote)}
+                      className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors shadow-sm shadow-orange-200"
+                    >
+                      <MessageSquare className="h-4 w-4" /> Responder
+                    </button>
+                  )}
+                </div>
+
+                {/* Kebab Menu */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveDropdown(activeDropdown === quote.id ? null : quote.id);
+                    }}
+                    className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    <MoreVertical className="h-5 w-5" />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {activeDropdown === quote.id && (
+                    <div
+                      ref={dropdownRef}
+                      className="absolute right-0 bottom-full mb-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                    >
+                      <button
+                        onClick={() => {
+                          setSelectedQuoteForDetails(quote);
+                          setDetailsModalOpen(true);
+                          setActiveDropdown(null);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 text-sm text-slate-700 flex items-center gap-2"
+                      >
+                        <Eye className="h-4 w-4 text-slate-400" /> Ver Detalles
+                      </button>
+
+                      {['Aprobado', 'approved'].includes(quote.status) && (isAdmin || isManager) && (
+                        <button
+                          onClick={() => {
+                            convertQuoteToProject(quote);
+                            setActiveDropdown(null);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-emerald-50 text-sm text-emerald-700 flex items-center gap-2"
+                        >
+                          <FolderPlus className="h-4 w-4" /> Convertir a Proyecto
+                        </button>
+                      )}
+
+                      {isManager && (
+                        <button
+                          onClick={() => {
+                            handleDeleteQuote(quote.id);
+                            setActiveDropdown(null);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-red-50 text-sm text-red-600 flex items-center gap-2 border-t border-slate-100"
+                        >
+                          <X className="h-4 w-4" /> Eliminar
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )) : (
+            <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
+              <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FolderCheck className="h-8 w-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-medium text-slate-900">No hay cotizaciones</h3>
+              <p className="text-slate-500">No se encontraron registros en esta categoría.</p>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Modal de Respuesta */}
+      {/* Modals */}
       {replyModalOpen && (
-        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={handleCloseReply}></div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <form onSubmit={handleSubmitReply}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <div className="sm:flex sm:items-start">
-                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                      <Quote className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                        Responder Cotización
-                      </h3>
-                      <div className="mt-2">
-                        <p className="text-sm text-gray-500 mb-4">
-                          Ingresa el monto de la cotización y un mensaje detallado para el cliente.
-                        </p>
-
-                        <div className="mb-4">
-                          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Monto (CLP)</label>
-                          <input
-                            type="number"
-                            id="amount"
-                            required
-                            min="0"
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            value={replyAmount}
-                            onChange={(e) => setReplyAmount(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="mb-4">
-                          <label htmlFor="message" className="block text-sm font-medium text-gray-700">Mensaje / Propuesta</label>
-                          <textarea
-                            id="message"
-                            required
-                            rows="4"
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            value={replyMessage}
-                            onChange={(e) => setReplyMessage(e.target.value)}
-                            placeholder="Detalla aquí la propuesta..."
-                          ></textarea>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  >
-                    Enviar Respuesta
-                  </button>
-                  <button
-                    type="button"
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={handleCloseReply}
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </form>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-800">Responder Cotización</h3>
+              <button onClick={() => setReplyModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="h-5 w-5" />
+              </button>
             </div>
+            <form onSubmit={handleSubmitReply} className="p-6">
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Monto (CLP)</label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  value={replyAmount}
+                  onChange={(e) => setReplyAmount(e.target.value)}
+                  className="w-full rounded-lg border-slate-300 focus:ring-orange-500 focus:border-orange-500"
+                />
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Mensaje / Propuesta</label>
+                <textarea
+                  rows="4"
+                  required
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  className="w-full rounded-lg border-slate-300 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  placeholder="Describe tu propuesta aquí..."
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setReplyModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 shadow-md shadow-orange-200"
+                >
+                  Enviar Respuesta
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
-      {/* Modal de Detalles */}
       <QuoteDetailsModal
         isOpen={detailsModalOpen}
         quote={selectedQuoteForDetails}

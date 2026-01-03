@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productsAPI } from '@/services/apiService';
-import { ShoppingCart, Search, ArrowLeft, Package } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Package, Sparkles } from 'lucide-react';
 import { getImageUrl } from '@/helpers/getImageUrl';
 import { useCart } from '@/context/CartContext';
 import CartDrawer from '@/components/cart/CartDrawer';
@@ -96,83 +96,78 @@ const Store = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Cargando productos...</p>
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600 font-light">Preparando la experiencia...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-gray-50 min-h-screen">
-            {/* Header */}
-            <div className="bg-white shadow-md sticky top-0 z-50">
+        <div className="bg-gray-50 min-h-screen font-sans">
+            {/* Header / Navbar */}
+            <div className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
-                        {/* Back Button */}
-                        <Link
-                            to="/"
-                            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors group"
-                        >
-                            <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
-                            <span className="font-medium hidden sm:inline">Volver</span>
-                        </Link>
-
-                        {/* Logo */}
-                        <Link to="/" className="flex items-center space-x-3 absolute left-1/2 transform -translate-x-1/2">
-                            <img src="/logo.png" alt="Eiken Design" className="h-10 w-auto" />
+                        {/* Logo Link */}
+                        <Link to="/" className="flex items-center space-x-3 group">
+                            <div className="relative">
+                                <img src="/logo.png" alt="Eiken Design" className="h-10 w-auto transition-transform group-hover:scale-105" />
+                            </div>
                             <div className="hidden md:block">
-                                <h1 className="text-xl font-bold text-gray-900">EIKEN DESIGN</h1>
-                                <p className="text-xs text-gray-600">Diseño Publicitario & Gráfica Vehicular</p>
+                                <h1 className="text-xl font-bold text-gray-900 tracking-tight">EIKEN DESIGN</h1>
+                                <p className="text-xs text-gray-500 font-medium tracking-wide">DISEÑO & CALIDAD</p>
                             </div>
                         </Link>
 
-                        {/* Cart */}
-                        <button
-                            onClick={() => setIsCartOpen(true)}
-                            className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
-                        >
-                            <ShoppingCart className="h-6 w-6" />
-                            {getCartItemsCount() > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                                    {getCartItemsCount()}
-                                </span>
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </div>
+                        {/* Back & Cart */}
+                        <div className="flex items-center gap-6">
+                            <Link
+                                to="/"
+                                className="flex items-center space-x-2 text-gray-500 hover:text-gray-900 transition-colors group"
+                            >
+                                <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+                                <span className="font-medium hidden sm:inline">Volver al Inicio</span>
+                            </Link>
 
-            {/* Compact Header with Search */}
-            <div className="bg-white border-b border-gray-200 py-4">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Productos</h1>
-                            <p className="text-sm text-gray-600">Merchandising y productos personalizados</p>
-                        </div>
-
-                        {/* Search Bar */}
-                        <div className="relative sm:w-96">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                            <input
-                                type="text"
-                                placeholder="Buscar productos..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            />
+                            <button
+                                onClick={() => setIsCartOpen(true)}
+                                className="relative p-2 text-gray-600 hover:text-orange-600 transition-colors"
+                            >
+                                <ShoppingCart className="h-6 w-6" />
+                                {getCartItemsCount() > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-[10px] rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-sm animate-bounce-short">
+                                        {getCartItemsCount()}
+                                    </span>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Main Content with Sidebar */}
+            {/* --- HERO SECTION (Compact) --- */}
+            <div className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/pattern-bg.png')] opacity-10"></div>
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 text-center">
+                    <span className="inline-block px-3 py-1 mb-3 text-xs font-semibold tracking-wider text-orange-300 uppercase bg-orange-900/30 rounded-full backdrop-blur-sm border border-orange-500/20">
+                        Tienda Oficial
+                    </span>
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
+                        Nuestros <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">Productos</span>
+                    </h1>
+                    <p className="max-w-2xl mx-auto text-sm text-slate-300 font-light">
+                        Merchandising exclusivo y diseños personalizados.
+                    </p>
+                </div>
+            </div>
+
+            {/* Main Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Sidebar Filters */}
                     <div className="lg:col-span-1">
-                        <div className="lg:sticky lg:top-24">
+                        <div className="lg:sticky lg:top-24 transition-all duration-300">
                             <StoreSidebarFilters
                                 categories={categories}
                                 selectedCategories={selectedCategories}
@@ -182,82 +177,94 @@ const Store = () => {
                                 priceRange={priceRange}
                                 onPriceChange={setPriceRange}
                                 onClearFilters={handleClearFilters}
+                                searchTerm={searchTerm}
+                                onSearchChange={setSearchTerm}
                             />
                         </div>
                     </div>
 
                     {/* Products Grid */}
                     <div className="lg:col-span-3">
-                        {/* Results Count */}
-                        <div className="mb-6 flex items-center justify-between">
-                            <p className="text-sm text-gray-600">
-                                Mostrando <span className="font-semibold">{filteredProducts.length}</span> de{' '}
-                                <span className="font-semibold">{products.length}</span> productos
+                        <div className="mb-6 flex items-center justify-between border-b border-gray-100 pb-4">
+                            <p className="text-sm text-gray-500">
+                                Mostrando <span className="font-semibold text-gray-900">{filteredProducts.length}</span> resultados
                             </p>
+                            {/* Sort dropdown could go here in future */}
                         </div>
 
-                        {/* Products Grid */}
                         {filteredProducts.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {filteredProducts.map((product) => (
                                     <div
                                         key={product.id}
-                                        className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                                        className="group bg-white rounded-2xl p-3 hover:shadow-xl transition-all duration-500 ease-out hover:-translate-y-1 border border-transparent hover:border-orange-50/50"
                                     >
-                                        {/* Product Image */}
-                                        <div className="relative h-64 bg-gray-100 overflow-hidden">
+                                        <div className="relative overflow-hidden rounded-xl aspect-[4/3] bg-gray-100">
                                             {product.image ? (
-                                                <img
-                                                    src={getImageUrl(product.image)}
-                                                    alt={product.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                    loading="lazy"
-                                                />
+                                                <>
+                                                    <img
+                                                        src={getImageUrl(product.image)}
+                                                        alt={product.name}
+                                                        className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
+                                                        loading="lazy"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                </>
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <Package className="h-20 w-20 text-gray-300" />
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                                                    <Package className="h-16 w-16 text-gray-200 group-hover:text-orange-200 transition-colors" />
                                                 </div>
                                             )}
-                                            {product.stock <= 5 && product.stock > 0 && (
-                                                <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
-                                                    Últimas unidades
-                                                </span>
-                                            )}
-                                            {product.stock === 0 && (
-                                                <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                                    Agotado
-                                                </span>
-                                            )}
+
+                                            {/* Badges */}
+                                            <div className="absolute top-3 right-3 flex flex-col gap-2 pointer-events-none">
+                                                {product.stock === 0 && (
+                                                    <span className="bg-red-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm">
+                                                        AGOTADO
+                                                    </span>
+                                                )}
+                                                {product.stock > 0 && product.stock <= 5 && (
+                                                    <span className="bg-amber-400/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm">
+                                                        ¡ÚLTIMAS!
+                                                    </span>
+                                                )}
+                                                {/* Optional: Add "NEW" badge logic here */}
+                                            </div>
                                         </div>
 
-                                        {/* Product Info */}
-                                        <div className="p-4">
+                                        <div className="pt-4 px-1 pb-1">
                                             {product.category && (
-                                                <p className="text-xs text-blue-600 font-semibold mb-1">
+                                                <p className="text-xs font-semibold text-orange-500 mb-1 uppercase tracking-wider">
                                                     {product.category.name}
                                                 </p>
                                             )}
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-1 leading-tight group-hover:text-orange-700 transition-colors">
                                                 {product.name}
                                             </h3>
-                                            {product.description && (
-                                                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                                                    {product.description}
-                                                </p>
-                                            )}
-                                            <div className="flex items-center justify-between mt-4">
-                                                <span className="text-2xl font-bold text-gray-900">
-                                                    {formatPrice(product.price)}
-                                                </span>
+                                            <p className="text-xs text-gray-500 line-clamp-2 h-8 leading-relaxed mb-4">
+                                                {product.description || 'Sin descripción disponible.'}
+                                            </p>
+
+                                            <div className="flex items-center justify-between pt-2 border-t border-gray-50/50">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] text-gray-400 font-medium uppercase">Precio</span>
+                                                    <span className="text-xl font-extrabold text-gray-900 tracking-tight">
+                                                        {formatPrice(product.price)}
+                                                    </span>
+                                                </div>
+
                                                 <button
                                                     onClick={() => handleAddToCart(product)}
                                                     disabled={product.stock === 0}
-                                                    className={`px-4 py-2 rounded-lg font-medium transition-all ${product.stock === 0
-                                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                        : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:scale-105'
-                                                        }`}
+                                                    className={`
+                                                        px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all duration-300 transform
+                                                        ${product.stock === 0
+                                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                            : 'bg-slate-900 text-white hover:bg-orange-600 hover:shadow-orange-500/30 active:scale-95'
+                                                        }
+                                                    `}
                                                 >
-                                                    {product.stock === 0 ? 'Agotado' : 'Agregar'}
+                                                    {product.stock === 0 ? 'Sin Stock' : 'Agregar'}
                                                 </button>
                                             </div>
                                         </div>
@@ -265,29 +272,24 @@ const Store = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-16 bg-white rounded-lg">
-                                <Package className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                                <h3 className="text-xl font-medium text-gray-900 mb-2">No se encontraron productos</h3>
-                                <p className="text-gray-600 mb-4">
-                                    {searchTerm || selectedCategories.length > 0
-                                        ? 'Intenta ajustar los filtros o términos de búsqueda'
-                                        : 'No hay productos disponibles en este momento'}
+                            <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
+                                <Sparkles className="mx-auto h-16 w-16 text-orange-200 mb-4 animate-pulse" />
+                                <h3 className="text-xl font-semibold text-gray-900 mb-2">No se encontraron productos</h3>
+                                <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                                    Parece que no hay coincidencias para tu búsqueda. Intenta simplificar los filtros.
                                 </p>
-                                {(selectedCategories.length > 0 || searchTerm || (priceRange[0] !== minPrice || priceRange[1] !== maxPrice)) && (
-                                    <button
-                                        onClick={handleClearFilters}
-                                        className="text-blue-600 hover:text-blue-700 font-medium"
-                                    >
-                                        Limpiar todos los filtros
-                                    </button>
-                                )}
+                                <button
+                                    onClick={handleClearFilters}
+                                    className="text-orange-600 hover:text-orange-800 font-semibold text-sm hover:underline"
+                                >
+                                    Limpiar todos los filtros
+                                </button>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Cart Drawer */}
             <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         </div>
     );

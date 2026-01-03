@@ -5,6 +5,7 @@ import { AppDataSource } from "../config/configDb.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
 import { ServiceSchema } from "../entity/service.entity.js";
+import { ProjectSchema } from "../entity/project.entity.js";
 import { mailService } from "./mail.service.js";
 
 const quoteRepository = AppDataSource.getRepository(QuoteSchema);
@@ -174,7 +175,7 @@ export const replyToQuote = async (id, amount, message) => {
 export const convertQuoteToProject = async (id) => {
   const quote = await quoteRepository.findOne({
     where: { id },
-    relations: ["client", "service", "category"]
+    relations: ["client", "service", "category", "service.division", "service.category"]
   });
 
   if (!quote) {
@@ -187,13 +188,15 @@ export const convertQuoteToProject = async (id) => {
     title: quote.customServiceTitle || quote.service?.name || "Proyecto sin título",
     description: quote.description,
     clientId: quote.clientId,
-    category: quote.category?.id || null,
-    division: quote.service?.division || 1,
-    status: "Pendiente",
+    category: quote.category ? quote.category.id : (quote.service?.category ? quote.service.category.id : 1), // Default to category 1 if missing
+    division: quote.service?.division ? quote.service.division.id : 1, // Default to division 1 if missing
+    status: "En Proceso",
     priority: "Medio",
     budgetAmount: quote.quotedAmount || 0,
     notes: quote.notes,
     quoteId: quote.id,
+    isFeatured: false, // Por defecto no destacado
+    image: (quote.referenceImages && quote.referenceImages.length > 0) ? quote.referenceImages[0] : null // Usar la primera imagen como portada inicial
   });
 
   await projectRepository.save(newProject);

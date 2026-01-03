@@ -39,6 +39,10 @@ const TopProductsChart = ({ orders = [] }) => {
         if (order.items && Array.isArray(order.items)) {
             order.items.forEach(item => {
                 const productId = item.productId;
+
+                // Skip non-product items (e.g. services)
+                if (!productId) return;
+
                 const productName = productNames[productId] || `Producto #${productId}`;
 
                 if (!productCounts[productName]) {

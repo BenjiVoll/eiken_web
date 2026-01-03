@@ -471,6 +471,149 @@ class MailService {
       </html>
     `;
   }
+
+  /**
+   * Envía notificación de orden completada
+   * @param {Object} order - Orden con items y cliente
+   */
+  async sendOrderCompletedEmail(order) {
+    try {
+      const itemsHTML = order.items?.map(item => `
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product?.name || item.service?.name || 'Producto'}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">x${item.quantity}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600;">$${item.totalPrice?.toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '';
+
+      const mailOptions = {
+        from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
+        to: order.client?.email,
+        subject: `✅ Pago Confirmado - Orden #${order.id}`,
+        html: this.getHtmlTemplate('Pago Confirmado', `
+          <tr>
+            <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px 40px; text-align: center;">
+              <img src="https://www.eikendesign.cl/fondo.jpg" 
+                   alt="Eiken Design" 
+                   style="max-width: 180px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;"
+              />
+            </td>
+          </tr>
+          
+          <tr>
+            <td style="padding: 50px 40px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; line-height: 80px;">
+                  <span style="color: white; font-size: 40px; font-weight: bold;">✓</span>
+                </div>
+              </div>
+
+              <h2 style="color: #2b2b2b; font-size: 28px; font-weight: 700; margin: 0 0 20px 0; text-align: center;">
+                ¡Pago Confirmado!
+              </h2>
+              
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.8; margin: 0 0 30px 0; text-align: center;">
+                Hola <strong style="color: #10b981;">${order.client?.name}</strong>,<br>
+                Tu pago ha sido procesado exitosamente. A continuación el resumen de tu orden:
+              </p>
+
+              <div style="background: #f7fafc; border-radius: 12px; padding: 24px; margin: 30px 0;">
+                <h3 style="color: #2b2b2b; font-size: 18px; font-weight: 600; margin: 0 0 15px 0;">
+                  Orden #${order.id}
+                </h3>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                  ${itemsHTML}
+                  <tr>
+                    <td colspan="2" style="padding: 15px 10px 10px; text-align: right; font-size: 18px; font-weight: 700;">
+                      Total:
+                    </td>
+                    <td style="padding: 15px 10px 10px; text-align: right; font-size: 18px; font-weight: 700; color: #10b981;">
+                      $${order.totalAmount?.toLocaleString('es-CL')}
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <p style="color: #718096; font-size: 14px; line-height: 1.6; margin: 30px 0 0; text-align: center;">
+                Te contactaremos pronto para coordinar la entrega.
+              </p>
+            </td>
+          </tr>
+        `)
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      console.log(`📧 Email de orden completada enviado a ${order.client?.email}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error enviando email de orden completada:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Envía notificación de reembolso
+   * @param {Object} order - Orden reembolsada
+   */
+  async sendOrderRefundedEmail(order) {
+    try {
+      const mailOptions = {
+        from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
+        to: order.client?.email,
+        subject: `💰 Reembolso Procesado - Orden #${order.id}`,
+        html: this.getHtmlTemplate('Reembolso Procesado', `
+          <tr>
+            <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 20px 40px; text-align: center;">
+              <img src="https://www.eikendesign.cl/fondo.jpg" 
+                   alt="Eiken Design" 
+                   style="max-width: 180px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;"
+              />
+            </td>
+          </tr>
+          
+          <tr>
+            <td style="padding: 50px 40px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 50%; line-height: 80px;">
+                  <span style="color: white; font-size: 40px; font-weight: bold;">💰</span>
+                </div>
+              </div>
+
+              <h2 style="color: #2b2b2b; font-size: 28px; font-weight: 700; margin: 0 0 20px 0; text-align: center;">
+                Reembolso Procesado
+              </h2>
+              
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.8; margin: 0 0 30px 0; text-align: center;">
+                Hola <strong style="color: #3b82f6;">${order.client?.name}</strong>,<br>
+                Tuorden #${order.id} ha sido reembolsada.
+              </p>
+
+              <div style="background: #f7fafc; border-radius: 12px; padding: 24px; margin: 30px 0; text-align: center;">
+                <p style="color: #2b2b2b; font-size: 18px; font-weight: 600; margin: 0 0 10px 0;">
+                  Monto reembolsado
+                </p>
+                <p style="color: #3b82f6; font-size: 32px; font-weight: 700; margin: 0;">
+                  $${order.totalAmount?.toLocaleString('es-CL')}
+                </p>
+              </div>
+
+              <p style="color: #718096; font-size: 14px; line-height: 1.6; margin: 30px 0 0; text-align: center;">
+                El reembolso se procesará en 3-5 días hábiles según tu medio de pago.
+              </p>
+            </td>
+          </tr>
+        `)
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      console.log(`📧 Email de reembolso enviado a ${order.client?.email}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error enviando email de reembolso:', error);
+      return false;
+    }
+  }
 }
 
 export const mailService = new MailService();

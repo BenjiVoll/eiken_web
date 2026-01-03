@@ -12,8 +12,7 @@ import {
   Boxes,
   Receipt,
   UserPlus,
-  Info,
-  AlertTriangle
+  Info
 } from 'lucide-react';
 import { servicesAPI, inventoryAPI, projectsAPI, quotesAPI, usersAPI, activitiesAPI, dashboardAPI, ordersAPI } from '@/services/apiService';
 import OrderStatusChart from '@/components/charts/OrderStatusChart';
@@ -27,8 +26,7 @@ const Dashboard = () => {
     services: 0,
     inventory: 0,
     projects: 0,
-    quotes: 0,
-    lowStockItems: 0
+    quotes: 0
   });
   const [loading, setLoading] = useState(true);
   const [recentActivity, setRecentActivity] = useState([]);
@@ -89,21 +87,17 @@ const Dashboard = () => {
 
         const results = await Promise.all(promises);
 
-        // Fetch low stock count
-        const lowStockResponse = await inventoryAPI.getLowStockCount();
-        const lowStockCount = lowStockResponse.data?.data?.count || 0;
+
 
         setStats({
           services: results[0]?.data?.data?.length || results[0]?.data?.length || 0,
           inventory: results[1]?.data?.data?.inventory?.length || results[1]?.data?.inventory?.length || results[1]?.data?.length || 0,
           projects: results[2]?.data?.projects?.length || results[2]?.data?.length || 0,
           quotes: results[3]?.data?.quotes?.length || results[3]?.data?.length || 0,
-          users: isManager ? (results[4]?.data?.users?.length || results[4]?.data?.length || 0) : 0,
-          lowStockItems: lowStockCount
+          users: isManager ? (results[4]?.data?.users?.length || results[4]?.data?.length || 0) : 0
         });
 
         const activityData = await activitiesAPI.getRecent(10);
-        console.log('Activity data:', activityData);
         const activitiesArray = activityData?.data?.data || activityData?.data || [];
         if (activitiesArray && activitiesArray.length > 0) {
           const activities = activitiesArray.map(act => ({
@@ -160,14 +154,6 @@ const Dashboard = () => {
       icon: Quote,
       color: 'bg-pink-500',
       href: '/quotes'
-    },
-    {
-      title: 'Materiales Críticos',
-      value: stats.lowStockItems,
-      icon: AlertTriangle,
-      color: 'bg-red-600',
-      href: '/inventory',
-      badge: stats.lowStockItems > 0 ? 'Stock Bajo' : 'OK'
     }
   ];
 
@@ -264,16 +250,18 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-5 py-3">
-                <div className="text-sm">
-                  <a
-                    href={card.href}
-                    className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
-                  >
-                    Ver todos
-                  </a>
+              {!card.hideViewAll && (
+                <div className="bg-gray-50 px-5 py-3">
+                  <div className="text-sm">
+                    <a
+                      href={card.href}
+                      className="font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
+                    >
+                      Ver todos
+                    </a>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}

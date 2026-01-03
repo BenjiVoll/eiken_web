@@ -9,7 +9,7 @@ const projectRepository = AppDataSource.getRepository(ProjectSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
-  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId } = data;
+  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId, isFeatured } = data;
 
   // Verificar que el cliente existe
   const client = await clientRepository.findOneBy({ id: clientId });
@@ -35,8 +35,10 @@ export const createProject = async (data) => {
     status,
     priority,
     budgetAmount,
+    budgetAmount,
     notes,
-    quoteId
+    quoteId,
+    isFeatured: isFeatured || false
   });
 
   await projectRepository.save(project);
@@ -73,6 +75,10 @@ export const updateProject = async (id, data) => {
   if (data.categoryId) {
     project.category = data.categoryId;
     delete data.categoryId;
+  }
+  // Si se actualiza division (viene como ID numérico), asignarlo directamente
+  if (data.division) {
+    project.division = data.division;
   }
   // Asignar el resto de campos
   Object.assign(project, data);
@@ -176,4 +182,16 @@ export const uploadProjectImage = async (id, file) => {
   project.image = file.filename;
   await projectRepository.save(project);
   return { image: file.filename, project };
+};
+
+export const getFeaturedProjects = async () => {
+  const projects = await projectRepository.find({
+    where: {
+      isFeatured: true,
+      status: "Completado"
+    },
+    relations: ["client", "category", "division"],
+    order: { createdAt: "DESC" }
+  });
+  return projects;
 };

@@ -18,8 +18,36 @@ const inventoryRepository = AppDataSource.getRepository(InventorySchema);
 export const createOrder = async (data) => {
   const { clientId, clientEmail, clientName, items, notes } = data;
 
-  // Si se proporciona clientId, verificar que el cliente existe
-  if (clientId) {
+  // Si no se proporciona clientId, buscar o crear cliente (Guest Checkout)
+  if (!clientId) {
+    if (!clientEmail) {
+      throw new Error("El email del cliente es obligatorio para compras sin cuenta");
+    }
+
+    // Buscar cliente existente por email
+    let client = await clientRepository.findOneBy({ email: clientEmail });
+
+    if (!client) {
+      // Crear nuevo cliente si no existe
+      console.log(`Creating new client for guest checkout: ${clientEmail}`);
+      client = clientRepository.create({
+        name: clientName || "Cliente Invitado",
+        email: clientEmail,
+        clientType: "individual",
+        isActive: true,
+        // Asumiendo que rut, phone, company pueden venir en data o ser null
+        phone: data.clientPhone || null,
+        company: data.company || null,
+        rut: data.rut || null,
+        address: data.address || null
+      });
+      await clientRepository.save(client);
+    }
+
+    // Asignar el ID del cliente encontrado o creado
+    data.clientId = client.id;
+  } else {
+    // Si se proporciona clientId, verificar que existe
     const client = await clientRepository.findOneBy({ id: clientId });
     if (!client) {
       throw new Error("Cliente no encontrado");
@@ -37,22 +65,53 @@ export const createOrder = async (data) => {
       customizations: item.customizations
     };
 
-    // Verificar si es un servicio o un producto
+    // Verificar validación de solo productos
     if (item.serviceId) {
-      const service = await serviceRepository.findOneBy({ id: item.serviceId });
-      if (!service) {
-        throw new Error(`Servicio con ID ${item.serviceId} no encontrado`);
-      }
-      unitPrice = item.unitPrice || service.price;
-      itemData.serviceId = item.serviceId;
-    } else if (item.productId) {
+      throw new Error("No se pueden incluir Servicios en una Orden de Compra. Por favor utilice el flujo de Cotizaciones.");
+    }
+
+    if (item.productId) {
       const product = await productRepository.findOneBy({ id: item.productId });
       if (!product) {
         throw new Error(`Producto con ID ${item.productId} no encontrado`);
       }
+
       if (product.stock < itemData.quantity) {
         throw new Error(`Stock insuficiente para el producto ${product.name}`);
       }
+      const materials = await getProductMaterials(item.productId);
+      if (materials && materials.length > 0) {
+        console.log(`🔍 Validando ${materials.length} materiales para ${product.name}...`);
+
+        for (const material of materials) {
+          const inventoryItem = await inventoryRepository.findOneBy({
+            id: material.inventoryId
+          });
+
+          if (!inventoryItem) {
+            throw new Error(
+              `Material de inventario "${material.inventoryId}" no encontrado para producto ${product.name}`
+            );
+          }
+
+          const totalNeeded = material.quantityNeeded * itemData.quantity;
+
+          if (inventoryItem.quantity < totalNeeded) {
+            throw new Error(
+              `Stock insuficiente de material "${inventoryItem.name}". ` +
+              `Disponible: ${inventoryItem.quantity} ${inventoryItem.unit}, ` +
+              `Necesario: ${totalNeeded} ${inventoryItem.unit} ` +
+              `(para ${itemData.quantity} unidad(es) de ${product.name})`
+            );
+          }
+
+          console.log(
+            `  ✅ ${inventoryItem.name}: ${inventoryItem.quantity} ${inventoryItem.unit} disponible, ` +
+            `${totalNeeded} ${inventoryItem.unit} necesario`
+          );
+        }
+      }
+
       unitPrice = item.unitPrice || product.price;
       itemData.productId = item.productId;
     } else {
@@ -67,11 +126,9 @@ export const createOrder = async (data) => {
     totalAmount += totalPrice;
   }
 
-  // Crear la orden
+  // Crear la orden (normalizada)
   const order = orderRepository.create({
-    clientId,
-    clientEmail,
-    clientName,
+    clientId: data.clientId,
     totalAmount,
     status: "pending",
     orderDate: new Date(),
@@ -202,11 +259,13 @@ export const updateOrderStatus = async (id, newStatus) => {
 
         console.log(`📦 Product stock descontado: ${product.name} -${orderItem.quantity}`);
 
-        // NUEVO: Descontar materiales del inventario automáticamente
+        // Descontar materiales del inventario automáticamente
         const materials = await getProductMaterials(orderItem.productId);
 
         if (materials && materials.length > 0) {
           console.log(`🔧 Descontando ${materials.length} materiales para ${product.name}...`);
+
+          const { createInventoryMovement } = await import("./inventoryMovement.service.js");
 
           for (const material of materials) {
             const inventoryItem = await inventoryRepository.findOneBy({
@@ -230,14 +289,21 @@ export const updateOrderStatus = async (id, newStatus) => {
               );
             }
 
-            // Descontar del inventario
-            inventoryItem.quantity -= totalNeeded;
-            await inventoryRepository.save(inventoryItem);
+            await createInventoryMovement({
+              inventoryId: material.inventoryId,
+              movementType: "salida",
+              quantity: totalNeeded,
+              reason: "Venta Automática",
+              referenceId: order.id,
+              referenceType: "order",
+              createdById: null,
+              notes: `Descuento automático por Orden #${order.id} (Producto: ${product.name}) - Procesado por sistema vía webhook de pago`
+            });
 
             console.log(
               `  ✅ ${inventoryItem.name}: ` +
               `-${totalNeeded} ${inventoryItem.unit} ` +
-              `(quedan ${inventoryItem.quantity} ${inventoryItem.unit})`
+              `(Trazabilidad registrada)`
             );
 
             // Verificar si llegó al stock mínimo y enviar alerta
@@ -247,11 +313,11 @@ export const updateOrderStatus = async (id, newStatus) => {
                 await checkAndAlertLowStock();
               } catch (alertError) {
                 console.error("Error enviando alerta de stock bajo:", alertError);
-                // No lanzar error, solo log
               }
             }
           }
-        } else {
+        }
+        else {
           console.log(`ℹ️ Producto ${product.name} no tiene materiales asociados`);
         }
       }
@@ -260,13 +326,31 @@ export const updateOrderStatus = async (id, newStatus) => {
 
   // Si la orden se cancela y estaba completada, restaurar stock
   if (newStatus === "cancelled" && oldStatus === "completed") {
+    const { createInventoryMovement } = await import("./inventoryMovement.service.js");
+
     for (const orderItem of order.items) {
       if (orderItem.productId) {
         const product = await productRepository.findOneBy({ id: orderItem.productId });
         if (product) {
-          // Restaurar stock
           product.stock += orderItem.quantity;
           await productRepository.save(product);
+
+          const materials = await getProductMaterials(orderItem.productId);
+          for (const material of materials) {
+            const totalToRestore = material.quantityNeeded * orderItem.quantity;
+
+            await createInventoryMovement({
+              inventoryId: material.inventoryId,
+              movementType: "entrada",
+              quantity: totalToRestore,
+              reason: "Cancelación de Orden",
+              referenceId: order.id,
+              referenceType: "order",
+              createdById: null,
+              notes: `Restauración por cancelación de Orden #${order.id} - Procesado por sistema`
+            });
+            console.log(`⏪ Material restaurado: ${material.inventoryId} +${totalToRestore}`);
+          }
         }
       }
     }
@@ -286,8 +370,6 @@ export const deleteOrder = async (id) => {
   if (!order) {
     throw new Error("Orden no encontrada");
   }
-
-  // Los items se eliminan automáticamente por CASCADE
   await orderRepository.remove(order);
   return { mensaje: "Orden eliminada exitosamente" };
 };

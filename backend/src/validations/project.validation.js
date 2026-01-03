@@ -223,6 +223,10 @@ export const projectUpdateValidation = Joi.object({
       "number.integer": "El id de la cotización debe ser un número entero.",
       "number.positive": "El id de la cotización debe ser un número positivo.",
     }),
+  isFeatured: Joi.boolean()
+    .messages({
+      "boolean.base": "El campo isFeatured debe ser un valor booleano.",
+    }),
 })
   .unknown(false)
   .messages({

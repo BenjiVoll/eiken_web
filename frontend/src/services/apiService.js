@@ -154,6 +154,11 @@ export const publicAPI = {
     getByStatus: async (status) => {
       const response = await publicApi.get(`/public/projects/status/${status}`);
       return response.data;
+    },
+
+    getFeatured: async () => {
+      const response = await publicApi.get('/public/projects/portfolio');
+      return response.data;
     }
   }
 };

@@ -16,12 +16,7 @@ const PaymentSuccess = () => {
 
     useEffect(() => {
         const confirmOrder = async () => {
-            console.log('=== PAYMENT SUCCESS DEBUG ===');
-            console.log('Payment ID:', paymentId);
-            console.log('External Reference:', externalReference);
-            console.log('Status:', status);
-            console.log('All search params:', Object.fromEntries(searchParams));
-            console.log('============================');
+
 
             try {
                 // Limpiar el carrito
@@ -30,9 +25,9 @@ const PaymentSuccess = () => {
                 // Si tenemos external_reference (order ID), confirmar la orden
                 if (externalReference) {
                     const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000/api';
-                    console.log('Confirmando orden:', externalReference);
+
                     const response = await axios.post(`${baseUrl}/orders/${externalReference}/confirm`);
-                    console.log('Orden confirmada:', response.data);
+
                 } else {
                     console.warn('No se recibió external_reference - la orden no se confirmará automáticamente');
                 }
