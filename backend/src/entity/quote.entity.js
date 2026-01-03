@@ -10,29 +10,11 @@ export const QuoteSchema = new EntitySchema({
       primary: true,
       generated: "increment",
     },
-    
-    clientName: {
-      type: "varchar",
-      length: 255,
+
+    clientId: {
+      type: "int",
       nullable: false,
-      name: "client_name",
-    },
-    clientEmail: {
-      type: "varchar",
-      length: 255,
-      nullable: false,
-      name: "client_email",
-    },
-    clientPhone: {
-      type: "varchar",
-      length: 50,
-      nullable: false,
-      name: "client_phone",
-    },
-    company: {
-      type: "varchar",
-      length: 255,
-      nullable: true,
+      name: "client_id",
     },
     customServiceTitle: {
       type: "varchar",
@@ -49,15 +31,21 @@ export const QuoteSchema = new EntitySchema({
       type: "text",
       nullable: false,
     },
-    urgency: {
-      type: "enum",
-      enum: ["Bajo", "Medio", "Alto", "Urgente"],
-      nullable: false,
+
+    requestedDeliveryDate: {
+      type: "date",
+      nullable: true,
+      name: "requested_delivery_date",
     },
-    
+    referenceImages: {
+      type: "simple-array",
+      nullable: true,
+      name: "reference_images",
+    },
+
     status: {
       type: "enum",
-      enum: ["Pendiente", "En Revisión", "Cotizado", "Aprobado", "Rechazado", "Convertido"],
+      enum: ["Pendiente", "Revisando", "En Revisión", "Cotizado", "Aprobado", "Rechazado", "Convertido"],
       nullable: false,
     },
     quotedAmount: {
@@ -71,7 +59,7 @@ export const QuoteSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
-    
+
     createdAt: {
       type: "timestamp",
       createDate: true,
@@ -85,8 +73,17 @@ export const QuoteSchema = new EntitySchema({
       name: "updated_at",
     },
   },
-  
+
   relations: {
+    client: {
+      target: "Client",
+      type: "many-to-one",
+      joinColumn: {
+        name: "client_id",
+        referencedColumnName: "id",
+      },
+      nullable: true,
+    },
     service: {
       target: "Service",
       type: "many-to-one",
@@ -106,19 +103,15 @@ export const QuoteSchema = new EntitySchema({
       nullable: true,
     },
   },
-  
+
   indices: [
     {
       name: "IDX_QUOTE_STATUS",
       columns: ["status"],
     },
     {
-      name: "IDX_QUOTE_EMAIL",
-      columns: ["clientEmail"],
-    },
-    {
-      name: "IDX_QUOTE_URGENCY",
-      columns: ["urgency"],
+      name: "IDX_QUOTE_CLIENT",
+      columns: ["clientId"],
     },
   ],
 });

@@ -9,8 +9,8 @@ const projectRepository = AppDataSource.getRepository(ProjectSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
-  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId } = data;
-  
+  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId, isFeatured } = data;
+
   // Verificar que el cliente existe
   const client = await clientRepository.findOneBy({ id: clientId });
   if (!client) {
@@ -18,9 +18,9 @@ export const createProject = async (data) => {
   }
 
   // Verificar si ya existe un proyecto con el mismo título para el mismo cliente
-  const existingProject = await projectRepository.findOneBy({ 
-    clientId, 
-    title 
+  const existingProject = await projectRepository.findOneBy({
+    clientId,
+    title
   });
   if (existingProject) {
     throw new Error("Ya existe un proyecto con este título para este cliente");
@@ -30,13 +30,15 @@ export const createProject = async (data) => {
     title,
     description,
     clientId,
-    projectType: categoryId,
+    category: categoryId,
     division,
     status,
     priority,
     budgetAmount,
+    budgetAmount,
     notes,
-    quoteId
+    quoteId,
+    isFeatured: isFeatured || false
   });
 
   await projectRepository.save(project);
@@ -60,19 +62,23 @@ export const updateProject = async (id, data) => {
   // Si se está actualizando el título, verificar que no exista otro con el mismo título para el mismo cliente
   if (data.title && data.title !== project.title) {
     const clientId = data.clientId || project.clientId;
-    const existingProject = await projectRepository.findOneBy({ 
-      clientId, 
-      title: data.title 
+    const existingProject = await projectRepository.findOneBy({
+      clientId,
+      title: data.title
     });
     if (existingProject && existingProject.id !== id) {
       throw new Error("Ya existe un proyecto con este título para este cliente");
     }
   }
 
-  // Si se actualiza categoryId, mapear a projectType
+  // Si se actualiza categoryId, mapear a category
   if (data.categoryId) {
-    project.projectType = data.categoryId;
+    project.category = data.categoryId;
     delete data.categoryId;
+  }
+  // Si se actualiza division (viene como ID numérico), asignarlo directamente
+  if (data.division) {
+    project.division = data.division;
   }
   // Asignar el resto de campos
   Object.assign(project, data);
@@ -136,6 +142,14 @@ export const deleteProject = async (id) => {
     throw new Error("Proyecto no encontrado");
   }
 
+  if (project.quoteId) {
+    throw new Error("No se puede eliminar un proyecto asociado a una cotización");
+  }
+
+  if (project.status === "Completado") {
+    throw new Error("No se puede eliminar un proyecto completado");
+  }
+
   await projectRepository.remove(project);
   return { mensaje: "Proyecto eliminado exitosamente" };
 };
@@ -168,4 +182,16 @@ export const uploadProjectImage = async (id, file) => {
   project.image = file.filename;
   await projectRepository.save(project);
   return { image: file.filename, project };
+};
+
+export const getFeaturedProjects = async () => {
+  const projects = await projectRepository.find({
+    where: {
+      isFeatured: true,
+      status: "Completado"
+    },
+    relations: ["client", "category", "division"],
+    order: { createdAt: "DESC" }
+  });
+  return projects;
 };

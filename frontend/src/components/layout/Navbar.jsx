@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import eikenLogo from '/dist/logo.png';
-import { 
-  Home, 
-  Settings, 
-  Package, 
-  Users, 
-  Briefcase, 
-  FileText, 
+import { useAuth } from '@/context/AuthContext';
+import eikenLogo from '/logo.png';
+import {
+  Home,
+  Settings,
+  Package,
+  Users,
+  Briefcase,
+  FileText,
   Quote,
   LogOut,
   Menu,
-  X
+  X,
+  ShoppingBag
 } from 'lucide-react';
 
 const Navbar = () => {
@@ -24,51 +25,57 @@ const Navbar = () => {
   const handleLogout = () => {
     // Limpiar primero
     logout();
-    
+
     // Redirección inmediata que reemplaza la entrada actual del historial
     window.location.replace('/');
   };
 
   const navigationItems = [
-    { 
-      name: 'Dashboard', 
-      href: '/intranet/dashboard', 
+    {
+      name: 'Dashboard',
+      href: '/intranet/dashboard',
       icon: Home,
       requiresRole: null
     },
-    { 
-      name: 'Servicios', 
-      href: '/intranet/services', 
+    {
+      name: 'Servicios',
+      href: '/intranet/services',
       icon: Settings,
       requiresRole: null
     },
-    { 
-      name: 'Inventario', 
-      href: '/intranet/inventory', 
+    {
+      name: 'Inventario',
+      href: '/intranet/inventory',
       icon: Package,
       requiresRole: null
     },
-    { 
-      name: 'Proveedores', 
-      href: '/intranet/suppliers', 
-      icon: Briefcase,
+    {
+      name: 'Productos',
+      href: '/intranet/products',
+      icon: Package,
       requiresRole: null
     },
-    { 
-      name: 'Proyectos', 
-      href: '/intranet/projects', 
+    {
+      name: 'Órdenes',
+      href: '/intranet/orders',
+      icon: ShoppingBag,
+      requiresRole: null
+    },
+    {
+      name: 'Proyectos',
+      href: '/intranet/projects',
       icon: FileText,
       requiresRole: null
     },
-    { 
-      name: 'Cotizaciones', 
-      href: '/intranet/quotes', 
+    {
+      name: 'Cotizaciones',
+      href: '/intranet/quotes',
       icon: Quote,
       requiresRole: null
     },
-    { 
-      name: 'Usuarios', 
-      href: '/intranet/users', 
+    {
+      name: 'Usuarios',
+      href: '/intranet/users',
       icon: Users,
       requiresRole: 'admin'
     }
@@ -114,17 +121,17 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-lg fixed w-full top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo y navegación principal */}
-          <div className="flex">
-            <div className="flex w-full items-center justify-between">
-              <div className="flex-shrink-0 flex items-center">
+          <div className="flex flex-1">
+            <div className="flex w-full items-center">
+              <div className="flex-shrink-0 flex items-center mr-8">
                 <Link to="/dashboard" className="flex items-center">
-                  <img src={eikenLogo} alt="Eiken Design Logo" className="h-10 w-auto mr-2 rounded shadow" />
+                  <img src={eikenLogo} alt="Eiken Design Logo" className="h-10 w-auto rounded shadow" />
                 </Link>
               </div>
-              <div className="hidden md:ml-6 md:flex md:space-x-8">
+              <div className="relative hidden md:flex md:space-x-6 overflow-x-auto flex-nowrap navbar-scroll flex-1">
                 {filteredNavigation.map((item) => {
                   if (item.name === 'Servicios') {
                     const Icon = item.icon;
@@ -132,11 +139,10 @@ const Navbar = () => {
                     return (
                       <div key="servicios-dropdown" className="relative">
                         <button
-                          className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 focus:outline-none ${
-                            isActive
-                              ? 'border-eiken-orange-500 text-gray-900'
-                              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                          }`}
+                          className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 focus:outline-none whitespace-nowrap ${isActive
+                            ? 'border-eiken-orange-500 text-gray-900'
+                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                            }`}
                           onClick={() => setIsServicesDropdownOpen((open) => !open)}
                           tabIndex={0}
                         >
@@ -145,12 +151,12 @@ const Navbar = () => {
                           <svg className="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
                         {isServicesDropdownOpen && (
-                          <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
-                            <Link to="/intranet/services" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setIsServicesDropdownOpen(false)}>Servicios</Link>
+                          <div className="fixed mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-[60]" style={{ top: '4rem', left: 'auto' }}>
+                            <Link to="/intranet/services" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-md" onClick={() => setIsServicesDropdownOpen(false)}>Servicios</Link>
                             {(isAdmin || isManager) && (
                               <>
-                                <Link to="/intranet/categories" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setIsServicesDropdownOpen(false)}>Categorías</Link>
-                                <Link to="/intranet/divisions" className="block px-4 py-2 text-gray-700 hover:bg-gray-100" onClick={() => setIsServicesDropdownOpen(false)}>Divisiones</Link>
+                                <Link to="/intranet/categories" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsServicesDropdownOpen(false)}>Categorías</Link>
+                                <Link to="/intranet/divisions" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-md" onClick={() => setIsServicesDropdownOpen(false)}>Divisiones</Link>
                               </>
                             )}
                           </div>
@@ -164,11 +170,10 @@ const Navbar = () => {
                       <Link
                         key={item.name}
                         to={item.href}
-                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                          isActive
-                            ? 'border-eiken-orange-500 text-gray-900'
-                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                        }`}
+                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 transition-colors duration-200 whitespace-nowrap ${isActive
+                          ? 'border-eiken-orange-500 text-gray-900'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                          }`}
                       >
                         <Icon className="w-4 h-4 mr-2" />
                         {item.name}
@@ -222,11 +227,10 @@ const Navbar = () => {
                 const isActive = location.pathname.startsWith('/intranet/services') || location.pathname.startsWith('/intranet/categories') || location.pathname.startsWith('/intranet/divisions');
                 return (
                   <div key="servicios-dropdown-mobile" className="">
-                    <div className={`flex items-center pl-3 pr-4 py-2 text-base font-medium border-l-4 ${
-                      isActive
-                        ? 'bg-blue-50 border-blue-500 text-blue-700'
-                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-                    }`}>
+                    <div className={`flex items-center pl-3 pr-4 py-2 text-base font-medium border-l-4 ${isActive
+                      ? 'bg-blue-50 border-blue-500 text-blue-700'
+                      : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                      }`}>
                       <Icon className="w-5 h-5 mr-3" />
                       Servicios
                     </div>
@@ -245,11 +249,10 @@ const Navbar = () => {
                     key={item.name}
                     to={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`block pl-3 pr-4 py-2 text-base font-medium border-l-4 ${
-                      isActive
-                        ? 'bg-blue-50 border-blue-500 text-blue-700'
-                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-                    }`}
+                    className={`block pl-3 pr-4 py-2 text-base font-medium border-l-4 ${isActive
+                      ? 'bg-blue-50 border-blue-500 text-blue-700'
+                      : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                      }`}
                   >
                     <div className="flex items-center">
                       <Icon className="w-5 h-5 mr-3" />

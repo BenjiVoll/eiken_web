@@ -1,8 +1,8 @@
 import React from 'react';
-import { Edit, Trash2, User, Calendar, DollarSign, Clock, Tag, Building, Image as ImageIcon } from 'lucide-react';
+import { Edit, Trash2, User, Calendar, DollarSign, Clock, Tag, Building, Image as ImageIcon, Star } from 'lucide-react';
 
 const ProjectsTable = ({ projects, isManager, isAdmin, onEdit, onDelete, getStatusColor, getStatusLabel, getPriorityColor, getPriorityLabel, getImageUrl, setModalImageUrl, setShowImageModal }) => (
-  <div className="project-grid">
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     {projects.map((project) => (
       <div key={project.id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
         <div className="w-full h-48 bg-gray-100 flex items-center justify-center" style={{ borderBottom: '1px solid #eee' }}>
@@ -22,7 +22,12 @@ const ProjectsTable = ({ projects, isManager, isAdmin, onEdit, onDelete, getStat
         </div>
         <div className="p-6">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex-1 mr-2">{project.title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 flex-1 mr-2 flex items-center">
+              {project.title}
+              {project.isFeatured && (
+                <Star className="ml-2 h-4 w-4 text-yellow-500 fill-current" title="Destacado en Portafolio" />
+              )}
+            </h3>
             <div className="flex items-center space-x-2">
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                 {getStatusLabel(project.status)}
@@ -64,7 +69,7 @@ const ProjectsTable = ({ projects, isManager, isAdmin, onEdit, onDelete, getStat
             <div className="flex items-center text-sm text-gray-600">
               <Tag className="h-4 w-4 mr-2 text-gray-400" />
               <span className="font-medium">Tipo:</span>
-              <span className="ml-2">{project.category?.name || project.projectType}</span>
+              <span className="ml-2">{project.category?.name || 'Sin categoría'}</span>
             </div>
             <div className="flex items-center text-sm">
               <Clock className="h-4 w-4 mr-2 text-gray-400" />

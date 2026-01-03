@@ -1,24 +1,44 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Palette, Menu, X, Phone } from 'lucide-react';
 
 const ClientNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
   const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest'
-      });
-    }
     setIsMenuOpen(false);
+
+    // Si estamos en la home, solo hacer scroll
+    if (location.pathname === '/') {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        });
+      }
+    } else {
+      // Si estamos en otra página, navegar a home con hash
+      navigate(`/#${sectionId}`);
+      // Esperar a que se cargue la home y luego hacer scroll
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
+          });
+        }
+      }, 100);
+    }
   };
 
   return (
@@ -27,9 +47,9 @@ const ClientNavbar = () => {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-3 flex-1">
             <div className="flex items-center">
-              <img 
-                src="/logo.png" 
-                alt="Eiken Design Logo" 
+              <img
+                src="/logo.png"
+                alt="Eiken Design Logo"
                 className="h-10 w-auto"
               />
               <div className="bg-eiken-gradient p-2 rounded-lg hidden">
@@ -70,12 +90,16 @@ const ClientNavbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4 justify-end flex-1">
-            <Link 
-              to="/intranet" 
-              className="text-gray-600 hover:text-eiken-red-500 font-medium transition-colors px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+            <Link
+              to="/store"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-medium hover:shadow-lg transition-all flex items-center space-x-2"
             >
-              Intranet
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              <span>Ir a Tienda</span>
             </Link>
+
           </div>
 
           <div className="md:hidden">
@@ -103,6 +127,13 @@ const ClientNavbar = () => {
               >
                 Portafolio
               </button>
+              <Link
+                to="/store"
+                className="block w-full text-left px-4 py-2 text-gray-600 hover:text-eiken-red-500 hover:bg-gray-50 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Tienda
+              </Link>
               <button
                 onClick={() => scrollToSection('nosotros')}
                 className="block w-full text-left px-4 py-2 text-gray-600 hover:text-eiken-red-500 hover:bg-gray-50 rounded-lg transition-colors"
@@ -115,15 +146,9 @@ const ClientNavbar = () => {
               >
                 Contacto
               </button>
-              
-              <Link
-                to="/intranet"
-                className="block w-full text-left px-4 py-2 text-gray-600 hover:text-eiken-red-500 hover:bg-gray-50 rounded-lg transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Intranet
-              </Link>
-              
+
+
+
               <div className="space-y-2 px-4 pt-4 border-t border-gray-200">
                 <button className="w-full border border-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors text-center">
                   Cotizar Proyecto

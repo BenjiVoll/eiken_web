@@ -4,7 +4,7 @@
 import User from "../entity/user.entity.js";
 import { ServiceSchema } from "../entity/service.entity.js";
 import { InventorySchema } from "../entity/inventory.entity.js";
-import { SupplierSchema } from "../entity/supplier.entity.js";
+
 import { ProjectSchema } from "../entity/project.entity.js";
 import { QuoteSchema } from "../entity/quote.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
@@ -20,7 +20,7 @@ async function createInitialData() {
     const categoryRepository = AppDataSource.getRepository(CategorySchema);
     const divisionRepository = AppDataSource.getRepository(DivisionSchema);
     const inventoryRepository = AppDataSource.getRepository(InventorySchema);
-    const supplierRepository = AppDataSource.getRepository(SupplierSchema);
+
     const projectRepository = AppDataSource.getRepository(ProjectSchema);
     const quoteRepository = AppDataSource.getRepository(QuoteSchema);
     const clientRepository = AppDataSource.getRepository(ClientSchema);
@@ -168,7 +168,7 @@ async function createInitialData() {
       console.log("Servicios ya existen, omitiendo creación.");
     }
 
-    
+
     const inventoryCount = await inventoryRepository.count();
     if (inventoryCount === 0) {
       await Promise.all([
@@ -298,59 +298,6 @@ async function createInitialData() {
       console.log("Inventario ya existe, omitiendo creación.");
     }
 
-    const supplierCount = await supplierRepository.count();
-    if (supplierCount === 0) {
-      await Promise.all([
-        supplierRepository.save(
-          supplierRepository.create({
-            name: "3M Chile S.A.",
-            contactPerson: "Juan Pérez",
-            phone: "+56 2 2620 2000",
-            email: "contacto@3m.cl",
-            address: "Av. Apoquindo 4700, Las Condes, Santiago",
-            rut: "90.123.000-7",
-            isActive: true,
-          })
-        ),
-        supplierRepository.save(
-          supplierRepository.create({
-            name: "Avery Dennison Chile",
-            contactPerson: "María Gómez",
-            phone: "+56 2 2555 1234",
-            email: "ventas@averydennison.cl",
-            address: "Av. Nueva Providencia 1860, Providencia, Santiago",
-            rut: "91.456.000-2",
-            isActive: true,
-          })
-        ),
-        supplierRepository.save(
-          supplierRepository.create({
-            name: "Oracal Chile SpA",
-            contactPerson: "Carlos Rojas",
-            phone: "+56 2 2777 5678",
-            email: "info@oracal.cl",
-            address: "Av. Las Industrias 2500, Maipú, Santiago",
-            rut: "92.789.000-5",
-            isActive: true,
-          })
-        ),
-        supplierRepository.save(
-          supplierRepository.create({
-            name: "Distribuidora Vinilos Sur",
-            contactPerson: "Ana Valdés",
-            phone: "+56 41 254 7890",
-            email: "contacto@vinilossur.cl",
-            address: "Calle O'Higgins 1234, Concepción",
-            rut: "93.234.000-8",
-            isActive: true,
-          })
-        ),
-      ]);
-      console.log("✅ Proveedores creados exitosamente.");
-    } else {
-      console.log("ℹ️  Proveedores ya existen, omitiendo creación.");
-    }
-
     // Crear clientes
     const clientCount = await clientRepository.count();
     if (clientCount === 0) {
@@ -364,6 +311,7 @@ async function createInitialData() {
             company: "Transportes Bio-Bío S.A.",
             rut: "96.789.123-4",
             clientType: "company",
+            source: "manual",
             isActive: true,
           })
         ),
@@ -376,6 +324,7 @@ async function createInitialData() {
             company: "Team Chile Rally SpA",
             rut: "77.456.789-0",
             clientType: "company",
+            source: "manual",
             isActive: true,
           })
         ),
@@ -388,6 +337,7 @@ async function createInitialData() {
             company: "Empresas Arauco S.A.",
             rut: "93.458.000-1",
             clientType: "company",
+            source: "manual",
             isActive: true,
           })
         ),
@@ -400,6 +350,7 @@ async function createInitialData() {
             company: "Cuerpo de Bomberos de Concepción",
             rut: "71.234.567-8",
             clientType: "company",
+            source: "manual",
             isActive: true,
           })
         ),
@@ -417,7 +368,7 @@ async function createInitialData() {
             title: "Wrap Completo Flota Transportes Bio-Bío",
             description: "Diseño e instalación de wrap completo para 25 camiones de carga",
             clientId: 1,
-            projectType: vehicularCategory.id,
+            category: vehicularCategory.id,
             division: truckDivision.id,
             status: "Completado",
             priority: "Alto",
@@ -430,7 +381,7 @@ async function createInitialData() {
             title: "Gráfica Rally Mobil 2024 - Team Chile",
             description: "Diseño especializado para 3 autos de competición Rally Mobil",
             clientId: 2,
-            projectType: racingCategory.id,
+            category: racingCategory.id,
             division: racingDivision.id,
             status: "Completado",
             priority: "Urgente",
@@ -443,7 +394,7 @@ async function createInitialData() {
             title: "Identidad Corporativa Grupo Arauco",
             description: "Desarrollo completo de identidad visual y aplicaciones vehiculares",
             clientId: 3,
-            projectType: corporativoCategory.id,
+            category: corporativoCategory.id,
             division: designDivision.id,
             status: "Completado",
             priority: "Medio",
@@ -456,7 +407,7 @@ async function createInitialData() {
             title: "Cuerpo de Bomberos Concepción - Equipamiento Gráfico",
             description: "Diseño e instalación de gráficas para carros bomba y equipamiento",
             clientId: 4,
-            projectType: vehicularCategory.id,
+            category: vehicularCategory.id,
             division: designDivision.id,
             status: "Completado",
             priority: "Alto",
@@ -469,7 +420,7 @@ async function createInitialData() {
             title: "Flota Express Chilexpress",
             description: "Wrap completo para 40 vehículos de reparto",
             clientId: 1,
-            projectType: vehicularCategory.id,
+            category: vehicularCategory.id,
             division: truckDivision.id,
             status: "En Proceso",
             priority: "Alto",
@@ -485,17 +436,62 @@ async function createInitialData() {
 
     const quoteCount = await quoteRepository.count();
     if (quoteCount === 0) {
+      // Crear clientes para las cotizaciones
+      const quoteClient1 = await clientRepository.save(
+        clientRepository.create({
+          name: "Juan Pérez",
+          email: "juan.perez@transportesabc.cl",
+          phone: "+56 9 8765 4321",
+          company: "Transportes ABC",
+          clientType: "company",
+          source: "manual",
+          isActive: true,
+        })
+      );
+
+      const quoteClient2 = await clientRepository.save(
+        clientRepository.create({
+          name: "María González",
+          email: "maria@racingteamchile.cl",
+          phone: "+56 9 1234 5678",
+          company: "Racing Team Chile",
+          clientType: "company",
+          source: "manual",
+          isActive: true,
+        })
+      );
+
+      const quoteClient3 = await clientRepository.save(
+        clientRepository.create({
+          name: "Carlos Rodríguez",
+          email: "carlos@empresadef.cl",
+          phone: "+56 2 2555 1234",
+          company: "Empresa DEF",
+          clientType: "company",
+          source: "manual",
+          isActive: true,
+        })
+      );
+
+      const quoteClient4 = await clientRepository.save(
+        clientRepository.create({
+          name: "Ana Martínez",
+          email: "ana@bomberosconcepcion.cl",
+          phone: "+56 41 254 9999",
+          company: "Bomberos Concepción",
+          clientType: "company",
+          source: "manual",
+          isActive: true,
+        })
+      );
+
       await Promise.all([
         quoteRepository.save(
           quoteRepository.create({
-            clientName: "Juan Pérez",
-            clientEmail: "juan.perez@transportesabc.cl",
-            clientPhone: "+56 9 8765 4321",
-            company: "Transportes ABC",
+            clientId: quoteClient1.id,
             customServiceTitle: "Wrap para Flota de Camiones",
-            categoryId: vehicularCategory.id,
+            category: vehicularCategory.id,
             description: "Necesitamos wrap completo para 10 camiones de nuestra flota",
-            urgency: "Medio",
             status: "Pendiente",
             quotedAmount: 4500000.00,
             notes: "Cliente interesado en descuento por volumen",
@@ -503,14 +499,10 @@ async function createInitialData() {
         ),
         quoteRepository.save(
           quoteRepository.create({
-            clientName: "María González",
-            clientEmail: "maria@racingteamchile.cl",
-            clientPhone: "+56 9 1234 5678",
-            company: "Racing Team Chile",
+            clientId: quoteClient2.id,
             customServiceTitle: "Gráfica para Autos de Competición",
-            categoryId: racingCategory.id,
+            category: racingCategory.id,
             description: "Gráfica para 2 autos de competición temporada 2024",
-            urgency: "Alto",
             status: "Aprobado",
             quotedAmount: 1700000.00,
             notes: "Aprobado para iniciar inmediatamente",
@@ -518,14 +510,10 @@ async function createInitialData() {
         ),
         quoteRepository.save(
           quoteRepository.create({
-            clientName: "Carlos Rodríguez",
-            clientEmail: "carlos@empresadef.cl",
-            clientPhone: "+56 2 2555 1234",
-            company: "Empresa DEF",
+            clientId: quoteClient3.id,
             customServiceTitle: "Desarrollo de Identidad Corporativa",
-            categoryId: corporativoCategory.id,
+            category: corporativoCategory.id,
             description: "Desarrollo de identidad corporativa completa incluyendo logo y aplicaciones",
-            urgency: "Bajo",
             status: "En Revisión",
             quotedAmount: 960000.00,
             notes: "En proceso de revisión de propuestas",
@@ -533,14 +521,10 @@ async function createInitialData() {
         ),
         quoteRepository.save(
           quoteRepository.create({
-            clientName: "Ana Martínez",
-            clientEmail: "ana@bomberosconcepcion.cl",
-            clientPhone: "+56 41 254 9999",
-            company: "Bomberos Concepción",
+            clientId: quoteClient4.id,
             customServiceTitle: "Gráfica para Carros Bomba",
-            categoryId: vehicularCategory.id,
+            category: vehicularCategory.id,
             description: "Gráfica para 3 carros bomba nuevos",
-            urgency: "Urgente",
             status: "Pendiente",
             quotedAmount: 1350000.00,
             notes: "Requiere aprobación urgente del directorio",

@@ -1,15 +1,14 @@
-import { useAuth } from '../context/AuthContext';
+﻿import { useAuth } from '@/context/AuthContext';
 import { useState, useEffect } from 'react';
-import ImageModal from '../components/forms/ImageModal';
-import { projectsAPI, clientsAPI } from '../services/apiService';
+import ImageModal from '@/components/forms/ImageModal';
+import { projectsAPI, clientsAPI } from '@/services/apiService';
 import { FileText } from 'lucide-react';
-import ProjectsHeader from '../components/projects/ProjectsHeader';
-import ProjectsSearchBar from '../components/projects/ProjectsSearchBar';
-import ProjectsTable from '../components/projects/ProjectsTable';
-import '../styles/projects.css';
-import ProjectModal from '../components/forms/ProjectModal';
-import { getImageUrl } from '../helpers/getImageUrl';
-import { showSuccessAlert, showErrorAlert, deleteDataAlert } from '../helpers/sweetAlert';
+import ProjectsHeader from '@/components/projects/ProjectsHeader';
+import ProjectsSearchBar from '@/components/projects/ProjectsSearchBar';
+import ProjectsTable from '@/components/projects/ProjectsTable';
+import ProjectModal from '@/components/forms/ProjectModal';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import { showSuccessAlert, showErrorAlert, deleteDataAlert } from '@/helpers/sweetAlert';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -18,7 +17,7 @@ const Projects = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
-  // const [modalLoading, setModalLoading] = useState(false); // Eliminar si no se usa
+
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
   const { isManager, isAdmin } = useAuth();
@@ -52,10 +51,10 @@ const Projects = () => {
   // Filtro de proyectos
   const filteredProjects = Array.isArray(projects)
     ? projects.filter(project =>
-        (project.title?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (String(project.division || "").toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (project.client?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+      (project.title?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (String(project.division || "").toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (project.client?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
     : [];
 
   // Funciones mínimas para modularización
@@ -123,14 +122,14 @@ const Projects = () => {
     }
   };
 
-  // Funciones para el modal
+
   const handleSaveProject = async (formData) => {
     try {
       let response;
       let imageWasUploaded = false;
       if (editingProject) {
         response = await projectsAPI.update(editingProject.id, formData);
-        // Solo mostrar mensaje si NO se subió imagen
+
         imageWasUploaded = false;
       } else {
         response = await projectsAPI.create(formData);
@@ -139,12 +138,7 @@ const Projects = () => {
       setIsModalOpen(false);
       setEditingProject(null);
       await loadData();
-      // Si se eliminó la imagen, recargar el proyecto actualizado para el modal
-      if (editingProject && editingProject.id) {
-          const updated = await projectsAPI.getById(editingProject.id);
-          setEditingProject(updated);
-      }
-      // Si se subió imagen, el mensaje se muestra en handleProjectImageUpload
+
       if (!imageWasUploaded) {
         showSuccessAlert(editingProject ? 'Proyecto actualizado' : 'Proyecto creado');
       }
@@ -160,7 +154,7 @@ const Projects = () => {
     formData.append('image', imageFile);
     try {
       await projectsAPI.uploadImage(projectId, formData);
-      // No mostrar ningún mensaje relacionado a la imagen
+
       loadData();
     } catch {
       showErrorAlert('Error', 'No se pudo subir la imagen');
@@ -171,12 +165,12 @@ const Projects = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <ProjectsHeader isManager={isManager} isAdmin={isAdmin} onCreate={handleCreateProject} />
       <ProjectsSearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-        {loading ? (
-          <div className="text-center py-12">
-            <FileText className="mx-auto h-12 w-12 text-gray-400 animate-pulse" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Cargando proyectos...</h3>
-          </div>
-        ) : filteredProjects.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-12">
+          <FileText className="mx-auto h-12 w-12 text-gray-400 animate-pulse" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">Cargando proyectos...</h3>
+        </div>
+      ) : filteredProjects.length === 0 ? (
         <div className="text-center py-12">
           <FileText className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">

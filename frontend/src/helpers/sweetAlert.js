@@ -41,7 +41,7 @@ export const showErrorAlert = (titleMessage, message) => {
  * Alerta de confirmación personalizada
  */
 export async function confirmAlert(title = "¿Estás seguro?", text = "Esta acción no se puede deshacer") {
-  return Swal.fire({
+  const result = await Swal.fire({
     title,
     text,
     icon: "question",
@@ -51,7 +51,11 @@ export async function confirmAlert(title = "¿Estás seguro?", text = "Esta acci
     confirmButtonText: "Confirmar",
     cancelButtonText: "Cancelar"
   });
+  return result.isConfirmed;
 }
+
+// Alias para mantener consistencia con otros helpers
+export const showConfirmAlert = confirmAlert;
 
 /**
  * Alerta de información

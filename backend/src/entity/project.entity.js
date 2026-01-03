@@ -10,7 +10,7 @@ export const ProjectSchema = new EntitySchema({
       primary: true,
       generated: "increment",
     },
-    
+
     title: {
       type: "varchar",
       length: 255,
@@ -20,23 +20,22 @@ export const ProjectSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
-    
+
     clientId: {
       type: "int",
       nullable: false,
       name: "client_id",
     },
-    
-    projectType: {
+
+    category: {
       type: "int",
       nullable: false,
-      name: "category_id",
     },
     division: {
       type: "int",
       nullable: false,
     },
-    
+
     status: {
       type: "enum",
       enum: ["Pendiente", "En Proceso", "Aprobado", "Completado", "Cancelado"],
@@ -47,7 +46,7 @@ export const ProjectSchema = new EntitySchema({
       enum: ["Bajo", "Medio", "Alto", "Urgente"],
       nullable: false,
     },
-    
+
     budgetAmount: {
       type: "decimal",
       precision: 10,
@@ -60,18 +59,25 @@ export const ProjectSchema = new EntitySchema({
       length: 500,
       nullable: true,
     },
-    
+
+    isFeatured: {
+      type: "boolean",
+      default: false,
+      nullable: false,
+      name: "is_featured",
+    },
+
     notes: {
       type: "text",
       nullable: true,
     },
-    
+
     quoteId: {
       type: "int",
       nullable: true,
       name: "quote_id",
     },
-    
+
     createdAt: {
       type: "timestamp",
       createDate: true,
@@ -85,7 +91,7 @@ export const ProjectSchema = new EntitySchema({
       name: "updated_at",
     },
   },
-  
+
   indices: [
     {
       name: "IDX_PROJECT_CLIENT",
@@ -96,15 +102,19 @@ export const ProjectSchema = new EntitySchema({
       columns: ["status"],
     },
     {
-      name: "IDX_PROJECT_PRIORITY", 
+      name: "IDX_PROJECT_PRIORITY",
       columns: ["priority"],
     },
     {
       name: "IDX_PROJECT_DIVISION",
       columns: ["division"],
     },
+    {
+      name: "IDX_PROJECT_FEATURED",
+      columns: ["isFeatured"],
+    },
   ],
-  
+
   relations: {
     client: {
       type: "many-to-one",
@@ -116,14 +126,14 @@ export const ProjectSchema = new EntitySchema({
     category: {
       type: "many-to-one",
       target: "Category",
-      joinColumn: { name: "category_id", referencedColumnName: "id" },
+      joinColumn: { name: "category", referencedColumnName: "id" },
       inverseSide: "projects",
       nullable: false,
     },
     division: {
       type: "many-to-one",
       target: "Division",
-      joinColumn: true,
+      joinColumn: { name: "division", referencedColumnName: "id" },
       nullable: false,
       inverseSide: "projects",
     },

@@ -7,10 +7,10 @@ import {
     deleteInventoryItem as deleteInventoryItemService,
     getInventoryByType as getInventoryByTypeService,
     getLowStockItems as getLowStockItemsService,
-    updateInventoryQuantity as updateInventoryQuantityService,
-    getInventoryBySupplier as getInventoryBySupplierService
+    updateInventoryQuantity as updateInventoryQuantityService
 } from "../services/inventory.service.js";
 import { createActivityService } from "../services/activity.service.js";
+import { checkAndAlertLowStock, getLowStockCount } from "../services/alert.service.js";
 
 // Crear un item de inventario
 export const createInventory = async (req, res) => {
@@ -18,9 +18,9 @@ export const createInventory = async (req, res) => {
         const item = await createInventoryItemService(req.body);
         // Registrar actividad
         await createActivityService({
-          type: "inventario",
-          description: `Nuevo material "${item.name}" agregado al inventario`,
-          userId: req.user?.id || null,
+            type: "inventario",
+            description: `Nuevo material "${item.name}" agregado al inventario`,
+            userId: req.user?.id || null,
         });
         res.status(201).json({
             status: "success",
@@ -28,9 +28,9 @@ export const createInventory = async (req, res) => {
             data: item
         });
     } catch (error) {
-        res.status(400).json({ 
+        res.status(400).json({
             status: "error",
-            message: error.message 
+            message: error.message
         });
     }
 };
@@ -55,9 +55,9 @@ export const getInventories = async (req, res) => {
             data: items
         });
     } catch (error) {
-        res.status(400).json({ 
+        res.status(400).json({
             status: "error",
-            message: error.message 
+            message: error.message
         });
     }
 };
@@ -67,9 +67,9 @@ export const getInventory = async (req, res) => {
     try {
         const item = await getInventoryItemByIdService(req.params.id);
         if (!item) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 status: "error",
-                message: "Item de inventario no encontrado" 
+                message: "Item de inventario no encontrado"
             });
         }
         res.status(200).json({
@@ -78,9 +78,9 @@ export const getInventory = async (req, res) => {
             data: item
         });
     } catch (error) {
-        res.status(400).json({ 
+        res.status(400).json({
             status: "error",
-            message: error.message 
+            message: error.message
         });
     }
 };
@@ -105,15 +105,7 @@ export const getLowStockItems = async (req, res) => {
     }
 };
 
-// Obtener inventario por proveedor
-export const getInventoryBySupplier = async (req, res) => {
-    try {
-        const items = await getInventoryBySupplierService(req.params.supplierId);
-        res.status(200).json(items);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-};
+
 
 // Actualizar cantidad de inventario
 export const updateInventoryQuantity = async (req, res) => {
@@ -132,5 +124,39 @@ export const deleteInventory = async (req, res) => {
         res.status(204).send();
     } catch (error) {
         res.status(400).json({ error: error.message });
+    }
+};
+
+// Verificar stock bajo y enviar alerta por email
+export const checkLowStockAlerts = async (req, res) => {
+    try {
+        const result = await checkAndAlertLowStock();
+
+        res.status(200).json({
+            status: "success",
+            data: result
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: "error",
+            message: error.message
+        });
+    }
+};
+
+// Obtener conteo de items con stock bajo (para dashboard)
+export const getLowStockItemsCount = async (req, res) => {
+    try {
+        const count = await getLowStockCount();
+
+        res.status(200).json({
+            status: "success",
+            data: { count }
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: "error",
+            message: error.message
+        });
     }
 };

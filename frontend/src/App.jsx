@@ -1,19 +1,30 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import Navbar from './components/layout/Navbar';
-import ClientNavbar from './components/layout/ClientNavbar';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import Dashboard from './pages/Dashboard';
-import Categories from './pages/Categories';
-import Divisions from './pages/Divisions';
-import Services from './pages/Services';
-import Inventory from './pages/Inventory';
-import Suppliers from './pages/Suppliers';
-import Projects from './pages/Projects';
-import Quotes from './pages/Quotes';
-import Users from './pages/Users';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
+import Sidebar from '@/components/layout/Sidebar';
+import TopHeader from '@/components/layout/TopHeader';
+import ClientNavbar from '@/components/layout/ClientNavbar';
+import Login from '@/pages/Login';
+import Home from '@/pages/Home';
+import Dashboard from '@/pages/Dashboard';
+import Categories from '@/pages/Categories';
+import Divisions from '@/pages/Divisions';
+import Services from '@/pages/Services';
+import Inventory from '@/pages/Inventory';
+
+import Projects from '@/pages/Projects';
+import Quotes from '@/pages/Quotes';
+import Users from '@/pages/Users';
+import Store from '@/pages/Store';
+import Products from '@/pages/Products';
+import Orders from '@/pages/Orders';
+import Checkout from '@/pages/Checkout';
+import PaymentSuccess from '@/pages/PaymentSuccess';
+import PaymentFailure from '@/pages/PaymentFailure';
+import PaymentPending from '@/pages/PaymentPending';
+
+import WhatsAppButton from '@/components/layout/WhatsAppButton';
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, loggingOut } = useAuth();
@@ -38,12 +49,27 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 };
 
 const AppLayout = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <main className="pt-16">
-        {children}
-      </main>
+    <div className="min-h-screen bg-slate-50">
+      <Sidebar
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+      />
+      <div className={`flex flex-col min-h-screen transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'
+        }`}>
+        <TopHeader onMenuClick={() => setIsSidebarOpen(true)} />
+        <main className="flex-1 p-6">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };
@@ -55,6 +81,7 @@ const ClientLayout = ({ children }) => {
       <main>
         {children}
       </main>
+      <WhatsAppButton />
     </div>
   );
 };
@@ -65,135 +92,189 @@ function AppContent() {
   return (
     <Router>
       <Routes>
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <ClientLayout>
               <Home />
             </ClientLayout>
-          } 
+          }
         />
-        
-        <Route 
-          path="/login" 
-          element={user ? <Navigate to="/intranet/dashboard" /> : <Login />} 
+        <Route
+          path="/store"
+          element={<Store />}
         />
-        
-        <Route 
-          path="/intranet" 
-          element={<Navigate to="/intranet/dashboard" replace />} 
+
+        <Route
+          path="/checkout"
+          element={
+            <ClientLayout>
+              <Checkout />
+            </ClientLayout>
+          }
         />
-        
-        <Route 
-          path="/intranet/dashboard" 
+
+        <Route
+          path="/payment/success"
+          element={
+            <ClientLayout>
+              <PaymentSuccess />
+            </ClientLayout>
+          }
+        />
+
+        <Route
+          path="/payment/failure"
+          element={
+            <ClientLayout>
+              <PaymentFailure />
+            </ClientLayout>
+          }
+        />
+
+        <Route
+          path="/payment/pending"
+          element={
+            <ClientLayout>
+              <PaymentPending />
+            </ClientLayout>
+          }
+        />
+
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/intranet/dashboard" /> : <Login />}
+        />
+
+        <Route
+          path="/intranet"
+          element={<Navigate to="/intranet/dashboard" replace />}
+        />
+
+        <Route
+          path="/intranet/dashboard"
           element={
             <ProtectedRoute>
               <AppLayout>
                 <Dashboard />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/intranet/services" 
+
+        <Route
+          path="/intranet/services"
           element={
             <ProtectedRoute>
               <AppLayout>
                 <Services />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/intranet/categories" 
+        <Route
+          path="/intranet/categories"
           element={
             <ProtectedRoute>
               <AppLayout>
                 <Categories />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/intranet/divisions" 
+        <Route
+          path="/intranet/divisions"
           element={
             <ProtectedRoute>
               <AppLayout>
                 <Divisions />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/intranet/inventory" 
+
+        <Route
+          path="/intranet/inventory"
           element={
             <ProtectedRoute>
               <AppLayout>
                 <Inventory />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/intranet/suppliers" 
+
+        <Route
+          path="/intranet/products"
           element={
             <ProtectedRoute>
               <AppLayout>
-                <Suppliers />
+                <Products />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/intranet/projects" 
+
+        <Route
+          path="/intranet/orders"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Orders />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+
+
+        <Route
+          path="/intranet/projects"
           element={
             <ProtectedRoute>
               <AppLayout>
                 <Projects />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/intranet/quotes" 
+
+        <Route
+          path="/intranet/quotes"
           element={
             <ProtectedRoute>
               <AppLayout>
                 <Quotes />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/intranet/users" 
+
+        <Route
+          path="/intranet/users"
           element={
             <ProtectedRoute requiredRole="admin">
               <AppLayout>
                 <Users />
               </AppLayout>
             </ProtectedRoute>
-          } 
+          }
         />
-        
+
         <Route path="/dashboard" element={<Navigate to="/intranet/dashboard" />} />
         <Route path="/services" element={<Navigate to="/intranet/services" />} />
         <Route path="/inventory" element={<Navigate to="/intranet/inventory" />} />
-        <Route path="/suppliers" element={<Navigate to="/intranet/suppliers" />} />
+        <Route path="/products" element={<Navigate to="/intranet/products" />} />
+
         <Route path="/projects" element={<Navigate to="/intranet/projects" />} />
         <Route path="/quotes" element={<Navigate to="/intranet/quotes" />} />
         <Route path="/users" element={<Navigate to="/intranet/users" />} />
-        
+
         <Route path="/admin/*" element={<Navigate to="/intranet" />} />
         <Route path="/gestion/*" element={<Navigate to="/intranet" />} />
-        
-        <Route 
-          path="*" 
+
+        <Route
+          path="*"
           element={
             <div className="min-h-screen flex items-center justify-center">
               <div className="text-center">
@@ -201,7 +282,7 @@ function AppContent() {
                 <p className="text-gray-600 mt-2">Página no encontrada</p>
               </div>
             </div>
-          } 
+          }
         />
       </Routes>
     </Router>
@@ -210,9 +291,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <CartProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </CartProvider>
   );
 }
 

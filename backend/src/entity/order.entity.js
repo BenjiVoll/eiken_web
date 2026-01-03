@@ -12,20 +12,8 @@ export const OrderSchema = new EntitySchema({
     },
     clientId: {
       type: "int",
-      nullable: true,
+      nullable: false,
       name: "client_id",
-    },
-    clientEmail: {
-      type: "varchar",
-      length: 255,
-      nullable: true,
-      name: "client_email",
-    },
-    clientName: {
-      type: "varchar",
-      length: 255,
-      nullable: true,
-      name: "client_name",
     },
     totalAmount: {
       type: "decimal",
@@ -36,7 +24,7 @@ export const OrderSchema = new EntitySchema({
     },
     status: {
       type: "enum",
-      enum: ["pending", "processing", "completed", "cancelled"],
+      enum: ["pending", "processing", "completed", "cancelled", "refunded"],
       default: "pending",
       nullable: false,
     },
@@ -49,6 +37,18 @@ export const OrderSchema = new EntitySchema({
     notes: {
       type: "text",
       nullable: true,
+    },
+    paymentId: {
+      type: "varchar",
+      length: 100,
+      nullable: true,
+      name: "payment_id",
+    },
+    lastProcessedPaymentId: {
+      type: "varchar",
+      length: 100,
+      nullable: true,
+      name: "last_processed_payment_id",
     },
     createdAt: {
       type: "timestamp",
@@ -71,10 +71,6 @@ export const OrderSchema = new EntitySchema({
     {
       name: "IDX_ORDER_DATE",
       columns: ["orderDate"],
-    },
-    {
-      name: "IDX_ORDER_CLIENT_EMAIL",
-      columns: ["clientEmail"],
     },
   ],
   relations: {
@@ -110,8 +106,13 @@ export const OrderItemSchema = new EntitySchema({
     },
     serviceId: {
       type: "int",
-      nullable: false,
+      nullable: true,
       name: "service_id",
+    },
+    productId: {
+      type: "int",
+      nullable: true,
+      name: "product_id",
     },
     quantity: {
       type: "int",
@@ -152,6 +153,10 @@ export const OrderItemSchema = new EntitySchema({
       name: "IDX_ORDER_ITEM_SERVICE",
       columns: ["serviceId"],
     },
+    {
+      name: "IDX_ORDER_ITEM_PRODUCT",
+      columns: ["productId"],
+    },
   ],
   relations: {
     order: {
@@ -167,7 +172,13 @@ export const OrderItemSchema = new EntitySchema({
       target: "Service",
       joinColumn: { name: "service_id", referencedColumnName: "id" },
       inverseSide: "orderItems",
-      nullable: false,
+      nullable: true,
+    },
+    product: {
+      type: "many-to-one",
+      target: "Product",
+      joinColumn: { name: "product_id", referencedColumnName: "id" },
+      nullable: true,
     },
   },
 });

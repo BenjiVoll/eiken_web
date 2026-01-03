@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import ServicesHeader from '../components/services/ServicesHeader';
-import ServicesSearchBar from '../components/services/ServicesSearchBar';
-import ServicesTable from '../components/services/ServicesTable';
-import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
-import ImageModal from '../components/forms/ImageModal';
-import { useAuth } from '../context/AuthContext';
-import { servicesAPI, categoriesAPI, divisionsAPI } from '../services/apiService';
+import ServicesHeader from '@/components/services/ServicesHeader';
+import ServicesSearchBar from '@/components/services/ServicesSearchBar';
+import ServicesTable from '@/components/services/ServicesTable';
+import { showSuccessAlert, showErrorAlert, confirmAlert } from '@/helpers/sweetAlert';
+import ImageModal from '@/components/forms/ImageModal';
+import { useAuth } from '@/context/AuthContext';
+import { servicesAPI, categoriesAPI, divisionsAPI } from '@/services/apiService';
 import { Plus, Edit, Trash2, Search, Settings, DollarSign } from 'lucide-react';
-import { getImageUrl } from '../helpers/getImageUrl';
-import ServiceModal from '../components/forms/ServiceModal';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import ServiceModal from '@/components/forms/ServiceModal';
 
 const Services = () => {
-  // Estado para el modal de imagen
+
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
   const { isManager, isAdmin } = useAuth();
@@ -70,7 +70,7 @@ const Services = () => {
         category: formData.categoryId,
         division: formData.division
       };
-      // Eliminar posibles campos extra
+
       delete serviceData.categoryId;
       let savedService;
       if (editingService) {
@@ -96,7 +96,6 @@ const Services = () => {
             Authorization: `Bearer ${token}`
           }
         });
-        // Solo mostrar la alerta si se está editando un servicio existente
         if (editingService) {
           showSuccessAlert('¡Imagen subida!', 'La imagen del servicio se ha subido correctamente');
         }

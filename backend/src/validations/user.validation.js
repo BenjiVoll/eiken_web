@@ -47,23 +47,27 @@ export const userBodyValidation = Joi.object({
       "string.email": "El correo electrónico debe ser válido.",
     }),
   password: Joi.string()
-    .min(6)
+    .min(8)
     .max(100)
+    .pattern(/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]+$/)
     .messages({
       "string.empty": "La contraseña no puede estar vacía.",
       "string.base": "La contraseña debe ser de tipo string.",
-      "string.min": "La contraseña debe tener como mínimo 6 caracteres.",
+      "string.min": "La contraseña debe tener como mínimo 8 caracteres.",
       "string.max": "La contraseña debe tener como máximo 100 caracteres.",
+      "string.pattern.base": "La contraseña debe contener al menos letras y números."
     }),
   newPassword: Joi.string()
-    .min(6)
+    .min(8)
     .max(100)
+    .pattern(/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]+$/)
     .allow("")
     .messages({
       "string.empty": "La nueva contraseña no puede estar vacía.",
       "string.base": "La nueva contraseña debe ser de tipo string.",
-      "string.min": "La nueva contraseña debe tener como mínimo 6 caracteres.",
+      "string.min": "La nueva contraseña debe tener como mínimo 8 caracteres.",
       "string.max": "La nueva contraseña debe tener como máximo 100 caracteres.",
+      "string.pattern.base": "La nueva contraseña debe contener al menos letras y números."
     }),
   role: Joi.string()
     .valid("admin", "manager", "designer", "operator")
@@ -76,10 +80,10 @@ export const userBodyValidation = Joi.object({
       "boolean.base": "El estado activo debe ser booleano.",
     }),
 })
-  .or("name", "email", "password", "newPassword", "role")
+  .or("name", "email", "password", "newPassword", "role", "isActive")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
     "object.missing":
-      "Debes proporcionar al menos un campo: name, email, password, newPassword o role.",
+      "Debes proporcionar al menos un campo: name, email, password, newPassword, role o isActive.",
   });

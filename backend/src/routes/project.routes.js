@@ -1,6 +1,6 @@
 "use strict";
 import { Router } from "express";
-import { 
+import {
   isAdminOrManager,
   isAnyUser
 } from "../middlewares/authorization.middleware.js";
@@ -14,7 +14,8 @@ import {
   getProjects,
   updateProject,
   uploadProjectImage,
-  deleteProjectImage
+  deleteProjectImage,
+  getFeaturedProjects
 } from "../controllers/project.controller.js";
 import upload from "../helpers/multer.helper.js";
 
@@ -25,25 +26,30 @@ router.use(authenticateJwt);
 
 // Rutas para gestión de proyectos
 router
-  .post("/", 
+  .post("/",
     isAdminOrManager,
-    createBodyValidation(projectBodyValidation), 
+    createBodyValidation(projectBodyValidation),
     createProject
   )
-  .get("/", 
+  .get("/",
     isAnyUser,
     getProjects
   )
-  .get("/:id", 
+  .get("/portfolio",
+    isAnyUser,
+    // TODO: Si es publico, quizás quitar isAnyUser o usar un middleware 'optionalAuth'
+    getFeaturedProjects
+  )
+  .get("/:id",
     isAnyUser,
     getProject
   )
-  .patch("/:id", 
+  .patch("/:id",
     isAdminOrManager,
-    createBodyValidation(projectUpdateValidation), 
+    createBodyValidation(projectUpdateValidation),
     updateProject
   )
-  .delete("/:id", 
+  .delete("/:id",
     isAdminOrManager,
     deleteProject
   )
@@ -52,7 +58,7 @@ router
     upload.single("image"),
     uploadProjectImage
   );
-  router.delete("/:id/image",
+router.delete("/:id/image",
   isAdminOrManager,
   deleteProjectImage
 );

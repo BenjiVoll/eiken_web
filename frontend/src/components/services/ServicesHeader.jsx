@@ -2,14 +2,14 @@ import React from 'react';
 import { Settings, Plus } from 'lucide-react';
 
 const ServicesHeader = ({ isManager, isAdmin, onCreate }) => (
-  <div className="services-header">
-    <div className="services-header-flex">
+  <div className="mb-8">
+    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
       <div>
-        <h1 className="services-title-flex">
+        <h1 className="text-3xl font-bold text-gray-900 flex items-center">
           <Settings className="h-8 w-8 mr-3 text-blue-600" />
           Servicios
         </h1>
-        <p className="services-description-flex">
+        <p className="mt-2 text-gray-600">
           Gestiona los servicios ofrecidos por Eiken Design
         </p>
       </div>

@@ -8,7 +8,7 @@ const serviceRepository = AppDataSource.getRepository(ServiceSchema);
 
 export const createService = async (data) => {
   const { name, description, category, division, price, imageUrl, rating } = data;
-  
+
   // Verificar si ya existe un servicio con el mismo nombre
   const existingService = await serviceRepository.findOneBy({ name });
   if (existingService) {
@@ -108,7 +108,7 @@ export const updateServiceRating = async (id, rating) => {
 
 export const deleteService = async (id) => {
   const serviceId = parseInt(id);
-  
+
   // Verificar si el servicio existe
   const service = await serviceRepository.findOneBy({ id: serviceId });
   if (!service) {
@@ -126,9 +126,23 @@ export const deleteService = async (id) => {
     throw new Error(`No se puede eliminar el servicio porque tiene ${quotesCount} cotización(es) asociada(s)`);
   }
 
+  // Verificar si tiene proyectos activos asociados (a través de cotizaciones)
+  const projectsResult = await AppDataSource.query(
+    `SELECT COUNT(p.id) as count 
+     FROM projects p
+     INNER JOIN quotes q ON p.quote_id = q.id
+     WHERE q.service_id = $1 AND p.status IN ('Pendiente', 'En Proceso', 'Aprobado')`,
+    [serviceId]
+  );
+
+  const projectsCount = parseInt(projectsResult[0]?.count || 0);
+  if (projectsCount > 0) {
+    throw new Error(`No se puede eliminar el servicio porque tiene ${projectsCount} proyecto(s) activo(s) asociado(s)`);
+  }
+
   // Hard delete - eliminar completamente
   await serviceRepository.remove(service);
-  
+
   return { mensaje: "Servicio eliminado exitosamente" };
 };
 

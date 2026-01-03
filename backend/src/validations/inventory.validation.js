@@ -26,20 +26,12 @@ export const inventoryQueryValidation = Joi.object({
       "string.min": "La categoría debe tener como mínimo 2 caracteres.",
       "string.max": "La categoría debe tener como máximo 50 caracteres.",
     }),
-  supplierId: Joi.number()
-    .integer()
-    .positive()
-    .messages({
-      "number.base": "El id del proveedor debe ser un número.",
-      "number.integer": "El id del proveedor debe ser un número entero.",
-      "number.positive": "El id del proveedor debe ser un número positivo.",
-    }),
 })
-  .or("id", "name", "category", "supplierId")
+  .or("id", "name", "category")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
-    "object.missing": "Debes proporcionar al menos un parámetro: id, name, category o supplierId.",
+    "object.missing": "Debes proporcionar al menos un parámetro: id, name o category.",
   });
 
 export const inventoryBodyValidation = Joi.object({
@@ -86,7 +78,7 @@ export const inventoryBodyValidation = Joi.object({
       "string.base": "El modelo debe ser de tipo string.",
       "string.max": "El modelo debe tener como máximo 100 caracteres.",
     }),
-  
+
   unit: Joi.string()
     .max(50)
     .default("metros")
@@ -113,16 +105,7 @@ export const inventoryBodyValidation = Joi.object({
       "number.integer": "El stock mínimo debe ser un número entero.",
       "number.min": "El stock mínimo no puede ser negativo.",
     }),
-  
-  supplierId: Joi.number()
-    .integer()
-    .positive()
-    .allow(null)
-    .messages({
-      "number.base": "El id del proveedor debe ser un número.",
-      "number.integer": "El id del proveedor debe ser un número entero.",
-      "number.positive": "El id del proveedor debe ser un número positivo.",
-    }),
+
   isActive: Joi.boolean()
     .default(true)
     .messages({
@@ -195,22 +178,13 @@ export const inventoryUpdateValidation = Joi.object({
       "number.integer": "El stock mínimo debe ser un número entero.",
       "number.min": "El stock mínimo no puede ser negativo.",
     }),
-  // unitCost eliminado completamente
-  supplierId: Joi.number()
-    .integer()
-    .positive()
-    .allow(null)
-    .messages({
-      "number.base": "El id del proveedor debe ser un número.",
-      "number.integer": "El id del proveedor debe ser un número entero.",
-      "number.positive": "El id del proveedor debe ser un número positivo.",
-    }),
+  // supplierId eliminado - feature de suppliers removido
   isActive: Joi.boolean()
     .messages({
       "boolean.base": "El estado activo debe ser de tipo boolean.",
     }),
 })
-  .or("name", "type", "color", "brand", "model", "unit", "quantity", "minStock", "supplierId", "isActive")
+  .or("name", "type", "color", "brand", "model", "unit", "quantity", "minStock", "isActive")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",

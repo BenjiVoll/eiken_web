@@ -1,50 +1,54 @@
 "use strict";
 import { Router } from "express";
-import { 
-  isAdmin, 
-  isManagerOrAbove 
-} from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";
-import { orderQueryValidation, orderBodyValidation } from "../validations/order.validation.js";
+import { isAdminOrManager } from "../middlewares/authorization.middleware.js";
+import { createBodyValidation, createParamsValidation } from "../middlewares/validations.middleware.js";
+import { orderBodyValidation } from "../validations/order.validation.js";
+import { idParamValidation } from "../validations/common.validation.js";
+import { sanitizeBody } from "../middlewares/sanitize.middleware.js";
 import {
   createOrder,
-  deleteOrder,
-  getOrder,
   getOrders,
-  updateOrder,
+  getOrderById,
+  updateOrderStatus,
+  getOrdersByEmail,
+  deleteOrder
 } from "../controllers/order.controller.js";
+import { confirmOrderController } from "../controllers/order.confirm.controller.js";
+import {
+  registerMaterialsUsage,
+  getOrderMaterials,
+  deleteMaterialUsage
+} from "../controllers/orderInventoryUsage.controller.js";
+import { materialUsageValidation } from "../validations/orderInventoryUsage.validation.js";
 
 const router = Router();
 
-// Todas las rutas requieren autenticación
+// Ruta pública para crear órdenes desde la tienda
+router.post("/", sanitizeBody, createBodyValidation(orderBodyValidation), createOrder);
+
+// Ruta pública para confirmar orden después del pago
+router.post("/:id/confirm", createParamsValidation(idParamValidation), confirmOrderController);
+
+// Rutas protegidas
 router.use(authenticateJwt);
 
-// Rutas para gestión de órdenes de compra
 router
-  .post("/", 
-    isManagerOrAbove,
-    createBodyValidation(orderBodyValidation), 
-    createOrder
+  .get("/", isAdminOrManager, getOrders)
+  .get("/email/:email", getOrdersByEmail)
+  .get("/:id", createParamsValidation(idParamValidation), getOrderById)
+  .patch("/:id/status", isAdminOrManager, createParamsValidation(idParamValidation), updateOrderStatus)
+  .delete("/:id", isAdminOrManager, createParamsValidation(idParamValidation), deleteOrder);
+
+// Rutas para registro de materiales usados en órdenes
+router
+  .post(
+    "/:orderId/materials",
+    isAdminOrManager,
+    createBodyValidation(materialUsageValidation),
+    registerMaterialsUsage
   )
-  .get("/", 
-    isManagerOrAbove,
-    createQueryValidation(orderQueryValidation), 
-    getOrders
-  )
-  .get("/:id", 
-    isManagerOrAbove,
-    createQueryValidation(orderQueryValidation), 
-    getOrder
-  )
-  .patch("/:id", 
-    isManagerOrAbove,
-    createBodyValidation(orderBodyValidation), 
-    updateOrder
-  )
-  .delete("/:id", 
-    isAdmin,
-    deleteOrder
-  );
+  .get("/:orderId/materials", getOrderMaterials)
+  .delete("/materials/:usageId", isAdminOrManager, deleteMaterialUsage);
 
 export default router;

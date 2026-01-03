@@ -1,25 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import ImageModal from '../components/forms/ImageModal';
+import { Link } from 'react-router-dom';
+import ImageModal from '@/components/forms/ImageModal';
 import {
-  Star,
   Phone,
   Mail,
   MapPin,
-  Truck,
   Trophy,
   Palette,
   Search,
   ArrowRight,
-  CheckCircle
+  CheckCircle,
+  Truck
 } from 'lucide-react';
-import { publicAPI } from '../services/apiService';
-import { showSuccessAlert, showErrorAlert } from '../helpers/sweetAlert';
-import { getImageUrl } from '../helpers/getImageUrl';
-import QuoteModal from '../components/forms/QuoteModal';
+import { publicAPI } from '@/services/apiService';
+import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
+import { getImageUrl } from '@/helpers/getImageUrl';
+import QuoteModal from '@/components/forms/QuoteModal';
 
 const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState(null);
+
+  // Manejar navegación con hash (ej: /#servicios)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const sectionId = hash.replace('#', '');
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }, 100);
+    }
+  }, []);
 
   const handleImageClick = (imageUrl) => {
     setModalImageUrl(imageUrl);
@@ -45,7 +62,8 @@ const Home = () => {
     customServiceTitle: '',
     categoryId: '',
     description: '',
-    urgency: 'Bajo',
+    requestedDeliveryDate: '',
+    selectedImages: [],
     notes: ''
   });
 
@@ -59,12 +77,17 @@ const Home = () => {
     loadCategories();
   }, []);
 
+
   // Estado y lógica para proyectos
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [projectsError, setProjectsError] = useState(null);
   const [projectSearchTerm, setProjectSearchTerm] = useState('');
   const [selectedProjectCategory, setSelectedProjectCategory] = useState('all');
+
+  // Estado para el carrusel del hero
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     const loadServices = async () => {
@@ -81,12 +104,54 @@ const Home = () => {
     const loadProjects = async () => {
       setProjectsLoading(true);
       setProjectsError(null);
-      const projectsData = await publicAPI.projects.getByStatus("Completado");
+      // Usar el endpoint de portafolio en lugar de filtrar por status
+      const projectsData = await publicAPI.projects.getFeatured();
       setProjects(projectsData.data || projectsData || []);
       setProjectsLoading(false);
     };
     loadProjects();
   }, []);
+
+  // Carrusel automático del hero
+  useEffect(() => {
+    const projectsWithImages = projects.filter(p => p.image);
+    if (projectsWithImages.length === 0 || isPaused) return;
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % projectsWithImages.length);
+    }, 5000); // Cambiar cada 5 segundos
+
+    return () => clearInterval(interval);
+  }, [projects, isPaused]);
+
+  // Intersection Observer para animaciones de scroll
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animated');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      const elements = document.querySelectorAll('.animate-on-scroll');
+      elements.forEach(el => observer.observe(el));
+
+      return () => {
+        observer.disconnect();
+      };
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
 
   // Filtrado de servicios por categoría
   const filteredServices = Array.isArray(services) ? services.filter((service) => {
@@ -99,8 +164,8 @@ const Home = () => {
   const filteredProjects = Array.isArray(projects) ? projects.filter((project) => {
     const matchesSearch = project.title?.toLowerCase().includes(projectSearchTerm.toLowerCase());
     const matchesCategory = selectedProjectCategory === 'all' || project.category?.id === selectedProjectCategory;
-    const isCompleted = project.status === 'Completado';
-    return matchesSearch && matchesCategory && isCompleted;
+    // La API ya devuelve solo los completados y destacados
+    return matchesSearch && matchesCategory;
   }) : [];
 
   // Categorías únicas para proyectos
@@ -120,30 +185,34 @@ const Home = () => {
         showErrorAlert('Validación', 'Debes seleccionar un servicio o especificar un servicio personalizado');
         return;
       }
-      // Construir el payload correcto
+
+      // 1. Preparar cotización sin imágenes para la creación inicial
+      const { selectedImages, ...quoteData } = formData;
       const payload = {
-        ...formData,
-        service: formData.service ? formData.service : null,
+        ...quoteData,
+        service: formData.service || null,
         customServiceTitle: formData.customServiceTitle || '',
         status: 'Pendiente',
       };
-      await publicAPI.quotes.create(payload);
-      showSuccessAlert('¡Cotización enviada!', 'Nos pondremos en contacto contigo pronto.');
+
+      const createdQuote = await publicAPI.quotes.create(payload);
+
+      // 2. Si la cotización se creó y hay imágenes, subirlas
+      if (selectedImages && selectedImages.length > 0 && createdQuote?.data?.id) {
+        try {
+          const imageFormData = new FormData();
+          selectedImages.forEach(file => imageFormData.append('images', file));
+          await publicAPI.quotes.uploadImages(createdQuote.data.id, imageFormData);
+        } catch (imageError) {
+          console.error('Error uploading images but quote was created:', imageError);
+        }
+      }
+
+      showSuccessAlert('¡Solicitud Recibida!', 'Nos pondremos en contacto contigo pronto.');
       resetForm();
     } catch (error) {
-      console.error('Error al crear cotización:', error);
-      let errorMessage = 'Error al enviar la cotización. Por favor intenta nuevamente.';
-      if (error.response?.data?.details) {
-        const validationErrors = error.response.data.details;
-        if (typeof validationErrors === 'string') {
-          errorMessage = validationErrors;
-        } else if (validationErrors.length > 0) {
-          errorMessage = validationErrors[0].message || validationErrors[0];
-        }
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      }
-      showErrorAlert('Error', errorMessage);
+      console.error('Error submitting quote:', error);
+      showErrorAlert('Error', 'No se pudo enviar la cotización. Por favor reintenta.');
     }
   };
 
@@ -157,7 +226,8 @@ const Home = () => {
       customServiceTitle: '',
       categoryId: '',
       description: '',
-      urgency: 'Bajo',
+      requestedDeliveryDate: '',
+      selectedImages: [],
       notes: ''
     });
     setShowQuoteModal(false);
@@ -186,24 +256,57 @@ const Home = () => {
     setShowQuoteModal(true);
   };
 
+  // Filtrar proyectos con imagen para el carrusel
+  const projectsWithImages = projects.filter(p => p.image);
+
   return (
     <div className="min-h-screen bg-white">
-      <section className="bg-gradient-to-br from-eiken-red-50 via-white to-eiken-orange-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section
+        className="relative py-20 overflow-hidden"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        {/* Carrusel de fondo */}
+        <div className="absolute inset-0 z-0">
+          {projectsWithImages.length > 0 ? (
+            <>
+              {projectsWithImages.map((project, index) => (
+                <div
+                  key={project.id}
+                  className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+                    }`}
+                >
+                  <img
+                    src={getImageUrl(project.image)}
+                    alt={project.title}
+                    className="w-full h-full object-cover"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
+                </div>
+              ))}
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70"></div>
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-eiken-red-50 via-white to-eiken-orange-50"></div>
+          )}
+        </div>
+
+        {/* Contenido principal */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="animate-on-scroll fade-in-up text-4xl md:text-6xl font-bold text-white mb-6 drop-shadow-lg">
               Transformamos tu{" "}
-              <span className="text-transparent bg-clip-text bg-eiken-racing">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">
                 Visión
               </span>{" "}
               en Realidad
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="animate-on-scroll fade-in-up delay-100 text-xl text-gray-100 mb-8 max-w-3xl mx-auto drop-shadow-md">
               Especialistas en diseño publicitario, gráfica vehicular y competición con más de 20 años de experiencia
             </p>
-            <button 
+            <button
               onClick={openQuoteModal}
-              className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto mb-8"
+              className="animate-on-scroll fade-in-up scale-in delay-200 bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-xl transition-all hover:scale-105 flex items-center mx-auto mb-8"
             >
               Solicitar Cotización
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -211,35 +314,52 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-16">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-eiken-red-500">20+</div>
-              <div className="text-gray-600">Años de Experiencia</div>
+            <div className="animate-on-scroll scale-in delay-300 text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl font-bold text-orange-400">20+</div>
+              <div className="text-gray-200">Años de Experiencia</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-eiken-orange-500">500+</div>
-              <div className="text-gray-600">Proyectos Realizados</div>
+            <div className="animate-on-scroll scale-in delay-400 text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl font-bold text-orange-400">500+</div>
+              <div className="text-gray-200">Proyectos Realizados</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-eiken-red-600">4.9</div>
-              <div className="text-gray-600">Calificación Promedio</div>
+            <div className="animate-on-scroll scale-in delay-500 text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl font-bold text-orange-400">Avery Dennison</div>
+              <div className="text-gray-200">Installer Certificado</div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-eiken-orange-600">15+</div>
-              <div className="text-gray-600">Premios Obtenidos</div>
+            <div className="animate-on-scroll scale-in delay-600 text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="text-3xl font-bold text-orange-400">Materiales</div>
+              <div className="text-gray-200">100% Premium</div>
             </div>
           </div>
+
+          {/* Indicadores del carrusel */}
+          {projectsWithImages.length > 1 && (
+            <div className="flex justify-center gap-2 mt-8">
+              {projectsWithImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${index === currentSlide
+                    ? 'bg-orange-400 w-8'
+                    : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                  aria-label={`Ir a imagen ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Nuestras Divisiones</h2>
-            <p className="text-gray-600">Especializados en tres áreas principales del diseño</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">Nuestras Divisiones</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Especializados en tres áreas principales del diseño</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
+            <div className="animate-on-scroll fade-in-up delay-200 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="bg-eiken-red-100 p-3 rounded-lg">
                   <Palette className="h-6 w-6 text-eiken-red-500" />
@@ -260,7 +380,7 @@ const Home = () => {
               </ul>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
+            <div className="animate-on-scroll fade-in-up delay-300 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="bg-eiken-orange-100 p-3 rounded-lg">
                   <Truck className="h-6 w-6 text-eiken-orange-500" />
@@ -281,7 +401,7 @@ const Home = () => {
               </ul>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
+            <div className="animate-on-scroll fade-in-up delay-400 bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="bg-red-100 p-3 rounded-lg">
                   <Trophy className="h-6 w-6 text-red-600" />
@@ -308,11 +428,11 @@ const Home = () => {
       <section id="servicios" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Nuestros Servicios</h2>
-            <p className="text-gray-600">Soluciones profesionales para todas tus necesidades de diseño</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">Nuestros Servicios</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Soluciones profesionales para todas tus necesidades de diseño</p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="animate-on-scroll fade-in-up delay-200 flex flex-col sm:flex-row gap-4 mb-8">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
@@ -327,11 +447,10 @@ const Home = () => {
               <button
                 key="all"
                 onClick={() => setSelectedCategory('all')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedCategory === 'all'
-                    ? 'bg-eiken-red-500 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCategory === 'all'
+                  ? 'bg-eiken-red-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
               >
                 Todos
               </button>
@@ -339,11 +458,10 @@ const Home = () => {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedCategory === category.id
-                      ? 'bg-eiken-red-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedCategory === category.id
+                    ? 'bg-eiken-red-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                 >
                   {category.name}
                 </button>
@@ -365,69 +483,75 @@ const Home = () => {
             <div className="text-center py-12">
               <p className="text-gray-600">No hay servicios disponibles en este momento.</p>
             </div>
+          ) : filteredServices.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No se encontraron servicios con los filtros seleccionados.</p>
+            </div>
           ) : null}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredServices.map((service) => (
-              <div key={service.id} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
-                <div className="p-6">
-                  <div className="relative mb-4">
+
+          {filteredServices.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredServices.map((service) => (
+                <div
+                  key={service.id}
+                  className="group bg-white rounded-2xl p-3 hover:shadow-xl transition-all duration-500 ease-out hover:-translate-y-1 border border-transparent hover:border-orange-50/50"
+                >
+                  {/* Contenedor de imagen con efecto de zoom */}
+                  <div className="relative overflow-hidden rounded-xl h-48 bg-gray-100">
                     {service.image ? (
-                      <img
-                        src={getImageUrl(service.image)}
-                        alt={service.name}
-                        className="w-full h-48 object-cover rounded-lg cursor-pointer"
-                        onClick={() => handleImageClick(getImageUrl(service.image))}
-                      />
+                      <>
+                        <img
+                          src={getImageUrl(service.image)}
+                          alt={service.name}
+                          className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110 cursor-pointer"
+                          onClick={() => handleImageClick(getImageUrl(service.image))}
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                      </>
                     ) : (
-                      <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400 text-lg">
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-lg">
                         Sin imagen
                       </div>
                     )}
                     {service.popular && (
-                      <span className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 text-xs rounded">
-                        Popular
+                      <span className="absolute top-2 left-2 bg-orange-500/90 backdrop-blur-sm text-white px-2 py-1 text-xs font-bold rounded-lg shadow-sm">
+                        POPULAR
                       </span>
                     )}
                   </div>
 
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-2">{service.name}</h3>
-                    <p className="text-gray-600 text-sm mb-3">{service.description}</p>
-                  </div>
+                  <div className="pt-4 px-2 pb-2">
+                    <h3 className="text-lg font-bold text-gray-800 mb-2 leading-tight group-hover:text-orange-600 transition-colors">
+                      {service.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed">
+                      {service.description}
+                    </p>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                        <span className="text-sm font-medium">{service.rating || 4.5}</span>
-                        <span className="text-xs text-gray-500">(50+ reseñas)</span>
+                    <div className="space-y-4">
+                      <div className="space-y-2 bg-gray-50/80 p-3 rounded-lg border border-gray-100">
+                        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Incluye:</h4>
+                        <ul className="text-xs text-gray-600 space-y-1.5">
+                          {(service.features || ["Servicio profesional", "Calidad garantizada"]).slice(0, 2).map((feature, index) => (
+                            <li key={index} className="flex items-center">
+                              <CheckCircle className="h-3.5 w-3.5 text-green-500 mr-2 flex-shrink-0" />
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-gray-900">Incluye:</h4>
-                      <ul className="text-xs text-gray-600 space-y-1">
-                        {(service.features || ["Servicio profesional", "Calidad garantizada"]).slice(0, 2).map((feature, index) => (
-                          <li key={index} className="flex items-center">
-                            <CheckCircle className="h-3 w-3 text-green-500 mr-2" />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div>
-                        <div className="text-2xl font-bold text-green-600">
-                          ${parseFloat(service.price || 0).toLocaleString()}
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                        <div>
+                          <p className="text-[10px] text-gray-400 font-medium uppercase">Desde</p>
+                          <p className="text-xl font-extrabold text-orange-600 tracking-tight">
+                            ${parseFloat(service.price || 0).toLocaleString()}
+                          </p>
                         </div>
-                        <div className="text-xs text-gray-500">Desde</div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button 
+                        <button
                           onClick={() => openQuoteModalWithService(service.id)}
-                          className="border border-gray-300 px-3 py-1 text-sm rounded hover:bg-gray-50"
+                          className="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm hover:bg-orange-600 hover:shadow-orange-500/30 transition-all duration-300 transform active:scale-95"
                         >
                           Cotizar
                         </button>
@@ -435,17 +559,17 @@ const Home = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       <section id="portafolio" className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Proyectos Destacados</h2>
-            <p className="text-gray-600">Algunos de nuestros trabajos más representativos</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">Proyectos Destacados</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Algunos de nuestros trabajos más representativos</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <div className="relative flex-1">
@@ -455,7 +579,7 @@ const Home = () => {
                 placeholder="Buscar proyectos..."
                 value={projectSearchTerm}
                 onChange={(e) => setProjectSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               />
             </div>
             <div className="flex space-x-2">
@@ -463,11 +587,10 @@ const Home = () => {
                 <button
                   key={`project-cat-${category === 'all' ? 'all' : category.id}`}
                   onClick={() => setSelectedProjectCategory(category === 'all' ? 'all' : category.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    selectedProjectCategory === (category === 'all' ? 'all' : category.id)
-                      ? 'bg-eiken-orange-500 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${selectedProjectCategory === (category === 'all' ? 'all' : category.id)
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
                 >
                   {category === 'all' ? 'Todos' : category.name}
                 </button>
@@ -495,48 +618,59 @@ const Home = () => {
           {/* Cards de proyectos */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProjects.map((project, idx) => (
-              <div key={project.id || idx} className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow group">
-                <div className="p-6">
-                  <div className="relative mb-4">
-                    {project.image ? (
+              <div key={project.id || idx} className="group bg-white rounded-2xl p-3 hover:shadow-xl transition-all duration-500 ease-out hover:-translate-y-1 border border-transparent hover:border-orange-100">
+
+                {/* Image Container */}
+                <div className="relative overflow-hidden rounded-xl h-48 bg-gray-100">
+                  {project.image ? (
+                    <>
                       <img
                         src={getImageUrl(project.image)}
                         alt={project.title}
-                        className="w-full h-48 object-cover rounded-lg cursor-pointer"
+                        className="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-110 cursor-pointer"
                         onClick={() => handleImageClick(getImageUrl(project.image))}
+                        loading="lazy"
                       />
-                    ) : (
-                      <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg text-gray-400 text-lg">
-                        Sin imagen
-                      </div>
-                    )}
-                  </div>
-      {/* Modal de imagen ampliada */}
-      <ImageModal isOpen={modalOpen} imageUrl={modalImageUrl} onClose={handleCloseModal} />
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
-                    <p className="text-gray-600 text-sm mb-3">{project.description}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <span className="font-medium">Cliente:</span>
-                      <span className="ml-2 truncate">{project.client?.name || project.client || 'Corporativo'}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <span className="font-medium">División:</span>
-                      <span className="ml-2">{project.division?.name || ''}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <span className="font-medium">Categoría:</span>
-                      <span className="ml-2">{project.category?.name || ''}</span>
-                    </div>
-                  </div>
-                  {project.notes && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <p className="text-sm text-gray-600 italic line-clamp-2">{project.notes}</p>
+                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-lg">
+                      Sin imagen
                     </div>
                   )}
                 </div>
+
+                {/* Content */}
+                <div className="mt-4 px-2 pb-2">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 leading-tight group-hover:text-orange-600 transition-colors">
+                    {project.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+                    {project.description}
+                  </p>
+
+                  <div className="space-y-2.5 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400 font-medium uppercase tracking-wider">Cliente</span>
+                      <span className="font-semibold text-gray-700 truncate max-w-[60%] text-right">{project.client?.name || project.client || 'Corporativo'}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400 font-medium uppercase tracking-wider">División</span>
+                      <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">{project.division?.name || 'General'}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400 font-medium uppercase tracking-wider">Categoría</span>
+                      <span className="text-orange-600 font-semibold">{project.category?.name || 'Varios'}</span>
+                    </div>
+                  </div>
+
+                  {project.notes && (
+                    <div className="mt-3 bg-yellow-50 p-2 rounded-lg border border-yellow-100">
+                      <p className="text-xs text-yellow-700 italic line-clamp-2 text-center">"{project.notes}"</p>
+                    </div>
+                  )}
+                </div>
+
               </div>
             ))}
           </div>
@@ -546,56 +680,43 @@ const Home = () => {
       <section id="nosotros" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Sobre Nosotros</h2>
-            <p className="text-gray-600">Más de 20 años transformando ideas en realidad</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">Sobre Nosotros</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Más de 20 años transformando ideas en realidad</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
+            <div className="animate-on-scroll fade-in-left">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Nuestra Historia</h3>
               <p className="text-gray-600 mb-6">
-                Desde nuestros inicios en 2004, Eiken Design se ha establecido como líder en el diseño publicitario 
-                y gráfica vehicular en Argentina. Comenzamos como un pequeño estudio de diseño y hemos crecido hasta 
+                Desde nuestros inicios en 2004, Eiken Design se ha establecido como líder en el diseño publicitario
+                y gráfica vehicular en Argentina. Comenzamos como un pequeño estudio de diseño y hemos crecido hasta
                 convertirnos en una empresa reconocida en tres divisiones especializadas.
               </p>
               <p className="text-gray-600 mb-6">
-                Nuestro compromiso con la calidad, la innovación y la satisfacción del cliente nos ha permitido 
+                Nuestro compromiso con la calidad, la innovación y la satisfacción del cliente nos ha permitido
                 trabajar con empresas líderes y equipos de competición de primer nivel.
               </p>
-              <div className="flex items-center space-x-8">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-eiken-red-500">500+</div>
-                  <div className="text-sm text-gray-600">Clientes Satisfechos</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-eiken-orange-500">20+</div>
-                  <div className="text-sm text-gray-600">Años de Experiencia</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-eiken-red-600">15+</div>
-                  <div className="text-sm text-gray-600">Premios Obtenidos</div>
-                </div>
-              </div>
+
             </div>
-            <div className="space-y-6">
+            <div className="animate-on-scroll fade-in-right space-y-6">
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">Misión</h4>
                 <p className="text-gray-600 text-sm">
-                  Transformar las ideas de nuestros clientes en soluciones visuales impactantes que comuniquen 
+                  Transformar las ideas de nuestros clientes en soluciones visuales impactantes que comuniquen
                   efectivamente su mensaje y fortalezcan su identidad de marca.
                 </p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">Visión</h4>
                 <p className="text-gray-600 text-sm">
-                  Ser la empresa líder en diseño publicitario y gráfica vehicular en Latinoamérica, reconocida 
+                  Ser la empresa líder en diseño publicitario y gráfica vehicular en Latinoamérica, reconocida
                   por nuestra innovación, calidad y excelencia en el servicio.
                 </p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h4 className="font-semibold text-gray-900 mb-2">Valores</h4>
                 <p className="text-gray-600 text-sm">
-                  Creatividad, calidad, innovación, compromiso con el cliente y responsabilidad social son los 
+                  Creatividad, calidad, innovación, compromiso con el cliente y responsabilidad social son los
                   pilares que guían cada uno de nuestros proyectos.
                 </p>
               </div>
@@ -607,24 +728,24 @@ const Home = () => {
       <section id="contacto" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Listo para tu Proyecto?</h2>
-            <p className="text-gray-600">Contáctanos y hagamos realidad tu visión</p>
+            <h2 className="animate-on-scroll fade-in-up text-3xl font-bold text-gray-900 mb-4">¿Listo para tu Proyecto?</h2>
+            <p className="animate-on-scroll fade-in-up delay-100 text-gray-600">Contáctanos y hagamos realidad tu visión</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow-sm text-center p-6">
+            <div className="animate-on-scroll scale-in delay-200 bg-white rounded-lg shadow-sm text-center p-6">
               <Phone className="h-8 w-8 text-eiken-red-500 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Teléfono</h3>
               <p className="text-gray-600">+54 11 1234-5678</p>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm text-center p-6">
+            <div className="animate-on-scroll scale-in delay-300 bg-white rounded-lg shadow-sm text-center p-6">
               <Mail className="h-8 w-8 text-eiken-red-500 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Email</h3>
               <p className="text-gray-600">eiken@eikendesign.cl</p>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm text-center p-6">
+            <div className="animate-on-scroll scale-in delay-400 bg-white rounded-lg shadow-sm text-center p-6">
               <MapPin className="h-8 w-8 text-eiken-red-500 mx-auto mb-4" />
               <h3 className="font-semibold mb-2">Ubicación</h3>
               <p className="text-gray-600">Los Angeles, Chile</p>
@@ -632,9 +753,9 @@ const Home = () => {
           </div>
 
           <div className="text-center mt-12">
-            <button 
+            <button
               onClick={openQuoteModal}
-              className="bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto"
+              className="animate-on-scroll fade-in-up scale-in delay-500 bg-eiken-gradient text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-shadow flex items-center mx-auto"
             >
               Solicitar Cotización Gratuita
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -670,8 +791,8 @@ const Home = () => {
               <h4 className="font-semibold mb-4">Divisiones</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>Eiken Design</li>
-                <li>Truck Design</li>
-                <li>Racing Design</li>
+                <li>Eiken Truck Design</li>
+                <li>Eiken Racing Design</li>
               </ul>
             </div>
 
@@ -684,22 +805,28 @@ const Home = () => {
               </ul>
             </div>
           </div>
-
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2025 Eiken Design. Todos los derechos reservados.</p>
+          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400">
+            <p>&copy; {new Date().getFullYear()} Eiken Design. Todos los derechos reservados.</p>
+            <Link to="/login" className="mt-2 md:mt-0 hover:text-orange-500 transition-colors flex items-center gap-1">
+              <span>Acceso Intranet</span>
+            </Link>
           </div>
         </div>
       </footer>
 
-      <QuoteModal
-        show={showQuoteModal}
-        onClose={resetForm}
-        onSubmit={handleSubmitQuote}
-        formData={formData}
-        setFormData={setFormData}
-        services={services}
-        categories={categories}
-      />
+      {/* Modals outside the sections */}
+      <ImageModal isOpen={modalOpen} imageUrl={modalImageUrl} onClose={handleCloseModal} />
+      {showQuoteModal && (
+        <QuoteModal
+          show={showQuoteModal}
+          onClose={() => setShowQuoteModal(false)}
+          onSubmit={handleSubmitQuote}
+          formData={formData}
+          setFormData={setFormData}
+          services={services}
+          categories={categories}
+        />
+      )}
     </div>
   );
 };

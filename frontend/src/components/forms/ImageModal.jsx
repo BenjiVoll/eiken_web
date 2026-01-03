@@ -8,7 +8,7 @@ const ImageModal = ({ isOpen, imageUrl, onClose }) => {
   };
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-80"
       onClick={handleBackdropClick}
     >
       <div className="relative">

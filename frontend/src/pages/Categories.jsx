@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import CategoryModal from '../components/forms/CategoryModal';
-import { categoriesAPI } from '../services/apiService';
+﻿import React, { useState, useEffect } from 'react';
+import CategoryModal from '@/components/forms/CategoryModal';
+import { categoriesAPI } from '@/services/apiService';
 import { Plus, Edit, Trash2, Search, Settings } from 'lucide-react';
-import { showSuccessAlert, showErrorAlert, confirmAlert } from '../helpers/sweetAlert';
+import { showSuccessAlert, showErrorAlert, confirmAlert } from '@/helpers/sweetAlert';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);

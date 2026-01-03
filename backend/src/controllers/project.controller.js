@@ -1,16 +1,14 @@
 "use strict";
 import {
-    createProject as createProjectService,
-    updateProject as updateProjectService,
-    getProjects as getProjectsService,
-    getProjectById as getProjectByIdService,
-    deleteProject as deleteProjectService,
-    deleteProjectImage as deleteProjectImageService,
-    uploadProjectImage as uploadProjectImageService,
-    getProjectsByStatus as getProjectsByStatusService
-
-
-
+  createProject as createProjectService,
+  updateProject as updateProjectService,
+  getProjects as getProjectsService,
+  getProjectById as getProjectByIdService,
+  deleteProject as deleteProjectService,
+  deleteProjectImage as deleteProjectImageService,
+  uploadProjectImage as uploadProjectImageService,
+  getProjectsByStatus as getProjectsByStatusService,
+  getFeaturedProjects as getFeaturedProjectsService
 } from "../services/project.service.js";
 import { createActivityService } from "../services/activity.service.js";
 import {
@@ -21,76 +19,77 @@ import {
 
 // Crear un proyecto
 export const createProject = async (req, res) => {
-    try {
-        const body = { ...req.body };
-        const project = await createProjectService(body);
-        // Registrar actividad
-        await createActivityService({
-          type: "proyecto",
-          description: `Nuevo proyecto "${project.title}" creado`,
-          userId: req.user?.id || null,
-        });
-        handleSuccess(res, 201, "Proyecto creado exitosamente", project);
-    } catch (error) {
-        handleErrorServer(res, 400, error.message);
-    }
+  try {
+    const body = { ...req.body };
+    const project = await createProjectService(body);
+    // Registrar actividad
+    await createActivityService({
+      type: "proyecto",
+      description: `Nuevo proyecto "${project.title}" creado`,
+      userId: req.user?.id || null,
+    });
+    handleSuccess(res, 201, "Proyecto creado exitosamente", project);
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
 };
 
 // Actualizar un proyecto
 export const updateProject = async (req, res) => {
-    try {
-        const project = await updateProjectService(req.params.id, req.body);
-        // Registrar actividad de edición
-        await createActivityService({
-          type: "proyecto",
-          description: `Proyecto "${project.title}" editado`,
-          userId: req.user?.id || null,
-        });
-        handleSuccess(res, 200, "Proyecto actualizado exitosamente", project);
-    } catch (error) {
-        handleErrorServer(res, 400, error.message);
-    }
+  try {
+    const project = await updateProjectService(req.params.id, req.body);
+    // Registrar actividad de edición
+    await createActivityService({
+      type: "proyecto",
+      description: `Proyecto "${project.title}" editado`,
+      userId: req.user?.id || null,
+    });
+    handleSuccess(res, 200, "Proyecto actualizado exitosamente", project);
+  } catch (error) {
+    console.error('Error actualizando proyecto:', error);
+    handleErrorServer(res, 400, error.message);
+  }
 };
 
 // Obtener todos los proyectos
 export const getProjects = async (req, res) => {
-    try {
-        const projects = await getProjectsService(req.query);
-        handleSuccess(res, 200, "Proyectos obtenidos exitosamente", projects);
-    } catch (error) {
-        handleErrorServer(res, 400, error.message);
-    }
+  try {
+    const projects = await getProjectsService(req.query);
+    handleSuccess(res, 200, "Proyectos obtenidos exitosamente", projects);
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
 };
 
 // Obtener un proyecto por ID
 export const getProject = async (req, res) => {
-    try {
-        const project = await getProjectByIdService(req.params.id);
-        if (!project) {
-            return handleErrorClient(res, 404, "Proyecto no encontrado");
-        }
-        handleSuccess(res, 200, "Proyecto encontrado", project);
-    } catch (error) {
-        handleErrorServer(res, 400, error.message);
+  try {
+    const project = await getProjectByIdService(req.params.id);
+    if (!project) {
+      return handleErrorClient(res, 404, "Proyecto no encontrado");
     }
+    handleSuccess(res, 200, "Proyecto encontrado", project);
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
 };
 
 // Eliminar un proyecto
 export const deleteProject = async (req, res) => {
-    try {
-        // Obtener el proyecto antes de eliminar
-        const project = await getProjectByIdService(req.params.id);
-        await deleteProjectService(req.params.id);
-        // Registrar actividad de eliminación con nombre
-        await createActivityService({
-          type: "proyecto",
-          description: `Proyecto "${project?.title || ''}" eliminado`,
-          userId: req.user?.id || null,
-        });
-        handleSuccess(res, 200, "Proyecto eliminado exitosamente");
-    } catch (error) {
-        handleErrorServer(res, 400, error.message);
-    }
+  try {
+    // Obtener el proyecto antes de eliminar
+    const project = await getProjectByIdService(req.params.id);
+    await deleteProjectService(req.params.id);
+    // Registrar actividad de eliminación con nombre
+    await createActivityService({
+      type: "proyecto",
+      description: `Proyecto "${project?.title || ''}" eliminado`,
+      userId: req.user?.id || null,
+    });
+    handleSuccess(res, 200, "Proyecto eliminado exitosamente");
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
 };
 
 // Subir imagen de proyecto
@@ -116,11 +115,21 @@ export const deleteProjectImage = async (req, res) => {
 
 // Obtener proyectos por status
 export const getProjectsByStatus = async (req, res) => {
-    try {
-        const { status } = req.params;
-        const projects = await getProjectsByStatusService(status);
-        handleSuccess(res, 200, `Proyectos con status '${status}' obtenidos exitosamente`, projects);
-    } catch (error) {
-        handleErrorServer(res, 400, error.message);
-    }
+  try {
+    const { status } = req.params;
+    const projects = await getProjectsByStatusService(status);
+    handleSuccess(res, 200, `Proyectos con status '${status}' obtenidos exitosamente`, projects);
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
+};
+
+// Obtener proyectos destacados para portafolio
+export const getFeaturedProjects = async (req, res) => {
+  try {
+    const projects = await getFeaturedProjectsService();
+    handleSuccess(res, 200, 'Proyectos destacados obtenidos exitosamente', projects);
+  } catch (error) {
+    handleErrorServer(res, 400, error.message);
+  }
 };

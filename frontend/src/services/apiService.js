@@ -1,9 +1,3 @@
-export const activitiesAPI = {
-  getRecent: async (limit = 10) => {
-    const response = await api.get(`/activities?limit=${limit}`);
-    return response.data;
-  }
-};
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000/api';
@@ -62,6 +56,47 @@ export const tokenManager = {
   }
 };
 
+export const activitiesAPI = {
+  getRecent: async (limit = 10) => {
+    const response = await api.get(`/activities?limit=${limit}`);
+    return response.data;
+  }
+};
+
+export const dashboardAPI = {
+  getData: () => api.get('/dashboard'),
+};
+
+export const productsAPI = {
+  getAll: () => api.get('/products'),
+  getActive: () => api.get('/public/products'),
+  getById: (id) => api.get(`/products/${id}`),
+  create: (data) => api.post('/products', data),
+  update: (id, data) => api.patch(`/products/${id}`, data),
+  delete: (id) => api.delete(`/products/${id}`),
+  uploadImage: (id, formData) => api.post(`/products/${id}/image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteImage: (id) => api.delete(`/products/${id}/image`),
+  // Product Materials
+  getMaterials: (productId) => api.get(`/products/${productId}/materials`),
+  addMaterial: (productId, data) => api.post(`/products/${productId}/materials`, data),
+  updateMaterial: (materialId, data) => api.put(`/products/materials/${materialId}`, data),
+  deleteMaterial: (materialId) => api.delete(`/products/materials/${materialId}`),
+};
+
+export const ordersAPI = {
+  getAll: () => api.get('/orders'),
+  getById: (id) => api.get(`/orders/${id}`),
+  getByEmail: (email) => api.get(`/orders/email/${email}`),
+  updateStatus: (id, status) => api.patch(`/orders/${id}/status`, { status }),
+  delete: (id) => api.delete(`/orders/${id}`),
+  // Material usage
+  getMaterials: (orderId) => api.get(`/orders/${orderId}/materials`),
+  registerMaterials: (orderId, materials) => api.post(`/orders/${orderId}/materials`, { materials }),
+  deleteMaterial: (usageId) => api.delete(`/orders/materials/${usageId}`),
+};
+
 export const publicAPI = {
   services: {
     getActive: async () => {
@@ -99,6 +134,14 @@ export const publicAPI = {
     create: async (quoteData) => {
       const response = await publicApi.post('/quotes/public', quoteData);
       return response.data;
+    },
+    uploadImages: async (id, formData) => {
+      const response = await publicApi.post(`/quotes/${id}/images`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
     }
   },
 
@@ -110,6 +153,11 @@ export const publicAPI = {
 
     getByStatus: async (status) => {
       const response = await publicApi.get(`/public/projects/status/${status}`);
+      return response.data;
+    },
+
+    getFeatured: async () => {
+      const response = await publicApi.get('/public/projects/portfolio');
       return response.data;
     }
   }
@@ -158,48 +206,18 @@ export const inventoryAPI = {
     return response.data;
   },
 
-  create: async (inventoryData) => {
-    const response = await api.post('/inventory', inventoryData);
-    return response.data;
-  },
-
-  update: async (id, inventoryData) => {
-    const response = await api.patch(`/inventory/${id}`, inventoryData);
-    return response.data;
-  },
-
   delete: async (id) => {
     const response = await api.delete(`/inventory/${id}`);
     return response.data;
+  },
+
+  getLowStockCount: async () => {
+    const response = await api.get('/inventory/alerts/count');
+    return response.data;
   }
 };
 
-export const suppliersAPI = {
-  getAll: async () => {
-    const response = await api.get('/suppliers');
-    return response.data;
-  },
 
-  getById: async (id) => {
-    const response = await api.get(`/suppliers/${id}`);
-    return response.data;
-  },
-
-  create: async (supplierData) => {
-    const response = await api.post('/suppliers', supplierData);
-    return response.data;
-  },
-
-  update: async (id, supplierData) => {
-    const response = await api.patch(`/suppliers/${id}`, supplierData);
-    return response.data;
-  },
-
-  delete: async (id) => {
-    const response = await api.delete(`/suppliers/${id}`);
-    return response.data;
-  }
-};
 
 export const projectsAPI = {
   getAll: async () => {
@@ -265,6 +283,16 @@ export const quotesAPI = {
 
   delete: async (id) => {
     const response = await api.delete(`/quotes/${id}`);
+    return response.data;
+  },
+
+  convert: async (id) => {
+    const response = await api.post(`/quotes/${id}/convert`);
+    return response.data;
+  },
+
+  reply: async (id, data) => {
+    const response = await api.post(`/quotes/${id}/reply`, data);
     return response.data;
   }
 };

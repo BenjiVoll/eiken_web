@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { usersAPI } from '../services/apiService';
+﻿import React, { useState, useEffect } from 'react';
+import { usersAPI } from '@/services/apiService';
 import { Users, Search, Plus, Edit, Trash2 } from 'lucide-react';
-import UserModal from '../components/forms/UserModal';
+import UserModal from '@/components/forms/UserModal';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
