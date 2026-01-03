@@ -13,7 +13,7 @@ sudo apt update && sudo apt upgrade -y
 
 ### 1.2 Instalar Git y herramientas básicas
 ```bash
-sudo apt install -y git curl build-essential
+sudo apt install -y git curl build-essential libatomic1 nano
 ```
 
 ### 1.3 Instalar Node.js 20 (LTS)
@@ -112,6 +112,12 @@ PORT=80
 DB_USERNAME=postgres
 PASSWORD=benjamin2025
 DATABASE=postgres
+DB_HOST=localhost
+DB_PORT=5432
+
+# Secretos de la App (Requeridos para el inicio)
+ACCESS_TOKEN_SECRET=e91b415e5bd12526e1fad223b1b8c244
+cookieKey=02faa9a6633f361e3a0deeb727b020e5
 
 # Configuración de Correo (Gmail)
 SMTP_HOST=smtp.gmail.com
@@ -200,3 +206,40 @@ pm2 startup
 Tus URLs finales son:
 *   **Web / Frontend**: `http://146.83.194.142:1867`
 *   **API / Backend**: `http://146.83.194.142:1866` (Referenciado internamente, aunque escuchando en puerto 80 dentro del servidor)
+
+---
+
+## 7. Comandos Útiles de Mantenimiento (PM2)
+
+Aquí tienes los comandos que más usarás para gestionar tu servidor:
+
+### Ver Logs (Para depurar errores)
+```bash
+# Ver logs de todo en tiempo real
+pm2 logs
+
+# Ver logs de un proceso específico
+pm2 logs eiken-backend
+pm2 logs eiken-frontend
+
+# Ver las últimas 100 líneas
+pm2 logs --lines 100
+```
+
+### Gestión de Procesos
+```bash
+# Ver estado de los procesos
+pm2 status
+
+# Reiniciar una aplicación (ej: después de un cambio de código)
+pm2 restart eiken-backend
+
+# Detener una aplicación
+pm2 stop eiken-backend
+```
+
+### Limpiar Logs
+Si los logs ocupan mucho espacio:
+```bash
+pm2 flush
+```
