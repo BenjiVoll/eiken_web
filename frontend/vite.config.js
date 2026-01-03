@@ -25,7 +25,7 @@ export default defineConfig({
           vendor: [
             'react',
             'react-dom',
-            'sweetalert1',
+            'sweetalert2',
             'lucide-react'
           ]
         }
