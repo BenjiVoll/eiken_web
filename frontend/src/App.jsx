@@ -23,8 +23,10 @@ import Checkout from '@/pages/Checkout';
 import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailure from '@/pages/PaymentFailure';
 import PaymentPending from '@/pages/PaymentPending';
+import QuoteAccept from '@/pages/QuoteAccept';
+import Settings from '@/pages/Settings';
 
-import WhatsAppButton from '@/components/layout/WhatsAppButton';
+
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, loggingOut } = useAuth();
@@ -81,7 +83,6 @@ const ClientLayout = ({ children }) => {
       <main>
         {children}
       </main>
-      <WhatsAppButton />
     </div>
   );
 };
@@ -139,6 +140,11 @@ function AppContent() {
               <PaymentPending />
             </ClientLayout>
           }
+        />
+
+        <Route
+          path="/quote/accept/:token"
+          element={<QuoteAccept />}
         />
 
         <Route
@@ -256,6 +262,19 @@ function AppContent() {
             <ProtectedRoute requiredRole="admin">
               <AppLayout>
                 <Users />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+
+
+        <Route
+          path="/intranet/settings"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AppLayout>
+                <Settings />
               </AppLayout>
             </ProtectedRoute>
           }

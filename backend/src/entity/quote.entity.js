@@ -59,6 +59,12 @@ export const QuoteSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
+    acceptanceToken: {
+      type: "varchar",
+      length: 100,
+      nullable: true,
+      name: "acceptance_token",
+    },
 
     createdAt: {
       type: "timestamp",

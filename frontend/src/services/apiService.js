@@ -142,6 +142,10 @@ export const publicAPI = {
         },
       });
       return response.data;
+    },
+    accept: async (token) => {
+      const response = await publicApi.get(`/public/quotes/accept/${token}`);
+      return response.data;
     }
   },
 
@@ -400,4 +404,15 @@ export const divisionsAPI = {
     const response = await api.delete(`/divisions/${id}`);
     return response.data;
   },
+};
+
+export const settingsAPI = {
+  get: async () => {
+    const response = await api.get('/settings');
+    return response.data;
+  },
+  update: async (data) => {
+    const response = await api.put('/settings', data);
+    return response.data;
+  }
 };

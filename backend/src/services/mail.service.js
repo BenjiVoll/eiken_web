@@ -303,7 +303,15 @@ class MailService {
                 </div>
               </div>
 
-              <p>Si estás de acuerdo con esta propuesta, por favor responde a este correo o contáctanos para proceder.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/quote/accept/${quote.acceptanceToken}" 
+                   style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                  Aceptar Presupuesto
+                </a>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #718096;">Al hacer clic, confirmarás la aceptación de este presupuesto.</p>
+              </div>
+
+              <p>Si tienes dudas sobre esta propuesta, por favor responde a este correo.</p>
             </div>
             <div style="background-color: #edf2f7; padding: 15px; text-align: center; font-size: 0.8em; color: #718096;">
               &copy; ${new Date().getFullYear()} Eiken Design. Todos los derechos reservados.
@@ -612,6 +620,129 @@ class MailService {
     } catch (error) {
       console.error('❌ Error enviando email de reembolso:', error);
       return false;
+    }
+  }
+
+  /**
+   * Envía alerta de nueva orden al administrador
+   * @param {Object} order - Orden creada
+   */
+  async sendNewOrderAlert(order) {
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || 'admin@eiken.com';
+      const itemsHTML = order.items?.map(item => `
+        <tr>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product?.name || item.service?.name || 'Producto'}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">x${item.quantity}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600;">$${item.totalPrice?.toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '';
+
+      const mailOptions = {
+        from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
+        to: adminEmail,
+        subject: `🔔 Nueva Venta Web - Orden #${order.id}`,
+        html: this.getHtmlTemplate('Nueva Venta Web', `
+          <tr>
+            <td style="background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); padding: 40px; text-align: center;">
+              <img src="https://www.eikendesign.cl/fondo.jpg" 
+                   alt="Eiken Design" 
+                   style="max-width: 180px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;"
+              />
+            </td>
+          </tr>
+          
+          <tr>
+            <td style="padding: 50px 40px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <div style="display: inline-block; width: 80px; height: 80px; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); border-radius: 50%; line-height: 80px;">
+                  <span style="color: white; font-size: 40px; font-weight: bold;">💰</span>
+                </div>
+              </div>
+
+              <h2 style="color: #2b2b2b; font-size: 28px; font-weight: 700; margin: 0 0 20px 0; text-align: center;">
+                ¡Nueva Venta Realizada!
+              </h2>
+              
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.8; margin: 0 0 30px 0; text-align: center;">
+                El cliente <strong style="color: #FF6600;">${order.client?.name}</strong> ha completado una compra.<br>
+                Status: <strong>${order.status}</strong>
+              </p>
+
+              <div style="background: #f7fafc; border-radius: 12px; padding: 24px; margin: 30px 0;">
+                <h3 style="color: #2b2b2b; font-size: 18px; font-weight: 600; margin: 0 0 15px 0;">
+                  Detalle Orden #${order.id}
+                </h3>
+                
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                  ${itemsHTML}
+                  <tr>
+                    <td colspan="2" style="padding: 15px 10px 10px; text-align: right; font-size: 18px; font-weight: 700;">
+                      Total:
+                    </td>
+                    <td style="padding: 15px 10px 10px; text-align: right; font-size: 18px; font-weight: 700; color: #10b981;">
+                      $${order.totalAmount?.toLocaleString('es-CL')}
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/orders" 
+                   style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
+                  Ver en Intranet
+                </a>
+              </div>
+            </td>
+          </tr>
+        `)
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log('✅ Admin order alert sent: %s', info.messageId);
+      return info;
+    } catch (error) {
+      console.error('❌ Error sending admin order alert:', error);
+    }
+  }
+
+  /**
+   * Alerta al admin cuando un cliente acepta presupuesto
+   */
+  async sendQuoteAcceptedAlert(quote) {
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL || 'admin@eiken.com';
+      const mailOptions = {
+        from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
+        to: adminEmail,
+        subject: `✅ Presupuesto Aprobado - Cotización #${quote.id}`,
+        html: this.getHtmlTemplate('Presupuesto Aprobado', `
+          <tr>
+            <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px; text-align: center;">
+              <img src="https://www.eikendesign.cl/fondo.jpg" alt="Eiken Design" style="max-width: 180px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 50px 40px; text-align: center;">
+              <h2 style="color: #2b2b2b;">¡Presupuesto Aprobado!</h2>
+              <p style="font-size: 16px; color: #4a5568;">
+                  El cliente <strong>${quote.client?.name}</strong> ha aceptado el presupuesto para la cotización #${quote.id}.
+              </p>
+              <div style="background: #f0fff4; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #48bb78;">
+                  <span style="font-size: 24px; font-weight: bold; color: #2f855a;">
+                      ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(quote.quotedAmount)}
+                  </span>
+              </div>
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/quotes" style="background: #2b2b2b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                  Gestionar Cotización
+              </a>
+            </td>
+          </tr>
+        `)
+      };
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Error sending quote accepted alert:', error);
     }
   }
 }

@@ -1,8 +1,8 @@
 import User from "../entity/user.entity.js";
 import { AppDataSource } from "../config/configDb.js";
 import {
-handleErrorClient,
-handleErrorServer,
+  handleErrorClient,
+  handleErrorServer,
 } from "../handlers/responseHandlers.js";
 
 export async function isAdmin(req, res, next) {
@@ -32,6 +32,40 @@ export async function isAdmin(req, res, next) {
       500,
       error.message,
     );
+  }
+}
+
+export async function isManagerOrAbove(req, res, next) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const userFound = await userRepository.findOneBy({ email: req.user.email });
+    if (!userFound) {
+      return handleErrorClient(res, 404, "Usuario no encontrado en la base de datos");
+    }
+    const allowedRoles = ["admin", "manager"];
+    if (!allowedRoles.includes(userFound.role)) {
+      return handleErrorClient(res, 403, "Error al acceder al recurso", "Se requieren permisos de Manager o superior.");
+    }
+    next();
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function isDesignerOrAbove(req, res, next) {
+  try {
+    const userRepository = AppDataSource.getRepository(User);
+    const userFound = await userRepository.findOneBy({ email: req.user.email });
+    if (!userFound) {
+      return handleErrorClient(res, 404, "Usuario no encontrado en la base de datos");
+    }
+    const allowedRoles = ["admin", "manager", "designer"];
+    if (!allowedRoles.includes(userFound.role)) {
+      return handleErrorClient(res, 403, "Error al acceder al recurso", "Se requieren permisos de Diseñador o superior.");
+    }
+    next();
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
   }
 }
 
@@ -73,17 +107,17 @@ export async function isAnyUser(req, res, next) {
 }
 
 export async function isOwnerOrManagerAbove(req, res, next) {
-try {
+  try {
     const userRepository = AppDataSource.getRepository(User);
 
     const userFound = await userRepository.findOneBy({ email: req.user.email });
 
     if (!userFound) {
-    return handleErrorClient(
+      return handleErrorClient(
         res,
         404,
         "Usuario no encontrado en la base de datos",
-    );
+      );
     }
 
     const userRole = userFound.role;
@@ -92,25 +126,25 @@ try {
 
     // Si es admin o manager, puede acceder a cualquier recurso
     if (allowedRoles.includes(userRole)) {
-        return next();
+      return next();
     }
 
     // Si no es admin/manager, solo puede acceder a sus propios recursos
     if (userFound.id.toString() === resourceUserId) {
-        return next();
+      return next();
     }
 
     return handleErrorClient(
-        res,
-        403,
-        "Error al acceder al recurso",
-        "Solo puedes acceder a tus propios recursos o necesitas permisos de manager."
+      res,
+      403,
+      "Error al acceder al recurso",
+      "Solo puedes acceder a tus propios recursos o necesitas permisos de manager."
     );
-} catch (error) {
+  } catch (error) {
     handleErrorServer(
-    res,
-    500,
-    error.message,
+      res,
+      500,
+      error.message,
     );
-}
+  }
 }

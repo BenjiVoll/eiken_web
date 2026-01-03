@@ -33,7 +33,7 @@ export const inventoryMovementQueryValidation = Joi.object({
   });
 
 export const inventoryMovementBodyValidation = Joi.object({
-  inventoryItemId: Joi.number()
+  inventoryId: Joi.number()
     .integer()
     .positive()
     .messages({
@@ -42,10 +42,10 @@ export const inventoryMovementBodyValidation = Joi.object({
       "number.positive": "El id del item debe ser un número positivo.",
     }),
   movementType: Joi.string()
-    .valid("in", "out", "adjustment")
+    .valid("entrada", "salida", "ajuste", "transferencia")
     .messages({
       "string.base": "El tipo de movimiento debe ser de tipo string.",
-      "any.only": "El tipo de movimiento debe ser uno de: in, out, adjustment.",
+      "any.only": "El tipo de movimiento debe ser uno de: entrada, salida, ajuste, transferencia.",
     }),
   quantity: Joi.number()
     .positive()
@@ -77,7 +77,7 @@ export const inventoryMovementBodyValidation = Joi.object({
       "string.max": "La referencia debe tener como máximo 100 caracteres.",
     }),
 })
-  .or("inventoryItemId", "movementType", "quantity", "unitCost", "reason", "reference")
+  .or("inventoryId", "movementType", "quantity", "unitCost", "reason", "reference")
   .unknown(false)
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",

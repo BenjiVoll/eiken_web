@@ -80,6 +80,11 @@ export const updateProject = async (id, data) => {
   if (data.division) {
     project.division = data.division;
   }
+  // No permitir destacar sin imagen
+  if (data.isFeatured === true && !project.image) {
+    throw new Error("No se puede publicar en el portafolio (destacar) sin una imagen de portada. Por favor sube una imagen primero.");
+  }
+
   // Asignar el resto de campos
   Object.assign(project, data);
   await projectRepository.save(project);

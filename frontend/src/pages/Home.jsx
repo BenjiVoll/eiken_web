@@ -16,6 +16,7 @@ import { publicAPI } from '@/services/apiService';
 import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
 import { getImageUrl } from '@/helpers/getImageUrl';
 import QuoteModal from '@/components/forms/QuoteModal';
+import WhatsAppButton from '@/components/layout/WhatsAppButton';
 
 const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -827,6 +828,7 @@ const Home = () => {
           categories={categories}
         />
       )}
+      <WhatsAppButton />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 "use strict";
 import { AppDataSource } from "../config/configDb.js";
-import { OrderSchema, OrderItemSchema } from "../entity/order.entity.js";
+import { OrderSchema } from "../entity/order.entity.js";
+import { OrderItemSchema } from "../entity/orderItem.entity.js";
 import { ClientSchema } from "../entity/user.entity.client.js";
 import { ServiceSchema } from "../entity/service.entity.js";
 import { ProductSchema } from "../entity/product.entity.js";
@@ -230,7 +231,7 @@ export const updateOrderStatus = async (id, newStatus) => {
 
   const order = await orderRepository.findOne({
     where: { id },
-    relations: ["items", "items.product"]
+    relations: ["items", "items.product", "client"]
   });
 
   if (!order) {

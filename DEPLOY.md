@@ -1,245 +1,166 @@
-# Guía de Despliegue en Debian Bullseye (Sin Docker)
+# Guía Definitiva de Despliegue: Eiken Web (Producción)
 
-Esta guía detalla los pasos para configurar y desplegar el proyecto "Eiken Web" en un servidor Debian Bullseye utilizando `git`, `npm` y `pm2`.
+Esta guía explica cómo publicar la aplicación para usuarios reales en un servidor estable y seguro, cubriendo desde la conexión inicial hasta el mantenimiento.
 
-## 1. Prerrequisitos del Sistema
+---
 
-Asegúrate de tener acceso `root` o privilegios `sudo` en el servidor.
+## 1. Conceptos y Acceso
 
-### 1.1 Actualizar el sistema
-```bash
-sudo apt update && sudo apt upgrade -y
-```
+### ¿Qué es producción?
+Subir a producción significa publicar tu aplicación en un **servidor estable y seguro** para que personas reales la usen. La app debe estar siempre disponible y protegida.
 
-### 1.2 Instalar Git y herramientas básicas
-```bash
-sudo apt install -y git curl build-essential libatomic1 nano
-```
+### Herramientas Requeridas
+- **OpenVPN**: Crea un túnel seguro a la red de la universidad.
+- **Termius**: Cliente SSH para manejar la terminal del servidor.
+- **PM2**: Administrador que mantiene la app encendida 24/7.
+- **Git**: Para clonar y actualizar el código.
 
-### 1.3 Instalar Node.js 20 (LTS)
-El proyecto requiere Node.js 20.x.
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-```
-Verificar instalación:
-```bash
-node -v
-# Debería mostrar v20.x.x
-npm -v
-```
-
-### 1.4 Instalar PostgreSQL 14
-```bash
-# Instalar repositorio de PostgreSQL
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-
-# Instalar PostgreSQL
-sudo apt update
-sudo apt install -y postgresql-14
-```
-
-### 1.5 Instalar PM2 (Gestor de Procesos)
-Para mantener la aplicación corriendo en segundo plano.
-```bash
-sudo npm install -g pm2
+### Datos de Conexión (SSH)
+```c
+IP: 146.83.198.35
+SSH: Puerto 22 (o el asignado de 4 dígitos)
+User: <tu_usuario>
+Password: <tu_password_root>
 ```
 
 ---
 
-## 2. Configuración de Base de Datos
+## 2. Preparando el Espacio de Trabajo
 
-### 2.1 Iniciar servicio
+> [!IMPORTANT]
+> Debes iniciar sesión como administrador con `su` o usar `sudo` para los comandos de instalación.
+
+### Actualización y Dependencias
 ```bash
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
+apt update && apt upgrade -y
+# Dependencias críticas para Node.js y compilación
+apt install curl git nano libatomic1 build-essential -y
 ```
 
-### 2.2 Configurar Base de Datos
-Accede a la consola de postgres:
+### Instalación de NVM y Node.js LTS
 ```bash
-sudo -u postgres psql
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+# Cargar NVM sin reiniciar la terminal
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+nvm install --lts
+nvm use --lts
 ```
 
-Asegúrate de configurar la contraseña del usuario `postgres` por defecto:
-```sql
-ALTER USER postgres WITH PASSWORD 'benjamin2025';
--- La base de datos 'postgres' ya existe por defecto, así que no necesitas crearla.
-\q
-```
-
----
-
-## 3. Configuración del Proyecto
-
-### 3.1 Clonar el repositorio
+### Gestión de Procesos (PM2)
 ```bash
-cd /var/www
-sudo mkdir eiken_web
-sudo chown $USER:$USER eiken_web
-git clone <URL_DEL_REPOSITORIO> eiken_web
-cd eiken_web
+npm install pm2@latest -g
 ```
 
 ---
 
-## 4. Configuración del Backend
+## 3. Configuración del Backend
 
-Navega a la carpeta del backend:
+### Paso 1. Instalación
 ```bash
-cd backend
-```
-
-### 4.1 Instalar dependencias
-```bash
+cd backend/
 npm install
 ```
 
-### 4.2 Configurar variables de entorno
-Crea el archivo `.env` basado en el ejemplo:
+### Paso 2. Variables de Entorno (.env)
+Entra a `backend/src/config/`:
 ```bash
-cp src/config/.example.env src/config/.env
-nano src/config/.env
+cd src/config/
+nano .env
 ```
 
-**Copia y pega el siguiente contenido EXACTO en `src/config/.env`:**
-
+Copia y ajusta el siguiente contenido (reemplaza con tus credenciales):
 ```env
-HOST=146.83.194.142
+HOST=146.83.198.35
 PORT=80
-# Credenciales de Base de Datos
+# DB_HOST=127.0.0.1 (Recomendado para local)
+DB_HOST=146.83.194.142 
+DB_PORT=1868
 DB_USERNAME=postgres
-PASSWORD=benjamin2025
+PASSWORD=tu_contraseña_aqui
 DATABASE=postgres
-DB_HOST=localhost
-DB_PORT=5432
-
-# Secretos de la App (Requeridos para el inicio)
-ACCESS_TOKEN_SECRET=e91b415e5bd12526e1fad223b1b8c244
-cookieKey=02faa9a6633f361e3a0deeb727b020e5
-
-# Configuración de Correo (Gmail)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=1870
-SMTP_SECURE=true
-SMTP_USER=benjivoll@gmail.com
-SMTP_PASS=ljgp hobv bocf ivuu
-SMTP_FROM="Eiken Design" <benjivoll@gmail.com>
-ADMIN_EMAIL=benjivoll@gmail.com
-
-# Integración Mercado Pago
-MERCADOPAGO_ACCESS_TOKEN_TEST=APP_USR-5905255067187421-121123-1fb932db5463cf26451f9fed868617f1-3055270498
-MERCADOPAGO_PUBLIC_KEY_TEST=APP_USR-c4ec0886-95f6-40db-8fe4-c182be58f494
-
-# URLs de Producción
-FRONTEND_URL=http://146.83.194.142:1867
-BACKEND_URL=http://146.83.194.142:1866
-NODE_ENV=production
+ACCESS_TOKEN_SECRET=un_string_random_largo
+cookieKey=otro_string_random
 ```
 
-### 4.3 Iniciar Backend
-Prueba que inicie correctamente:
+### Paso 3. Levantar Proceso
 ```bash
-npm start
-```
-Si todo está bien, inicia con PM2:
-```bash
+cd ../../
 pm2 start src/index.js --name "eiken-backend"
 ```
 
 ---
 
-## 5. Configuración del Frontend
+## 4. Configuración del Frontend
 
-Navega a la carpeta del frontend:
+### Paso 1. Instalación
 ```bash
-cd ../frontend
-```
-
-### 5.1 Instalar dependencias
-```bash
+cd ../frontend/
 npm install
 ```
 
-### 5.2 Configurar URL del Backend
-Crea un archivo `.env` en la raíz de `frontend`:
+### Paso 2. Crear el archivo .env
 ```bash
 nano .env
 ```
-Añade lo siguiente:
-```env
-VITE_BASE_URL=http://146.83.194.142:443/api
-```
 
-### 5.3 Ajustar Puerto en vite.config.js
-Edita `vite.config.js` para usar el puerto **1867** (según FRONTEND_URL en el backend):
-
+### Paso 3. Configurar la URL base
+Dentro del archivo `.env`, agrega la dirección del backend.
+**Recordar reemplazar el puerto por el correspondiente a su grupo (80 -> 4 dígitos):**
 ```bash
-nano vite.config.js
+VITE_BASE_URL=http://146.83.198.35:<Puerto 80 -> 4 dígitos>/api
 ```
-Localiza la sección `preview` y ajústala:
-```javascript
-  preview: {
-    port: 1867, // Puerto Web asignado
-    host: true,
-    allowedHosts: ['146.83.194.142'] // Permitir este host
-  },
-```
+*Ejemplo: `VITE_BASE_URL=http://146.83.198.35:8085/api`*
 
-### 5.4 Construir y Correr
+### Paso 4. Construir el Frontend
 ```bash
 npm run build
+```
+Esto genera la carpeta `dist/` con la versión optimizada.
+
+### Paso 5. Iniciar con PM2
+```bash
 pm2 start npm --name "eiken-frontend" -- run preview
 ```
 
 ---
 
-## 6. Finalización
+## 5. Pruebas y Mantenimiento
 
-Guarda la configuración de PM2:
+### Probar en el Navegador
+Ingresa la IP con el puerto asignado para la web (443 -> 4 dígitos):
+`http://146.83.198.35:<Puerto 443 -> 4 dígitos>`
+
+### Pruebas con Postman (API)
+`http://146.83.198.35:<Puerto 80 -> 4 dígitos>/api`
+
+### Persistencia y Resurrección
 ```bash
-pm2 save
-pm2 startup
+pm2 save      # Guarda los procesos para el reinicio
+pm2 resurrect # Restaura procesos si el servidor físico se cae
+pm2 startup   # Configura el inicio automático al bootear
 ```
 
-Tus URLs finales son:
-*   **Web / Frontend**: `http://146.83.194.142:1867`
-*   **API / Backend**: `http://146.83.194.142:1866` (Referenciado internamente, aunque escuchando en puerto 80 dentro del servidor)
+### Resetear el Contenedor (Limpieza)
+Si necesitas empezar de cero o entregar el espacio:
+```bash
+# 1. Borrar código
+cd ~
+rm -rf <nombre_del_directorio>
+
+# 2. Detener procesos
+pm2 delete all
+pm2 flush
+
+# 3. Limpiar Base de Datos (desde DBeaver/pgAdmin)
+```
 
 ---
 
-## 7. Comandos Útiles de Mantenimiento (PM2)
-
-Aquí tienes los comandos que más usarás para gestionar tu servidor:
-
-### Ver Logs (Para depurar errores)
-```bash
-# Ver logs de todo en tiempo real
-pm2 logs
-
-# Ver logs de un proceso específico
-pm2 logs eiken-backend
-pm2 logs eiken-frontend
-
-# Ver las últimas 100 líneas
-pm2 logs --lines 100
-```
-
-### Gestión de Procesos
-```bash
-# Ver estado de los procesos
-pm2 status
-
-# Reiniciar una aplicación (ej: después de un cambio de código)
-pm2 restart eiken-backend
-
-# Detener una aplicación
-pm2 stop eiken-backend
-```
-
-### Limpiar Logs
-Si los logs ocupan mucho espacio:
-```bash
-pm2 flush
-```
+## 6. Comandos Rápidos de PM2
+- `pm2 status`: Listar estados.
+- `pm2 logs`: Ver errores en tiempo real.
+- `pm2 restart all`: Reiniciar todo.
+- `pm2 stop <id o name>`: Parar una aplicación específica.
