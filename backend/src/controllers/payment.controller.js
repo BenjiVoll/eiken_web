@@ -1,5 +1,5 @@
 "use strict";
-import { createPaymentPreference } from "../services/mercadopago.service.js";
+import { createPaymentPreference, getPaymentInfo } from "../services/mercadopago.service.js";
 import { createOrder } from "../services/order.service.js";
 import { handleSuccess, handleErrorClient, handleErrorServer } from "../handlers/responseHandlers.js";
 import { FRONTEND_URL } from "../config/configEnv.js";
@@ -116,22 +116,44 @@ export const paymentWebhookController = async (req, res) => {
         if (type === "payment") {
             const paymentId = data.id;
 
-            // Aquí deberías:
-            // 1. Consultar el estado del pago en Mercado Pago
-            // 2. Actualizar la orden en tu base de datos
-            // 3. Enviar email de confirmación si es aprobado
-
             console.log(`Payment notification received: ${paymentId}`);
 
-            // Por ahora solo confirmamos la recepción
-            // TODO: Implementar actualización de orden
+            // 1. Consultar el estado del pago en Mercado Pago
+            const payment = await getPaymentInfo(paymentId);
+
+            if (payment && payment.status === 'approved') {
+                const orderId = payment.external_reference;
+                if (orderId) {
+                    // 2. Actualizar la orden en tu base de datos y descontar stock
+                    console.log(`✅ Payment approved for Order #${orderId}. Updating status...`);
+
+                    // Solo intentar actualizar si no está ya completada para evitar duplicar descuentos
+                    // updateOrderStatus tiene su propia lògica, pero es bueno ser precavido
+                    try {
+                        const { updateOrderStatus } = await import("../services/order.service.js");
+                        await updateOrderStatus(orderId, "completed");
+
+                        console.log(`🚀 Order #${orderId} marked as COMPLETED and stock updated.`);
+
+                        // 3. Enviar email de confirmación (esto podría ir en updateOrderStatus o aquí)
+                        // TODO: Implementar envío de email si no está en updateOrderStatus
+
+                    } catch (orderError) {
+                        console.error(`❌ Error updating order #${orderId}:`, orderError.message);
+                    }
+                } else {
+                    console.warn(`⚠️ Payment ${paymentId} approved but no external_reference (Order ID) found.`);
+                }
+            } else {
+                console.log(`ℹ️ Payment ${paymentId} status is: ${payment?.status}`);
+            }
         }
 
         // Siempre responder 200 para que Mercado Pago sepa que recibimos la notificación
         return res.status(200).json({ received: true });
     } catch (error) {
         console.error("Error processing webhook:", error);
-        // Aún así respondemos 200 para evitar que Mercado Pago reintente
+        // Aún así respondemos 200 para evitar que Mercado Pago reintente infinitamente
         return res.status(200).json({ received: true, error: error.message });
     }
 };

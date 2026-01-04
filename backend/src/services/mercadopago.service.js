@@ -1,5 +1,5 @@
 "use strict";
-import { MercadoPagoConfig, Preference } from "mercadopago";
+import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import {
     MERCADOPAGO_ACCESS_TOKEN_TEST,
     MERCADOPAGO_ACCESS_TOKEN_PROD
@@ -115,21 +115,36 @@ export const createPaymentPreference = async (orderData) => {
         }
 
         // Configurar preferencia
+        // Configurar preferencia
+
+        // Obtener URL del backend para notificaciones
+        let notificationUrl;
+        if (process.env.BACKEND_URL) {
+            const cleanBackendUrl = process.env.BACKEND_URL.trim().replace(/\/$/, "");
+            notificationUrl = `${cleanBackendUrl}/api/payments/webhook`;
+        }
+
         const preferenceData = {
             items: preferenceItems,
-            // CRITICAL: payer.email MUST match the email used to login to MP
-            // For sandbox: use test buyer email
-            // For production: need to ask user for their MP email
+            // En producción, usar el email real del cliente
+            // Si estamos en desarrollo/sandbox, igual podemos usarlo, 
+            // pero si falla, se puede hacer fallback a un test user si es estrictamente necesario.
+            // Para homologación real, debe ser el email del usuario.
             payer: {
-                email: "test_user_4098001220088528592@testuser.com", // HARDCODED for sandbox testing
+                email: clientEmail,
             },
             back_urls: {
                 success: successUrl,
                 failure: failureUrl,
                 pending: pendingUrl,
             },
-            external_reference: String(orderId), // Para identificar la orden después del pago
+            // auto_return: "approved", // Removed to allow logic below handle it
+            external_reference: String(orderId),
         };
+
+        if (notificationUrl) {
+            preferenceData.notification_url = notificationUrl;
+        }
 
         // Conditionally enable auto_return only for non-localhost URLs
         // Mercado Pago errors if auto_return is set but back_urls are localhost
@@ -171,11 +186,16 @@ export const createPaymentPreference = async (orderData) => {
  * @param {string} paymentId - ID del pago
  * @returns {Promise<Object>} Información del pago
  */
+/**
+ * Obtiene información de un pago
+ * @param {string} paymentId - ID del pago
+ * @returns {Promise<Object>} Información del pago
+ */
 export const getPaymentInfo = async (paymentId) => {
     try {
-        // Nota: Necesitarías importar Payment de mercadopago para esto
-        // Por ahora retornamos null, puedes implementarlo después
-        return null;
+        initializeMercadoPago();
+        const payment = new Payment(client);
+        return await payment.get({ id: paymentId });
     } catch (error) {
         console.error("Error getting payment info:", error);
         throw new Error(`Error al obtener información del pago: ${error.message}`);

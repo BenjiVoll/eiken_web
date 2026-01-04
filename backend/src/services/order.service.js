@@ -8,6 +8,7 @@ import { ProductSchema } from "../entity/product.entity.js";
 import { InventorySchema } from "../entity/inventory.entity.js";
 import { getProductMaterials } from "./productMaterial.service.js";
 import { checkAndAlertLowStock } from "./alert.service.js";
+import { mailService } from "./mail.service.js";
 
 const orderRepository = AppDataSource.getRepository(OrderSchema);
 const orderItemRepository = AppDataSource.getRepository(OrderItemSchema);
@@ -359,6 +360,16 @@ export const updateOrderStatus = async (id, newStatus) => {
 
   order.status = newStatus;
   await orderRepository.save(order);
+
+  // Enviar correos si la orden se completó
+  if (newStatus === "completed" && oldStatus !== "completed") {
+    // Enviar confirmación al cliente
+    await mailService.sendOrderCompletedEmail(order);
+
+    // Enviar alerta al administrador
+    await mailService.sendNewOrderAlert(order);
+  }
+
   return order;
 };
 

@@ -480,6 +480,17 @@ class MailService {
     `;
   }
 
+  translateStatus(status) {
+    const statusMap = {
+      'pending': 'Pendiente',
+      'processing': 'En Proceso',
+      'completed': 'Completada',
+      'cancelled': 'Cancelada',
+      'refunded': 'Reembolsada'
+    };
+    return statusMap[status] || status;
+  }
+
   /**
    * Envía notificación de orden completada
    * @param {Object} order - Orden con items y cliente
@@ -490,7 +501,7 @@ class MailService {
         <tr>
           <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product?.name || item.service?.name || 'Producto'}</td>
           <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">x${item.quantity}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600;">$${item.totalPrice?.toLocaleString('es-CL')}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600;">${Number(item.totalPrice || 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</td>
         </tr>
       `).join('') || '';
 
@@ -537,7 +548,7 @@ class MailService {
                       Total:
                     </td>
                     <td style="padding: 15px 10px 10px; text-align: right; font-size: 18px; font-weight: 700; color: #10b981;">
-                      $${order.totalAmount?.toLocaleString('es-CL')}
+                      ${Number(order.totalAmount || 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}
                     </td>
                   </tr>
                 </table>
@@ -602,7 +613,7 @@ class MailService {
                   Monto reembolsado
                 </p>
                 <p style="color: #3b82f6; font-size: 32px; font-weight: 700; margin: 0;">
-                  $${order.totalAmount?.toLocaleString('es-CL')}
+                  ${order.totalAmount?.toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}
                 </p>
               </div>
 
@@ -634,7 +645,7 @@ class MailService {
         <tr>
           <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product?.name || item.service?.name || 'Producto'}</td>
           <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">x${item.quantity}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600;">$${item.totalPrice?.toLocaleString('es-CL')}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: 600;">${Number(item.totalPrice || 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}</td>
         </tr>
       `).join('') || '';
 
@@ -666,7 +677,7 @@ class MailService {
               
               <p style="color: #4a5568; font-size: 16px; line-height: 1.8; margin: 0 0 30px 0; text-align: center;">
                 El cliente <strong style="color: #FF6600;">${order.client?.name}</strong> ha completado una compra.<br>
-                Status: <strong>${order.status}</strong>
+                Estado: <strong>${this.translateStatus(order.status)}</strong>
               </p>
 
               <div style="background: #f7fafc; border-radius: 12px; padding: 24px; margin: 30px 0;">
@@ -681,7 +692,7 @@ class MailService {
                       Total:
                     </td>
                     <td style="padding: 15px 10px 10px; text-align: right; font-size: 18px; font-weight: 700; color: #10b981;">
-                      $${order.totalAmount?.toLocaleString('es-CL')}
+                      ${Number(order.totalAmount || 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP' })}
                     </td>
                   </tr>
                 </table>

@@ -9,6 +9,7 @@ import ProjectsTable from '@/components/projects/ProjectsTable';
 import ProjectModal from '@/components/forms/ProjectModal';
 import { getImageUrl } from '@/helpers/getImageUrl';
 import { showSuccessAlert, showErrorAlert, deleteDataAlert } from '@/helpers/sweetAlert';
+import { getErrorMessage } from '@/helpers/errorHelper';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -75,8 +76,8 @@ const Projects = () => {
       await projectsAPI.delete(project.id);
       showSuccessAlert('Proyecto eliminado');
       loadData();
-    } catch {
-      showErrorAlert('Error', 'No se pudo eliminar el proyecto');
+    } catch (error) {
+      showErrorAlert('Error', getErrorMessage(error, 'No se pudo eliminar el proyecto'));
     }
   };
 
@@ -143,8 +144,8 @@ const Projects = () => {
         showSuccessAlert(editingProject ? 'Proyecto actualizado' : 'Proyecto creado');
       }
       return response.data || response;
-    } catch {
-      showErrorAlert('Error', 'No se pudo guardar el proyecto');
+    } catch (error) {
+      showErrorAlert('Error', getErrorMessage(error, 'No se pudo guardar el proyecto'));
       return null;
     }
   };
@@ -156,8 +157,8 @@ const Projects = () => {
       await projectsAPI.uploadImage(projectId, formData);
 
       loadData();
-    } catch {
-      showErrorAlert('Error', 'No se pudo subir la imagen');
+    } catch (error) {
+      showErrorAlert('Error', getErrorMessage(error, 'No se pudo subir la imagen'));
     }
   };
 

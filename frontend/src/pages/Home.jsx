@@ -329,7 +329,7 @@ const Home = () => {
             </div>
             <div className="animate-on-scroll scale-in delay-600 text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
               <div className="text-3xl font-bold text-orange-400">Materiales</div>
-              <div className="text-gray-200">100% Premium</div>
+              <div className="text-gray-200">100% Certificados</div>
             </div>
           </div>
 
@@ -419,7 +419,6 @@ const Home = () => {
                 <li>• Autos de competición</li>
                 <li>• Rally nacional/internacional</li>
                 <li>• Cascos y equipamiento</li>
-                <li>• Homologación FIA</li>
               </ul>
             </div>
           </div>

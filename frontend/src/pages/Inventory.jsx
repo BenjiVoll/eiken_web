@@ -9,6 +9,7 @@ import {
   createDataAlert,
   updateDataAlert
 } from '@/helpers';
+import { getErrorMessage } from '@/helpers/errorHelper';
 import InventoryModal from '@/components/forms/InventoryModal';
 
 const Inventory = () => {
@@ -76,7 +77,8 @@ const Inventory = () => {
       resetForm();
     } catch (error) {
       console.error('Error saving inventory item:', error);
-      showErrorAlert('Error', 'No se pudo guardar el material. Inténtalo de nuevo.');
+      const msg = getErrorMessage(error, 'No se pudo guardar el material. Inténtalo de nuevo.');
+      showErrorAlert('Error', msg);
     }
   };
 
@@ -106,7 +108,8 @@ const Inventory = () => {
       }
     } catch (error) {
       console.error('Error deleting inventory item:', error);
-      showErrorAlert('Error', 'No se pudo eliminar el material. Inténtalo de nuevo.');
+      const msg = getErrorMessage(error, 'No se pudo eliminar el material. Inténtalo de nuevo.');
+      showErrorAlert('Error', msg);
     }
   };
 

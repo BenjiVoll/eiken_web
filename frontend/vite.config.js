@@ -10,10 +10,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
-  /*server: {
-    port: 5173, // Puerto para desarrollo (npm run dev)
-    host: true
-  },*/
+  server: {
+    port: 5173,
+    host: true,
+    strictPort: true,
+    allowedHosts: ['.loca.lt', 'localhost']
+  },
   preview: {
     port: 443, // Puerto para preview (npm run preview)
     host: true
