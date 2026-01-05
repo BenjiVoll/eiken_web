@@ -1,6 +1,7 @@
 ﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '@/services/authService';
 import { tokenManager } from '@/services/apiService';
+import { getErrorMessage } from '@/helpers/errorHelper';
 
 const AuthContext = createContext();
 
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     // Verificar si hay un token guardado al cargar la aplicación
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    
+
     if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user');
       }
     }
-    
+
     // Listener para logout automático cuando el token expira
     const handleAutoLogout = () => {
       setUser(null);
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     window.addEventListener('auth:logout', handleAutoLogout);
-    
+
     // Importante: siempre terminar el loading
     setLoading(false);
 
@@ -58,27 +59,27 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authService.login(email, password);
-      
+
       // El backend devuelve: { status: "Success", message: "...", data: { token, user } }
       if (response.status === 'Success') {
         const { data } = response;
-        
+
         if (!data || !data.token || !data.user) {
           console.error('Estructura de datos incorrecta:', data);
           return { success: false, error: 'Estructura de respuesta inválida' };
         }
-        
+
         const { token, user: userData } = data;
-        
+
         // Guardar en localStorage
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
-        
+
         tokenManager.setAuthToken(token);
-        
+
         // Actualizar el estado
         setUser(userData);
-        
+
         return { success: true };
       } else {
         const errorMessage = response.message || 'Error de autenticación';
@@ -86,22 +87,10 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error en login:', error);
-      
-      let errorMessage = 'Error de conexión';
-      
-      if (error.response) {
-        // El servidor respondió con un código de error
-        errorMessage = error.response.data?.message || `Error ${error.response.status}: ${error.response.statusText}`;
-      } else if (error.request) {
-        // La petición se hizo pero no hubo respuesta
-        errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión.';
-      } else {
-        // Algo más pasó
-        errorMessage = error.message || 'Error desconocido';
-      }
-      
-      return { 
-        success: false, 
+      const errorMessage = getErrorMessage(error, 'Error de conexión');
+
+      return {
+        success: false,
         error: errorMessage
       };
     }
@@ -109,17 +98,17 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setLoggingOut(true);
-    
+
     // Limpiar localStorage primero
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    
+
     // Limpiar el token de las peticiones
     tokenManager.setAuthToken(null);
-    
+
     // Limpiar el estado
     setUser(null);
-    
+
     // NO hacer petición al backend para evitar 401
   };
 
@@ -127,7 +116,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await authService.register(userData);
-      
+
       if (response.status === 'success') {
         return { success: true };
       } else {
@@ -135,9 +124,10 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error en registro:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Error de conexión' 
+      const errorMessage = getErrorMessage(error, 'Error de conexión');
+      return {
+        success: false,
+        error: errorMessage
       };
     } finally {
       setLoading(false);

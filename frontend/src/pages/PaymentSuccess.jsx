@@ -14,9 +14,13 @@ const PaymentSuccess = () => {
     const externalReference = searchParams.get('external_reference');
     const status = searchParams.get('status');
 
+    const confirmedRef = React.useRef(false);
+
     useEffect(() => {
         const confirmOrder = async () => {
-
+            // Evitar múltiples llamadas
+            if (confirmedRef.current) return;
+            confirmedRef.current = true;
 
             try {
                 // Limpiar el carrito
@@ -40,7 +44,7 @@ const PaymentSuccess = () => {
         };
 
         confirmOrder();
-    }, [externalReference, clearCart]);
+    }, []);
 
     if (confirming) {
         return (

@@ -1,10 +1,6 @@
 import React from 'react';
 
-/**
- * Componente Button reutilizable
- * @param {Object} props - Props del componente
- * @returns {JSX.Element} - Elemento button
- */
+// Componente Button reutilizable
 const Button = ({
   children,
   variant = 'primary',
@@ -18,7 +14,7 @@ const Button = ({
   ...props
 }) => {
   const baseClasses = 'inline-flex items-center justify-center font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
-  
+
   const variants = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',

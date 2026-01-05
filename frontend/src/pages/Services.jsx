@@ -3,6 +3,7 @@ import ServicesHeader from '@/components/services/ServicesHeader';
 import ServicesSearchBar from '@/components/services/ServicesSearchBar';
 import ServicesTable from '@/components/services/ServicesTable';
 import { showSuccessAlert, showErrorAlert, confirmAlert } from '@/helpers/sweetAlert';
+import { getErrorMessage } from '@/helpers/errorHelper';
 import ImageModal from '@/components/forms/ImageModal';
 import { useAuth } from '@/context/AuthContext';
 import { servicesAPI, categoriesAPI, divisionsAPI } from '@/services/apiService';
@@ -105,13 +106,7 @@ const Services = () => {
       setEditingService(null);
     } catch (error) {
       console.error('Error saving service:', error);
-      let errorMessage = 'Error al guardar el servicio';
-      if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
-        const validationErrors = error.response.data.details.map(detail => detail.message || detail).join(', ');
-        errorMessage = `Errores de validación: ${validationErrors}`;
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      }
+      const errorMessage = getErrorMessage(error, 'Error al guardar el servicio');
       showErrorAlert('Error', errorMessage);
     } finally {
       setModalLoading(false);
@@ -124,14 +119,14 @@ const Services = () => {
   };
 
   const handleDelete = async (id) => {
-    const result = await confirmAlert('¿Estás seguro de que quieres eliminar este servicio?', 'Esta acción no se puede deshacer');
-    if (result.isConfirmed) {
+    const isConfirmed = await confirmAlert('¿Estás seguro de que quieres eliminar este servicio?', 'Esta acción no se puede deshacer');
+    if (isConfirmed) {
       try {
         await servicesAPI.delete(id);
         await loadServices();
         showSuccessAlert('¡Eliminado!', 'El servicio ha sido eliminado correctamente');
-      } catch {
-        showErrorAlert('Error', 'No se pudo eliminar el servicio');
+      } catch (error) {
+        showErrorAlert('Error', getErrorMessage(error, 'No se pudo eliminar el servicio'));
       }
     }
   };

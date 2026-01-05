@@ -114,7 +114,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                         </div>
                         <button
                             onClick={handleCheckout}
-                            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                            className="w-full bg-eiken-orange-600 text-white py-3 rounded-lg hover:bg-eiken-orange-700 transition-colors font-medium"
                         >
                             Proceder al Pago
                         </button>

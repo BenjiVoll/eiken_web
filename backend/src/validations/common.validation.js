@@ -1,10 +1,7 @@
 "use strict";
 import Joi from "joi";
 
-/**
- * Validación común para parámetros ID en rutas
- * Usar con createParamsValidation() en las rutas
- */
+// Validación común para parámetros ID en rutas
 export const idParamValidation = Joi.object({
     id: Joi.number()
         .integer()

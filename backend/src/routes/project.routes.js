@@ -2,7 +2,8 @@
 import { Router } from "express";
 import {
   isAdminOrManager,
-  isAnyUser
+  isAnyUser,
+  isDesignerOrAbove
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation } from "../middlewares/validations.middleware.js";
@@ -54,7 +55,7 @@ router
     deleteProject
   )
   .post("/:id/image",
-    isAnyUser,
+    isDesignerOrAbove,
     upload.single("image"),
     uploadProjectImage
   );

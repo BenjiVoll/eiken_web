@@ -3,6 +3,7 @@ import { usersAPI } from '@/services/apiService';
 import { Users, Search, Plus, Edit, Trash2 } from 'lucide-react';
 import UserModal from '@/components/forms/UserModal';
 import Swal from 'sweetalert2';
+import { getErrorMessage } from '@/helpers/errorHelper';
 import withReactContent from 'sweetalert2-react-content';
 
 const UsersPage = () => {
@@ -40,8 +41,8 @@ const UsersPage = () => {
         await usersAPI.delete(user.id);
         await loadUsers();
         MySwal.fire('Eliminado', 'Usuario eliminado correctamente', 'success');
-      } catch {
-        MySwal.fire('Error', 'No se pudo eliminar el usuario', 'error');
+      } catch (error) {
+        MySwal.fire('Error', getErrorMessage(error, 'No se pudo eliminar el usuario'), 'error');
       } finally {
         setLoading(false);
       }
@@ -60,8 +61,8 @@ const UsersPage = () => {
       }
       setModalOpen(false);
       await loadUsers();
-    } catch {
-      MySwal.fire('Error', 'No se pudo guardar el usuario', 'error');
+    } catch (error) {
+      MySwal.fire('Error', getErrorMessage(error, 'No se pudo guardar el usuario'), 'error');
     } finally {
       setModalLoading(false);
     }
@@ -177,9 +178,8 @@ const UsersPage = () => {
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
                         {getRoleLabel(user.role)}
                       </span>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
                         {user.isActive ? 'Activo' : 'Inactivo'}
                       </span>
                     </div>

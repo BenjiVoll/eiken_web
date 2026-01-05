@@ -13,12 +13,11 @@ import { connectDB } from "./config/configDb.js";
 import { createInitialData } from "./config/initialSetup.js";
 import { passportJwtSetup } from "./auth/passport.auth.js";
 
-// Configurar zona horaria de Santiago de Chile (UTC-3)
+// Zona horaria de Santiago de Chile (UTC-3)
 process.env.TZ = 'America/Santiago';
 
-// Forzar offset específico para Chile
 const originalDateNow = Date.now;
-Date.now = function() {
+Date.now = function () {
   const utcTime = originalDateNow();
   const offset = -3 * 60 * 60 * 1000; // UTC-3 en milisegundos
   return utcTime + offset;
@@ -70,7 +69,7 @@ async function setupServer() {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    // Servir archivos estáticos de la carpeta uploads
+    // Servir archivos de la carpeta uploads
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
     passportJwtSetup();

@@ -25,14 +25,15 @@ const Divisions = () => {
   };
 
   const handleDelete = async (id) => {
-    const result = await confirmAlert('¿Estás seguro de que quieres eliminar esta división?', 'Esta acción no se puede deshacer');
-    if (result.isConfirmed) {
+    const isConfirmed = await confirmAlert('¿Estás seguro de que quieres eliminar esta división?', 'Esta acción no se puede deshacer');
+    if (isConfirmed) {
       try {
         await divisionsAPI.delete(id);
         await loadDivisions();
         showSuccessAlert('¡Eliminado!', 'La división ha sido eliminada correctamente');
-      } catch {
-        showErrorAlert('Error', 'No se pudo eliminar la división');
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || 'No se pudo eliminar la división';
+        showErrorAlert('Error', errorMessage);
       }
     }
   };

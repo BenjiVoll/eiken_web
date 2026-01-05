@@ -19,17 +19,25 @@ export const createInventoryMovement = async (data) => {
   }
 
   // Verificar que el usuario existe
-  const user = await userRepository.findOneBy({ id: createdById });
-  if (!user) {
-    throw new Error("Usuario no encontrado");
+  let user;
+  if (createdById) {
+    user = await userRepository.findOneBy({ id: createdById });
+    if (!user) {
+      throw new Error("Usuario no encontrado");
+    }
+  } else {
+    const adminUser = await userRepository.findOne({ where: { role: 'admin' } });
+    if (adminUser) {
+      user = adminUser;
+    } else {
+      console.warn("⚠️ No se encontró usuario admin para asignar al movimiento automático. Podría fallar si la BD exige NOT NULL.");
+    }
   }
 
-  // Validar cantidad según tipo de movimiento
   if (movementType === "salida" && inventoryItem.quantity < quantity) {
     throw new Error("No hay suficiente inventario disponible");
   }
 
-  // Crear el movimiento
   const movement = movementRepository.create({
     inventoryId,
     movementType,
@@ -37,13 +45,12 @@ export const createInventoryMovement = async (data) => {
     reason,
     referenceId,
     referenceType,
-    createdById,
+    createdById: user?.id || createdById,
     notes
   });
 
   await movementRepository.save(movement);
 
-  // Actualizar la cantidad del inventario
   switch (movementType) {
     case "entrada":
       inventoryItem.quantity += quantity;
@@ -60,7 +67,6 @@ export const createInventoryMovement = async (data) => {
 
   await inventoryRepository.save(inventoryItem);
 
-  // Verificar si hay stock bajo y enviar alerta
   if (movementType === "salida" || movementType === "ajuste") {
     await checkAndAlertLowStock();
   }
@@ -74,7 +80,6 @@ export const updateInventoryMovement = async (id, data) => {
     throw new Error("Movimiento de inventario no encontrado");
   }
 
-  // No permitir cambiar inventoryId, movementType o cantidad una vez creado
   const { inventoryId, movementType, quantity, ...allowedUpdates } = data;
 
   Object.assign(movement, allowedUpdates);

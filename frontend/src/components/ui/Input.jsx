@@ -1,10 +1,6 @@
 import React from 'react';
 
-/**
- * Componente Input reutilizable
- * @param {Object} props - Props del componente
- * @returns {JSX.Element} - Elemento input con label y error
- */
+// Componente Input reutilizable
 const Input = ({
   label,
   name,
@@ -31,14 +27,14 @@ const Input = ({
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
+
       <div className="relative">
         {icon && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             {icon}
           </div>
         )}
-        
+
         <input
           id={name}
           name={name}
@@ -53,7 +49,7 @@ const Input = ({
           {...props}
         />
       </div>
-      
+
       {error && (
         <p className="form-error">{error}</p>
       )}

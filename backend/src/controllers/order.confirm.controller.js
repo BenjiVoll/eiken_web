@@ -15,6 +15,10 @@ export const confirmOrderController = async (req, res) => {
 
         return handleSuccess(res, 200, "Orden confirmada exitosamente", { order });
     } catch (error) {
+        if (error.message === "Orden no encontrada") {
+            console.warn(`⚠️ Warning: Attempted to confirm non-existent Order #${req.params.id}`);
+            return handleErrorServer(res, 404, "Orden no encontrada");
+        }
         console.error("Error confirming order:", error);
         return handleErrorServer(res, 500, error.message || "Error al confirmar la orden");
     }

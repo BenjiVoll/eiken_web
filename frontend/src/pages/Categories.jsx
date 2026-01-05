@@ -25,14 +25,15 @@ const Categories = () => {
   };
 
   const handleDelete = async (id) => {
-    const result = await confirmAlert('¿Estás seguro de que quieres eliminar esta categoría?', 'Esta acción no se puede deshacer');
-    if (result.isConfirmed) {
+    const isConfirmed = await confirmAlert('¿Estás seguro de que quieres eliminar esta categoría?', 'Esta acción no se puede deshacer');
+    if (isConfirmed) {
       try {
         await categoriesAPI.delete(id);
         await loadCategories();
         showSuccessAlert('¡Eliminado!', 'La categoría ha sido eliminada correctamente');
-      } catch {
-        showErrorAlert('Error', 'No se pudo eliminar la categoría');
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || 'No se pudo eliminar la categoría';
+        showErrorAlert('Error', errorMessage);
       }
     }
   };
