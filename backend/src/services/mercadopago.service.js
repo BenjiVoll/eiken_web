@@ -144,7 +144,8 @@ export const createPaymentPreference = async (orderData) => {
         }
 
         const isLocalhost = backUrl.includes("localhost") || backUrl.includes("127.0.0.1");
-        if (!isLocalhost) {
+        // Solo activar auto_return en producción real
+        if (process.env.NODE_ENV === 'production' && !isLocalhost) {
             preferenceData.auto_return = "approved";
         }
 
@@ -162,6 +163,7 @@ export const createPaymentPreference = async (orderData) => {
             throw new Error(`URLs de retorno inválidas: ${urlError.message}`);
         }
 
+        console.log("🚀 [DEBUG] Creating Preference with Data:", JSON.stringify(preferenceData, null, 2));
         const response = await preference.create({ body: preferenceData });
 
         return {
