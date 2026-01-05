@@ -22,7 +22,7 @@ const PaymentPending = () => {
                     <div className="space-y-4">
                         <Link
                             to="/store"
-                            className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="w-full flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-eiken-orange-600 hover:bg-eiken-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-eiken-orange-500"
                         >
                             Volver a la Tienda
                         </Link>
