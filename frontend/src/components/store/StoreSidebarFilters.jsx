@@ -31,24 +31,24 @@ const StoreSidebarFilters = ({
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            {/* Search Bar in Sidebar */}
+            {/* Barra de búsqueda */}
             <div className="mb-6">
                 <div className="relative group">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 group-focus-within:text-indigo-500 transition-colors" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 group-focus-within:text-eiken-orange-500 transition-colors" />
                     <input
                         type="text"
                         placeholder="Buscar productos..."
                         value={searchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder-gray-400 text-gray-700"
+                        className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-eiken-orange-100 focus:border-eiken-orange-500 outline-none transition-all placeholder-gray-400 text-gray-700"
                     />
                 </div>
             </div>
 
-            {/* Header with Clear Filters */}
+            {/* Encabezado con botón de limpiar filtros */}
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-50">
                 <h3 className="text-gray-900 font-bold flex items-center gap-2">
-                    <Filter className="w-4 h-4 text-indigo-500" />
+                    <Filter className="w-4 h-4 text-eiken-orange-500" />
                     Filtros
                 </h3>
                 {hasActiveFilters && (
@@ -61,13 +61,13 @@ const StoreSidebarFilters = ({
                 )}
             </div>
 
-            {/* Categories Filter */}
+            {/* Categorías */}
             <div className="mb-6">
                 <button
                     onClick={() => setShowCategories(!showCategories)}
                     className="flex items-center justify-between w-full text-left mb-3 group"
                 >
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Categorías</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider group-hover:text-eiken-orange-600 transition-colors">Categorías</span>
                     <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${showCategories ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -86,10 +86,10 @@ const StoreSidebarFilters = ({
                                             type="checkbox"
                                             checked={selectedCategories.includes(category)}
                                             onChange={() => onCategoryChange(category)}
-                                            className="peer h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all"
+                                            className="peer h-4 w-4 rounded border-gray-300 text-eiken-orange-600 focus:ring-eiken-orange-500 cursor-pointer transition-all"
                                         />
                                     </div>
-                                    <span className={`text-sm transition-colors ${selectedCategories.includes(category) ? 'text-indigo-700 font-medium' : 'text-gray-600 group-hover:text-gray-900'}`}>
+                                    <span className={`text-sm transition-colors ${selectedCategories.includes(category) ? 'text-eiken-orange-700 font-medium' : 'text-gray-600 group-hover:text-gray-900'}`}>
                                         {category}
                                     </span>
                                 </label>
@@ -99,13 +99,13 @@ const StoreSidebarFilters = ({
                 )}
             </div>
 
-            {/* Price Range Filter */}
+            {/* Rango de precio */}
             <div className="mb-2">
                 <button
                     onClick={() => setShowPrice(!showPrice)}
                     className="flex items-center justify-between w-full text-left mb-4 group"
                 >
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wide group-hover:text-indigo-600 transition-colors">Precio</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wide group-hover:text-eiken-orange-600 transition-colors">Precio</span>
                     <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${showPrice ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -138,7 +138,7 @@ const StoreSidebarFilters = ({
                                                 borderRadius: '2px',
                                                 background: getTrackBackground({
                                                     values: priceRange,
-                                                    colors: ['#F3F4F6', '#6366F1', '#F3F4F6'],
+                                                    colors: ['#F3F4F6', '#e63600', '#F3F4F6'],
                                                     min: minPrice,
                                                     max: maxPrice
                                                 }),
@@ -162,17 +162,17 @@ const StoreSidebarFilters = ({
                                             justifyContent: 'center',
                                             alignItems: 'center',
                                             boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
-                                            border: '2px solid #6366F1',
+                                            border: '2px solid #e63600',
                                             outline: 'none'
                                         }}
                                     >
-                                        {isDragged && <div className="w-2 h-2 bg-indigo-500 rounded-full" />}
+                                        {isDragged && <div className="w-2 h-2 bg-eiken-orange-500 rounded-full" />}
                                     </div>
                                 )}
                             />
                         </div>
 
-                        {/* Price Values Inputs/Display */}
+                        {/* Valores de precio */}
                         <div className="flex items-center justify-between gap-4">
                             <div className="bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 w-full text-center">
                                 <span className="block text-[10px] text-gray-400 uppercase font-semibold">Mín</span>

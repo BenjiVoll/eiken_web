@@ -5,12 +5,7 @@ import { InventorySchema } from "../entity/inventory.entity.js";
 import { createActivityService } from "./activity.service.js";
 import { checkAndAlertLowStock } from "./alert.service.js";
 
-/**
- * Registrar materiales usados en una orden
- * @param {number} orderId - ID de la orden
- * @param {Array} materials - [{inventoryId, quantityUsed, notes}]
- * @param {number} userId - ID del usuario que registra
- */
+// Registrar materiales usados en una orden
 export const registerMaterialsUsage = async (orderId, materials, userId) => {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
@@ -96,7 +91,6 @@ export const registerMaterialsUsage = async (orderId, materials, userId) => {
             });
         }
 
-        // Commit de la transacción
         await queryRunner.commitTransaction();
 
         // Registrar actividad
@@ -133,10 +127,7 @@ export const registerMaterialsUsage = async (orderId, materials, userId) => {
     }
 };
 
-/**
- * Obtener materiales usados en una orden
- * @param {number} orderId - ID de la orden
- */
+// Obtener materiales usados en una orden
 export const getMaterialsUsedByOrder = async (orderId) => {
     try {
         const usageRepository = AppDataSource.getRepository(OrderInventoryUsageSchema);
@@ -170,11 +161,7 @@ export const getMaterialsUsedByOrder = async (orderId) => {
     }
 };
 
-/**
- * Eliminar registro de material usado (restaura inventario)
- * @param {number} usageId - ID del registro de uso
- * @param {number} userId - ID del usuario que elimina
- */
+// Eliminar registro de material usado (restaura inventario)
 export const deleteMaterialUsage = async (usageId, userId) => {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();

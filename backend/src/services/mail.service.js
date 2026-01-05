@@ -1,16 +1,42 @@
 import nodemailer from 'nodemailer';
+import { AppDataSource } from "../config/configDb.js";
+import UserSchema from "../entity/user.entity.js";
+
+const userRepository = AppDataSource.getRepository(UserSchema);
 
 class MailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
+      pool: true,
+      maxConnections: 1,
+      rateDelta: 10000,
+      rateLimit: 3,
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
-      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+      secure: process.env.SMTP_SECURE === 'true',
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
     });
+  }
+
+  async getAdminEmails() {
+    try {
+      const admins = await userRepository.find({ where: { role: 'admin' } });
+      const adminEmails = admins.map(admin => admin.email).filter(email => email);
+
+      const envEmail = process.env.ADMIN_EMAIL;
+      if (envEmail && !adminEmails.includes(envEmail)) {
+        adminEmails.push(envEmail);
+      }
+
+      // Si no hay nadie, usar el default
+      return adminEmails.length > 0 ? adminEmails : ['admin@eiken.com'];
+    } catch (error) {
+      console.error('Error fetching admin emails:', error);
+      return [process.env.ADMIN_EMAIL || 'admin@eiken.com'];
+    }
   }
 
   async sendQuoteNotification(quote) {
@@ -129,10 +155,10 @@ class MailService {
 
   async sendNewQuoteAlert(quote) {
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || 'admin@eiken.com';
+      const adminEmails = await this.getAdminEmails();
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
-        to: adminEmail,
+        to: adminEmails,
         subject: `🔔 Nueva Cotización: ${quote.client?.name}`,
         html: this.getHtmlTemplate('Nueva Cotización Recibida', `
           <!-- Header con colores Eiken Design -->
@@ -334,7 +360,7 @@ class MailService {
         return { success: false, message: 'No hay items con stock bajo' };
       }
 
-      const adminEmail = process.env.ADMIN_EMAIL || 'admin@eiken.com';
+      const adminEmails = await this.getAdminEmails();
 
       // Generar HTML de la tabla de items
       const itemsHTML = lowStockItems.map(item => `
@@ -349,7 +375,7 @@ class MailService {
 
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
-        to: adminEmail,
+        to: adminEmails,
         subject: `⚠️ Alerta de Stock Bajo - ${lowStockItems.length} Material(es) Crítico(s)`,
         html: this.getHtmlTemplate('Alerta de Stock Bajo', `
           <!-- Header con colores Eiken Design -->
@@ -640,7 +666,7 @@ class MailService {
    */
   async sendNewOrderAlert(order) {
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || 'admin@eiken.com';
+      const adminEmails = await this.getAdminEmails();
       const itemsHTML = order.items?.map(item => `
         <tr>
           <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product?.name || item.service?.name || 'Producto'}</td>
@@ -651,7 +677,7 @@ class MailService {
 
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
-        to: adminEmail,
+        to: adminEmails,
         subject: `🔔 Nueva Venta Web - Orden #${order.id}`,
         html: this.getHtmlTemplate('Nueva Venta Web', `
           <tr>
@@ -722,10 +748,10 @@ class MailService {
    */
   async sendQuoteAcceptedAlert(quote) {
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || 'admin@eiken.com';
+      const adminEmails = await this.getAdminEmails();
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
-        to: adminEmail,
+        to: adminEmails,
         subject: `✅ Presupuesto Aprobado - Cotización #${quote.id}`,
         html: this.getHtmlTemplate('Presupuesto Aprobado', `
           <tr>

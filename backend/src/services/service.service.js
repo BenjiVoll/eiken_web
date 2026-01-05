@@ -101,8 +101,6 @@ export const updateServiceRating = async (id, rating) => {
   if (!service) {
     throw new Error("Servicio no encontrado");
   }
-
-  // Por ahora solo retornamos el servicio ya que no tenemos campo rating en la BD
   return service;
 };
 
@@ -140,7 +138,6 @@ export const deleteService = async (id) => {
     throw new Error(`No se puede eliminar el servicio porque tiene ${projectsCount} proyecto(s) activo(s) asociado(s)`);
   }
 
-  // Hard delete - eliminar completamente
   await serviceRepository.remove(service);
 
   return { mensaje: "Servicio eliminado exitosamente" };

@@ -107,13 +107,6 @@ export const deleteProduct = async (id) => {
         throw new Error("Producto no encontrado");
     }
 
-    // Soft delete or Hard delete? 
-    // Requirements don't specify strict rules for products like services.
-    // We'll do hard delete but check if it's in any order (if we had order items linked to products).
-    // Currently OrderItem links to Service, not Product (Store is new).
-    // We should probably link OrderItem to Product too or have a separate OrderProduct entity.
-    // For now, simple delete.
-
     await productRepository.remove(product);
     return { mensaje: "Producto eliminado exitosamente" };
 };

@@ -151,13 +151,13 @@ const Store = () => {
                 <div className="absolute inset-0 bg-[url('/pattern-bg.png')] opacity-10"></div>
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 text-center">
                     <span className="inline-block px-3 py-1 mb-3 text-xs font-semibold tracking-wider text-orange-300 uppercase bg-orange-900/30 rounded-full backdrop-blur-sm border border-orange-500/20">
-                        Tienda Oficial
+                        Tienda
                     </span>
                     <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">
-                        Nuestros <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">Productos</span>
+                        Eiken <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-400">Design</span>
                     </h1>
                     <p className="max-w-2xl mx-auto text-sm text-slate-300 font-light">
-                        Merchandising exclusivo y diseños personalizados.
+                        Poleras, polerones, stickers y más. Productos personalizados.
                     </p>
                 </div>
             </div>

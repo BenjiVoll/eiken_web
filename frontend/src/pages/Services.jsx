@@ -119,8 +119,8 @@ const Services = () => {
   };
 
   const handleDelete = async (id) => {
-    const result = await confirmAlert('¿Estás seguro de que quieres eliminar este servicio?', 'Esta acción no se puede deshacer');
-    if (result.isConfirmed) {
+    const isConfirmed = await confirmAlert('¿Estás seguro de que quieres eliminar este servicio?', 'Esta acción no se puede deshacer');
+    if (isConfirmed) {
       try {
         await servicesAPI.delete(id);
         await loadServices();

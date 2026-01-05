@@ -1,30 +1,19 @@
 "use strict";
 import xss from 'xss';
 
-/**
- * Sanitiza texto eliminando código HTML/JavaScript malicioso
- * Previene ataques XSS (Cross-Site Scripting)
- * 
- * @param {string} text - Texto a sanitizar
- * @returns {string} - Texto sanitizado
- */
+// Sanitiza texto eliminando código HTML/JavaScript malicioso. Previene ataques XSS (Cross-Site Scripting)
+
 export const sanitizeHtml = (text) => {
     if (!text) return text;
     if (typeof text !== 'string') return text;
 
     return xss(text, {
-        whiteList: {}, // No permitir ningún tag HTML
-        stripIgnoreTag: true, // Eliminar tags no permitidos
-        stripIgnoreTagBody: ['script'], // Eliminar contenido de scripts
+        whiteList: {},
+        stripIgnoreTag: true,
+        stripIgnoreTagBody: ['script'],
     });
 };
 
-/**
- * Sanitiza un objeto recursivamente
- * 
- * @param {Object} obj - Objeto a sanitizar
- * @returns {Object} - Objeto sanitizado
- */
 export const sanitizeObject = (obj) => {
     if (!obj || typeof obj !== 'object') return obj;
 

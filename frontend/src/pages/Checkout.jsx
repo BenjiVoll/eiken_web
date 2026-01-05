@@ -4,7 +4,7 @@ import { useCart } from '@/context/CartContext';
 import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
 import { getImageUrl } from '@/helpers/getImageUrl';
 import { settingsAPI } from '@/services/apiService';
-import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
+
 import { MapPin } from 'lucide-react';
 import axios from 'axios';
 
@@ -12,7 +12,7 @@ const Checkout = () => {
     const { cart, getCartTotal, clearCart } = useCart();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [preferenceId, setPreferenceId] = useState(null);
+
     const [pickupDetails, setPickupDetails] = useState({
         address: 'Cargando...',
         city: '',
@@ -25,12 +25,8 @@ const Checkout = () => {
     });
     const [errors, setErrors] = useState({});
 
-    // Inicializar Mercado Pago con Public Key
+    // Cargar configuración de la tienda
     useEffect(() => {
-        const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY || 'APP_USR-c4ec0886-95f6-40db-8fe4-c182be58f494';
-        initMercadoPago(publicKey);
-
-        // Cargar configuración de la tienda
         const fetchSettings = async () => {
             try {
                 const response = await settingsAPI.get();
@@ -103,18 +99,16 @@ const Checkout = () => {
             const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000/api';
             const response = await axios.post(`${baseUrl}/payments/create-preference`, orderData);
 
-            const preferenceIdFromServer = response.data.data.preferenceId || response.data.data.preference_id;
+            const initPoint = response.data.data.initPoint || response.data.data.init_point;
 
-            if (preferenceIdFromServer) {
-                setPreferenceId(preferenceIdFromServer);
-                showSuccessAlert('¡Listo!', 'Ahora puedes pagar con Mercado Pago');
+            if (initPoint) {
+                window.location.href = initPoint;
             } else {
-                throw new Error("No se recibió el ID de preferencia");
+                throw new Error("No se recibió la URL de pago");
             }
         } catch (error) {
             console.error('Error creating order:', error);
             showErrorAlert('Error', error.response?.data?.message || 'No se pudo crear la orden');
-        } finally {
             setLoading(false);
         }
     };
@@ -141,7 +135,6 @@ const Checkout = () => {
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">Finalizar Compra</h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Formulario */}
                     <div className="lg:col-span-2">
                         <div className="bg-white rounded-lg shadow p-6">
                             <h2 className="text-xl font-semibold mb-6">Información de Contacto</h2>
@@ -157,7 +150,7 @@ const Checkout = () => {
                                         onChange={handleChange}
                                         className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${errors.clientName ? 'border-red-500' : 'border-gray-300'
                                             }`}
-                                        disabled={loading || preferenceId}
+                                        disabled={loading}
                                     />
                                     {errors.clientName && (
                                         <p className="text-red-600 text-sm mt-1">{errors.clientName}</p>
@@ -175,14 +168,12 @@ const Checkout = () => {
                                         onChange={handleChange}
                                         className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 ${errors.clientEmail ? 'border-red-500' : 'border-gray-300'
                                             }`}
-                                        disabled={loading || preferenceId}
+                                        disabled={loading}
                                     />
                                     {errors.clientEmail && (
                                         <p className="text-red-600 text-sm mt-1">{errors.clientEmail}</p>
                                     )}
                                 </div>
-
-                                {/* Lugar de Retiro (Estático) */}
                                 <div className="mt-6">
                                     <h3 className="text-lg font-medium text-gray-900 mb-3">Lugar de retiro</h3>
                                     <p className="text-sm text-gray-500 mb-3">Hay 1 sucursal con existencias cerca de ti</p>
@@ -214,33 +205,34 @@ const Checkout = () => {
                                         onChange={handleChange}
                                         rows={3}
                                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                                        disabled={loading || preferenceId}
+                                        disabled={loading}
                                         placeholder="Instrucciones especiales, preferencias de entrega, etc."
                                     />
                                 </div>
 
-                                {!preferenceId && (
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
-                                    >
-                                        {loading ? 'Procesando...' : 'Confirmar Orden'}
-                                    </button>
-                                )}
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span>Redirigiendo a MercadoPago...</span>
+                                        </>
+                                    ) : (
+                                        'Pagar con MercadoPago'
+                                    )}
+                                </button>
                             </form>
 
-                            {/* Botón de Mercado Pago */}
-                            {preferenceId && (
-                                <div className="mt-6">
-                                    <h3 className="text-lg font-semibold mb-4 text-center">Pagar con Mercado Pago</h3>
-                                    <Wallet initialization={{ preferenceId }} />
-                                </div>
-                            )}
+
                         </div>
                     </div>
 
-                    {/* Resumen */}
                     <div className="lg:col-span-1">
                         <div className="bg-white rounded-lg shadow p-6 sticky top-8">
                             <h2 className="text-xl font-semibold mb-4">Resumen de la Orden</h2>

@@ -189,10 +189,9 @@ export const acceptQuoteByToken = async (token) => {
   }
 
   quote.status = "Aprobado";
-  quote.acceptanceToken = null; // Invalidar token (un solo uso)
+  quote.acceptanceToken = null;
   await quoteRepository.save(quote);
 
-  // Notificar al admin de la aceptación
   mailService.sendQuoteAcceptedAlert(quote);
 
   return { success: true, message: "Cotización aprobada correctamente", quote };
@@ -214,15 +213,15 @@ export const convertQuoteToProject = async (id) => {
     title: quote.customServiceTitle || quote.service?.name || "Proyecto sin título",
     description: quote.description,
     clientId: quote.clientId,
-    category: quote.category ? quote.category.id : (quote.service?.category ? quote.service.category.id : 1), // Default to category 1 if missing
-    division: quote.service?.division ? quote.service.division.id : 1, // Default to division 1 if missing
+    category: quote.category ? quote.category.id : (quote.service?.category ? quote.service.category.id : 1),
+    division: quote.service?.division ? quote.service.division.id : 1,
     status: "En Proceso",
     priority: "Medio",
     budgetAmount: quote.quotedAmount || 0,
     notes: quote.notes,
     quoteId: quote.id,
-    isFeatured: false, // Por defecto no destacado
-    image: (quote.referenceImages && quote.referenceImages.length > 0) ? quote.referenceImages[0] : null // Usar la primera imagen como portada inicial
+    isFeatured: false,
+    image: (quote.referenceImages && quote.referenceImages.length > 0) ? quote.referenceImages[0] : null
   });
 
   await projectRepository.save(newProject);

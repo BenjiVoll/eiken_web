@@ -8,9 +8,7 @@ const productMaterialRepository = AppDataSource.getRepository(ProductMaterialSch
 const productRepository = AppDataSource.getRepository(ProductSchema);
 const inventoryRepository = AppDataSource.getRepository(InventorySchema);
 
-/**
- * Agregar material a un producto
- */
+// Agregar material a un producto
 export const addMaterialToProduct = async (productId, materialData) => {
     const { inventoryId, quantityNeeded } = materialData;
 
@@ -55,9 +53,7 @@ export const addMaterialToProduct = async (productId, materialData) => {
     });
 };
 
-/**
- * Obtener todos los materiales de un producto
- */
+// Obtener todos los materiales de un producto
 export const getProductMaterials = async (productId) => {
     return await productMaterialRepository.find({
         where: { productId },
@@ -66,9 +62,7 @@ export const getProductMaterials = async (productId) => {
     });
 };
 
-/**
- * Actualizar cantidad necesaria de un material
- */
+// Actualizar cantidad necesaria de un material
 export const updateProductMaterial = async (id, data) => {
     const { quantityNeeded } = data;
 
@@ -84,9 +78,7 @@ export const updateProductMaterial = async (id, data) => {
     return await productMaterialRepository.save(material);
 };
 
-/**
- * Eliminar material de un producto
- */
+// Eliminar material de un producto
 export const removeMaterialFromProduct = async (id) => {
     const material = await productMaterialRepository.findOneBy({ id });
     if (!material) {
@@ -97,9 +89,7 @@ export const removeMaterialFromProduct = async (id) => {
     return { success: true };
 };
 
-/**
- * Eliminar todos los materiales de un producto
- */
+// Eliminar todos los materiales de un producto
 export const removeAllProductMaterials = async (productId) => {
     await productMaterialRepository.delete({ productId });
     return { success: true };

@@ -1,8 +1,6 @@
 import Swal from 'sweetalert2';
 
-/**
- * Alerta de confirmación para eliminar
- */
+// Alerta de confirmación para eliminar
 export async function deleteDataAlert() {
   return Swal.fire({
     title: "¿Estás seguro?",
@@ -15,9 +13,7 @@ export async function deleteDataAlert() {
   });
 }
 
-/**
- * Alerta de éxito
- */
+// Alerta de éxito
 export const showSuccessAlert = (titleMessage, message) => {
   Swal.fire(
     titleMessage,
@@ -26,9 +22,7 @@ export const showSuccessAlert = (titleMessage, message) => {
   );
 };
 
-/**
- * Alerta de error
- */
+// Alerta de error
 export const showErrorAlert = (titleMessage, message) => {
   Swal.fire(
     titleMessage,
@@ -37,9 +31,7 @@ export const showErrorAlert = (titleMessage, message) => {
   );
 };
 
-/**
- * Alerta de confirmación personalizada
- */
+// Alerta de confirmación personalizada
 export async function confirmAlert(title = "¿Estás seguro?", text = "Esta acción no se puede deshacer") {
   const result = await Swal.fire({
     title,
@@ -54,12 +46,8 @@ export async function confirmAlert(title = "¿Estás seguro?", text = "Esta acci
   return result.isConfirmed;
 }
 
-// Alias para mantener consistencia con otros helpers
 export const showConfirmAlert = confirmAlert;
 
-/**
- * Alerta de información
- */
 export const showInfoAlert = (titleMessage, message) => {
   Swal.fire(
     titleMessage,
@@ -68,9 +56,9 @@ export const showInfoAlert = (titleMessage, message) => {
   );
 };
 
-/**
- * Alerta de advertencia
- */
+
+// Alerta de advertencia
+
 export const showWarningAlert = (titleMessage, message) => {
   Swal.fire(
     titleMessage,
@@ -79,9 +67,9 @@ export const showWarningAlert = (titleMessage, message) => {
   );
 };
 
-/**
- * Alerta de carga
- */
+
+//Alerta de carga
+
 export const showLoadingAlert = (message = "Procesando...") => {
   Swal.fire({
     title: message,
@@ -94,16 +82,16 @@ export const showLoadingAlert = (message = "Procesando...") => {
   });
 };
 
-/**
- * Cerrar alerta actual
- */
+
+// Cerrar alerta actual
+
 export const closeAlert = () => {
   Swal.close();
 };
 
-/**
- * Toast de notificación
- */
+
+// Toast de notificación
+
 export const showToast = (message, icon = 'success', timer = 3000) => {
   Swal.fire({
     toast: true,
@@ -116,9 +104,9 @@ export const showToast = (message, icon = 'success', timer = 3000) => {
   });
 };
 
-/**
- * Confirmación específica para crear
- */
+
+// Confirmación específica para crear
+
 export async function createDataAlert(itemType = "elemento") {
   return Swal.fire({
     title: `¿Crear ${itemType}?`,
@@ -132,9 +120,9 @@ export async function createDataAlert(itemType = "elemento") {
   });
 }
 
-/**
- * Confirmación específica para actualizar
- */
+
+// Confirmación específica para actualizar
+
 export async function updateDataAlert(itemType = "elemento") {
   return Swal.fire({
     title: `¿Actualizar ${itemType}?`,

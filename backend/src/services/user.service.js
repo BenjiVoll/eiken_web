@@ -71,11 +71,9 @@ export async function updateUserService(query, body) {
     if (body.role) dataUserUpdate.role = body.role;
     if (typeof body.isActive === 'boolean') dataUserUpdate.isActive = body.isActive;
 
-    // Solo actualizar password si se proporciona newPassword
     if (body.newPassword && body.newPassword.trim() !== "") {
       dataUserUpdate.passwordHash = await encryptPassword(body.newPassword);
     } else if (body.password && body.password.trim() !== "") {
-      // Si se envía password (caso de creación), encriptarla
       dataUserUpdate.passwordHash = await encryptPassword(body.password);
     }
 

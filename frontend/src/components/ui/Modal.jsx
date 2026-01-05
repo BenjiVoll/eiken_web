@@ -1,11 +1,7 @@
 import React from 'react';
 import Button from './Button';
 
-/**
- * Componente Modal reutilizable
- * @param {Object} props - Props del componente
- * @returns {JSX.Element} - Modal
- */
+// Componente Modal reutilizable
 const Modal = ({
   isOpen,
   onClose,
@@ -67,9 +63,7 @@ const Modal = ({
   );
 };
 
-/**
- * Componente ConfirmModal para confirmaciones
- */
+// Componente ConfirmModal para confirmaciones
 export const ConfirmModal = ({
   isOpen,
   onClose,

@@ -25,10 +25,10 @@ const getAccessToken = () => {
 let client;
 let preference;
 
-// Función para inicializar Mercado Pago (lazy initialization)
+// Función para inicializar Mercado Pago
 const initializeMercadoPago = () => {
     if (client && preference) {
-        return; // Ya está inicializado
+        return;
     }
 
     try {
@@ -45,7 +45,7 @@ const initializeMercadoPago = () => {
         preference = new Preference(client);
     } catch (error) {
         console.error("Error inicializando Mercado Pago:", error.message);
-        throw error; // Lanzamos el error para que se maneje arriba
+        throw error;
     }
 };
 
@@ -60,6 +60,7 @@ const initializeMercadoPago = () => {
  * @param {string} orderData.backUrl - URL de retorno después del pago
  * @returns {Promise<Object>} Preferencia creada
  */
+
 export const createPaymentPreference = async (orderData) => {
     try {
         // Inicializar Mercado Pago si no está inicializado
@@ -114,9 +115,6 @@ export const createPaymentPreference = async (orderData) => {
             throw new Error("No se pudieron construir las URLs de retorno");
         }
 
-        // Configurar preferencia
-        // Configurar preferencia
-
         // Obtener URL del backend para notificaciones
         let notificationUrl;
         if (process.env.BACKEND_URL) {
@@ -138,7 +136,6 @@ export const createPaymentPreference = async (orderData) => {
                 failure: failureUrl,
                 pending: pendingUrl,
             },
-            // auto_return: "approved", // Removed to allow logic below handle it
             external_reference: String(orderId),
         };
 
@@ -146,8 +143,6 @@ export const createPaymentPreference = async (orderData) => {
             preferenceData.notification_url = notificationUrl;
         }
 
-        // Conditionally enable auto_return only for non-localhost URLs
-        // Mercado Pago errors if auto_return is set but back_urls are localhost
         const isLocalhost = backUrl.includes("localhost") || backUrl.includes("127.0.0.1");
         if (!isLocalhost) {
             preferenceData.auto_return = "approved";
@@ -181,16 +176,7 @@ export const createPaymentPreference = async (orderData) => {
     }
 };
 
-/**
- * Obtiene información de un pago
- * @param {string} paymentId - ID del pago
- * @returns {Promise<Object>} Información del pago
- */
-/**
- * Obtiene información de un pago
- * @param {string} paymentId - ID del pago
- * @returns {Promise<Object>} Información del pago
- */
+// Obtener información de un pago
 export const getPaymentInfo = async (paymentId) => {
     try {
         initializeMercadoPago();
@@ -202,12 +188,7 @@ export const getPaymentInfo = async (paymentId) => {
     }
 };
 
-/**
- * Valida la firma de un webhook de Mercado Pago
- * @param {Object} data - Datos del webhook
- * @param {string} signature - Firma del webhook
- * @returns {boolean} True si la firma es válida
- */
+// Validar firma de webhook
 export const validateWebhookSignature = (data, signature) => {
     // Implementar validación de firma si es necesario
     // Por ahora retornamos true, pero en producción deberías validar
