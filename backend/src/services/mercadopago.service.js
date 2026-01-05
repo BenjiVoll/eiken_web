@@ -163,7 +163,6 @@ export const createPaymentPreference = async (orderData) => {
             throw new Error(`URLs de retorno inválidas: ${urlError.message}`);
         }
 
-        console.log("🚀 [DEBUG] Creating Preference with Data:", JSON.stringify(preferenceData, null, 2));
         const response = await preference.create({ body: preferenceData });
 
         return {
