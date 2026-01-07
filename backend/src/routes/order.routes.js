@@ -1,7 +1,7 @@
 "use strict";
 import { Router } from "express";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { isAdminOrManager } from "../middlewares/authorization.middleware.js";
+import { isAdminOrManager, isAnyUser } from "../middlewares/authorization.middleware.js";
 import { createBodyValidation, createParamsValidation } from "../middlewares/validations.middleware.js";
 import { orderBodyValidation } from "../validations/order.validation.js";
 import { idParamValidation } from "../validations/common.validation.js";
@@ -33,8 +33,9 @@ router.post("/:id/confirm", createParamsValidation(idParamValidation), confirmOr
 // Rutas protegidas
 router.use(authenticateJwt);
 
+// CU-05 y CU-07: Todos los roles pueden ver órdenes (lectura)
 router
-  .get("/", isAdminOrManager, getOrders)
+  .get("/", isAnyUser, getOrders)
   .get("/email/:email", getOrdersByEmail)
   .get("/:id", createParamsValidation(idParamValidation), getOrderById)
   .patch("/:id/status", isAdminOrManager, createParamsValidation(idParamValidation), updateOrderStatus)

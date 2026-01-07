@@ -60,8 +60,7 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
             icon: ShoppingCart,
             items: [
                 { name: 'Órdenes', href: '/intranet/orders', icon: ShoppingBag },
-                { name: 'Productos', href: '/intranet/products', icon: Package },
-                { name: 'Datos Tienda', href: '/intranet/settings', icon: Settings }
+                { name: 'Productos', href: '/intranet/products', icon: Package }
             ]
         });
     }
@@ -100,7 +99,8 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
             name: 'Administración',
             icon: Users,
             items: [
-                { name: 'Usuarios', href: '/intranet/users', icon: Users }
+                { name: 'Usuarios', href: '/intranet/users', icon: Users },
+                { name: 'Datos Tienda', href: '/intranet/settings', icon: Settings }
             ]
         });
     }

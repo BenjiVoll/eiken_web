@@ -1,7 +1,7 @@
 import React from 'react';
 import { Edit, Trash2, User, Calendar, DollarSign, Clock, Tag, Building, Image as ImageIcon, Star } from 'lucide-react';
 
-const ProjectsTable = ({ projects, isManager, isAdmin, onEdit, onDelete, getStatusColor, getStatusLabel, getPriorityColor, getPriorityLabel, getImageUrl, setModalImageUrl, setShowImageModal }) => (
+const ProjectsTable = ({ projects, isManager, isAdmin, isDesigner, onEdit, onDelete, getStatusColor, getStatusLabel, getPriorityColor, getPriorityLabel, getImageUrl, setModalImageUrl, setShowImageModal }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     {projects.map((project) => (
       <div key={project.id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
