@@ -2,6 +2,7 @@
 import { ordersAPI } from '@/services/apiService';
 import { Package, Search, Filter, Eye, Trash2, Box } from 'lucide-react';
 import { showSuccessAlert, showErrorAlert, showConfirmAlert } from '@/helpers/sweetAlert';
+import { getErrorMessage } from '@/helpers/errorHelper';
 import MaterialUsageModal from '@/components/orders/MaterialUsageModal';
 
 const Orders = () => {
@@ -41,7 +42,7 @@ const Orders = () => {
             setOrders(response.data.data || []);
         } catch (error) {
             console.error('Error loading orders:', error);
-            showErrorAlert('Error', 'No se pudieron cargar las órdenes');
+            showErrorAlert('Error', getErrorMessage(error, 'No se pudieron cargar las órdenes'));
         } finally {
             setLoading(false);
         }
@@ -80,7 +81,7 @@ const Orders = () => {
             showSuccessAlert('¡Actualizado!', 'El estado de la orden ha sido actualizado');
             loadOrders();
         } catch (error) {
-            showErrorAlert('Error', 'No se pudo actualizar el estado');
+            showErrorAlert('Error', getErrorMessage(error, 'No se pudo actualizar el estado'));
         }
     };
 
@@ -95,7 +96,7 @@ const Orders = () => {
                 showSuccessAlert('¡Eliminado!', 'La orden ha sido eliminada');
                 loadOrders();
             } catch (error) {
-                showErrorAlert('Error', 'No se pudo eliminar la orden');
+                showErrorAlert('Error', getErrorMessage(error, 'No se pudo eliminar la orden'));
             }
         }
     };
@@ -110,7 +111,7 @@ const Orders = () => {
                 loadOrderMaterials(orderId);
             }
         } catch (error) {
-            showErrorAlert('Error', 'No se pudieron cargar los detalles');
+            showErrorAlert('Error', getErrorMessage(error, 'No se pudieron cargar los detalles'));
         }
     };
 
@@ -144,7 +145,7 @@ const Orders = () => {
                     loadOrderMaterials(selectedOrder.id);
                 }
             } catch (error) {
-                showErrorAlert('Error', 'No se pudo eliminar el registro');
+                showErrorAlert('Error', getErrorMessage(error, 'No se pudo eliminar el registro'));
             }
         }
     };

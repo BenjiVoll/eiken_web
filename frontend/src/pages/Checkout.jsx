@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
+import { getErrorMessage } from '@/helpers/errorHelper';
 import { getImageUrl } from '@/helpers/getImageUrl';
 import { settingsAPI, paymentsAPI } from '@/services/apiService';
 
@@ -106,7 +107,7 @@ const Checkout = () => {
             }
         } catch (error) {
             console.error('Error creating order:', error);
-            showErrorAlert('Error', error.response?.data?.message || 'No se pudo crear la orden');
+            showErrorAlert('Error', getErrorMessage(error, 'No se pudo crear la orden'));
             setLoading(false);
         }
     };

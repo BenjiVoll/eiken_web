@@ -15,6 +15,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { showSuccessAlert, showErrorAlert, deleteDataAlert, createDataAlert } from '@/helpers/sweetAlert';
+import { getErrorMessage } from '@/helpers/errorHelper';
 import { useAuth } from '@/context/AuthContext';
 import QuoteDetailsModal from '@/components/modals/QuoteDetailsModal';
 
@@ -78,8 +79,8 @@ const Quotes = () => {
         await quotesAPI.delete(id);
         await loadQuotes();
         showSuccessAlert('Eliminado', 'Cotización eliminada correctamente');
-      } catch {
-        showErrorAlert('Error', 'No se pudo eliminar la cotización');
+      } catch (error) {
+        showErrorAlert('Error', getErrorMessage(error, 'No se pudo eliminar la cotización'));
       }
     }
   };
@@ -104,7 +105,7 @@ const Quotes = () => {
       showSuccessAlert('¡Proyecto Creado!', 'La cotización ha sido convertida exitosamente');
       loadQuotes();
     } catch (error) {
-      showErrorAlert('Error', error.response?.data?.message || 'No se pudo convertir');
+      showErrorAlert('Error', getErrorMessage(error, 'No se pudo convertir'));
     }
   };
 
@@ -128,7 +129,7 @@ const Quotes = () => {
       setReplyModalOpen(false);
       loadQuotes();
     } catch (error) {
-      showErrorAlert('Error', 'No se pudo enviar la respuesta.');
+      showErrorAlert('Error', getErrorMessage(error, 'No se pudo enviar la respuesta.'));
     }
   };
 
