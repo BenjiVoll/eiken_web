@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { settingsAPI } from '../services/apiService';
 import { showSuccessAlert, showErrorAlert } from '../helpers/sweetAlert';
+import { getErrorMessage } from '../helpers/errorHelper';
 import { Save, MapPin, Clock, Phone } from 'lucide-react';
 
 const Settings = () => {
@@ -31,7 +32,7 @@ const Settings = () => {
             }
         } catch (error) {
             console.error(error);
-            showErrorAlert('Error', 'No se pudo cargar la configuración');
+            showErrorAlert('Error', getErrorMessage(error, 'No se pudo cargar la configuración'));
         } finally {
             setFetching(false);
         }
@@ -49,7 +50,7 @@ const Settings = () => {
             showSuccessAlert('Guardado', 'La configuración se actualizó correctamente');
         } catch (error) {
             console.error(error);
-            showErrorAlert('Error', 'No se pudo guardar la configuración');
+            showErrorAlert('Error', getErrorMessage(error, 'No se pudo guardar la configuración'));
         } finally {
             setLoading(false);
         }

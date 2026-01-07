@@ -14,8 +14,8 @@ import {
   FileText,
   MessageSquare
 } from 'lucide-react';
-import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
-import Swal from 'sweetalert2';
+import { showSuccessAlert, showErrorAlert, deleteDataAlert, createDataAlert } from '@/helpers/sweetAlert';
+import { getErrorMessage } from '@/helpers/errorHelper';
 import { useAuth } from '@/context/AuthContext';
 import QuoteDetailsModal from '@/components/modals/QuoteDetailsModal';
 
@@ -73,23 +73,14 @@ const Quotes = () => {
   };
 
   const handleDeleteQuote = async (id) => {
-    const result = await Swal.fire({
-      title: '¿Eliminar cotización?',
-      text: 'Esta acción no se puede deshacer.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-    });
+    const result = await deleteDataAlert();
     if (result.isConfirmed) {
       try {
         await quotesAPI.delete(id);
         await loadQuotes();
-        Swal.fire('Eliminado', 'Cotización eliminada correctamente', 'success');
-      } catch {
-        Swal.fire('Error', 'No se pudo eliminar la cotización', 'error');
+        showSuccessAlert('Eliminado', 'Cotización eliminada correctamente');
+      } catch (error) {
+        showErrorAlert('Error', getErrorMessage(error, 'No se pudo eliminar la cotización'));
       }
     }
   };
@@ -106,15 +97,7 @@ const Quotes = () => {
   const convertQuoteToProject = async (quote) => {
     /* ... lógica existente ... */
     try {
-      const result = await Swal.fire({
-        title: 'Convertir a Proyecto',
-        text: '¿Deseas convertir esta cotización aprobada en un proyecto?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, convertir',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#10b981',
-      });
+      const result = await createDataAlert('Proyecto a partir de Cotización');
 
       if (!result.isConfirmed) return;
 
@@ -122,7 +105,7 @@ const Quotes = () => {
       showSuccessAlert('¡Proyecto Creado!', 'La cotización ha sido convertida exitosamente');
       loadQuotes();
     } catch (error) {
-      showErrorAlert('Error', error.response?.data?.message || 'No se pudo convertir');
+      showErrorAlert('Error', getErrorMessage(error, 'No se pudo convertir'));
     }
   };
 
@@ -146,7 +129,7 @@ const Quotes = () => {
       setReplyModalOpen(false);
       loadQuotes();
     } catch (error) {
-      showErrorAlert('Error', 'No se pudo enviar la respuesta.');
+      showErrorAlert('Error', getErrorMessage(error, 'No se pudo enviar la respuesta.'));
     }
   };
 

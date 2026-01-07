@@ -12,6 +12,8 @@ export const categoryBodyValidation = Joi.object({
       "string.max": "El nombre no puede superar los 100 caracteres",
       "any.required": "El nombre es obligatorio"
     })
+}).unknown(false).messages({
+  "object.unknown": "No se permiten propiedades adicionales."
 });
 
 export const categoryUpdateValidation = Joi.object({
@@ -26,4 +28,6 @@ export const categoryUpdateValidation = Joi.object({
       "string.max": "El nombre no puede superar los 100 caracteres",
       "any.required": "El nombre es obligatorio"
     })
+}).unknown(false).messages({
+  "object.unknown": "No se permiten propiedades adicionales."
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Edit, Trash2, DollarSign } from 'lucide-react';
 
-const ServicesTable = ({ services, categories, divisions, onEdit, onDelete, getDivisionColor, formatPrice, isManager, setModalImageUrl, setShowImageModal, getImageUrl }) => (
+const ServicesTable = ({ services, categories, divisions, onEdit, onDelete, getDivisionColor, formatPrice, isManager, isAdmin, isDesigner, setModalImageUrl, setShowImageModal, getImageUrl }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     {services.map((service) => (
       <div key={service.id} className="bg-white shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-200">
@@ -23,7 +23,7 @@ const ServicesTable = ({ services, categories, divisions, onEdit, onDelete, getD
         <div className="p-6">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
-            {isManager && (
+            {(isManager || isAdmin || isDesigner) && (
               <div className="flex space-x-2">
                 <button
                   onClick={() => onEdit(service)}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Settings, Plus } from 'lucide-react';
 
-const ServicesHeader = ({ isManager, isAdmin, onCreate }) => (
+const ServicesHeader = ({ isManager, isAdmin, isDesigner, onCreate }) => (
   <div className="mb-8">
     <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
       <div>
@@ -13,7 +13,7 @@ const ServicesHeader = ({ isManager, isAdmin, onCreate }) => (
           Gestiona los servicios ofrecidos por Eiken Design
         </p>
       </div>
-      {(isManager || isAdmin) && (
+      {(isManager || isAdmin || isDesigner) && (
         <button
           onClick={onCreate}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

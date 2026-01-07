@@ -21,7 +21,7 @@ const Projects = () => {
 
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
-  const { isManager, isAdmin } = useAuth();
+  const { isManager, isAdmin, isDesigner } = useAuth();
 
   useEffect(() => {
     loadData();
@@ -164,7 +164,7 @@ const Projects = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <ProjectsHeader isManager={isManager} isAdmin={isAdmin} onCreate={handleCreateProject} />
+      <ProjectsHeader isManager={isManager} isAdmin={isAdmin} isDesigner={isDesigner} onCreate={handleCreateProject} />
       <ProjectsSearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       {loading ? (
         <div className="text-center py-12">
@@ -180,7 +180,7 @@ const Projects = () => {
           <p className="mt-1 text-sm text-gray-500">
             {searchTerm ? 'Intenta con un término de búsqueda diferente' : 'Comienza creando un nuevo proyecto'}
           </p>
-          {!searchTerm && (isManager || isAdmin) && (
+          {!searchTerm && (isManager || isAdmin || isDesigner) && (
             <div className="mt-6">
               <button
                 onClick={handleCreateProject}
@@ -196,6 +196,7 @@ const Projects = () => {
           projects={filteredProjects}
           isManager={isManager}
           isAdmin={isAdmin}
+          isDesigner={isDesigner}
           onEdit={handleEditProject}
           onDelete={handleDeleteProject}
           getStatusColor={getStatusColor}

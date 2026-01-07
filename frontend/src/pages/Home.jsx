@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { publicAPI } from '@/services/apiService';
 import { showSuccessAlert, showErrorAlert } from '@/helpers/sweetAlert';
+import { getErrorMessage } from '@/helpers/errorHelper';
 import { getImageUrl } from '@/helpers/getImageUrl';
 import QuoteModal from '@/components/forms/QuoteModal';
 import WhatsAppButton from '@/components/layout/WhatsAppButton';
@@ -213,7 +214,7 @@ const Home = () => {
       resetForm();
     } catch (error) {
       console.error('Error submitting quote:', error);
-      showErrorAlert('Error', 'No se pudo enviar la cotización. Por favor reintenta.');
+      showErrorAlert('Error', getErrorMessage(error, 'No se pudo enviar la cotización. Por favor reintenta.'));
     }
   };
 

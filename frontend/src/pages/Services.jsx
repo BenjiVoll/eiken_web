@@ -15,7 +15,7 @@ const Services = () => {
 
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
-  const { isManager, isAdmin } = useAuth();
+  const { isManager, isAdmin, isDesigner } = useAuth();
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [divisions, setDivisions] = useState([]);
@@ -175,7 +175,7 @@ const Services = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <ServicesHeader isManager={isManager} isAdmin={isAdmin} onCreate={() => { setEditingService(null); setShowModal(true); }} />
+      <ServicesHeader isManager={isManager} isAdmin={isAdmin} isDesigner={isDesigner} onCreate={() => { setEditingService(null); setShowModal(true); }} />
       <ServicesSearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <ServicesTable
         services={filteredServices}
@@ -186,6 +186,8 @@ const Services = () => {
         getDivisionColor={getDivisionColor}
         formatPrice={formatPrice}
         isManager={isManager}
+        isAdmin={isAdmin}
+        isDesigner={isDesigner}
         setModalImageUrl={setModalImageUrl}
         setShowImageModal={setShowImageModal}
         getImageUrl={getImageUrl}

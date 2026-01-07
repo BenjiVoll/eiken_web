@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-/**
- * Custom hook para manejar llamadas a la API
- */
+// Custom hook para manejar llamadas a la API
 
 export const useApi = (apiFunction, immediate = false) => {
   const [data, setData] = useState(null);
@@ -12,7 +10,7 @@ export const useApi = (apiFunction, immediate = false) => {
   const execute = useCallback(async (...args) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await apiFunction(...args);
       setData(result);
@@ -46,9 +44,7 @@ export const useApi = (apiFunction, immediate = false) => {
   };
 };
 
-/**
- * Hook para manejar operaciones CRUD
- */
+//Hook para manejar operaciones CRUD
 export const useCrud = (apiMethods) => {
   const [items, setItems] = useState([]);
   const [currentItem, setCurrentItem] = useState(null);
@@ -59,7 +55,7 @@ export const useCrud = (apiMethods) => {
   const fetchAll = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await apiMethods.getAll();
       setItems(result);
@@ -76,7 +72,7 @@ export const useCrud = (apiMethods) => {
   const fetchById = async (id) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await apiMethods.getById(id);
       setCurrentItem(result);
@@ -93,7 +89,7 @@ export const useCrud = (apiMethods) => {
   const create = async (data) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await apiMethods.create(data);
       setItems(prev => [...prev, result]);
@@ -110,7 +106,7 @@ export const useCrud = (apiMethods) => {
   const update = async (id, data) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const result = await apiMethods.update(id, data);
       setItems(prev => prev.map(item => item.id === id ? result : item));
@@ -130,7 +126,7 @@ export const useCrud = (apiMethods) => {
   const remove = async (id) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       await apiMethods.delete(id);
       setItems(prev => prev.filter(item => item.id !== id));
