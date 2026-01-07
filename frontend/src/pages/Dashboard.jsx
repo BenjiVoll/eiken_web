@@ -237,7 +237,7 @@ const Dashboard = () => {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className={`${card.color} p-3 rounded-md`}>
+                    <div className={`${card.color} p - 3 rounded - md`}>
                       <Icon className="h-6 w-6 text-white" />
                     </div>
                   </div>
@@ -275,20 +275,16 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* Charts Section - Solo Admin/Manager */}
-      {(isAdmin || isManager) && (
-        <>
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <OrderStatusChart orders={orders} />
-            <TopProductsChart orders={orders} />
-          </div>
+      {/* Charts Section - CU-07: Todos los roles ven gráficos */}
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <OrderStatusChart orders={orders} />
+        <TopProductsChart orders={orders} />
+      </div>
 
-          {/* Monthly Sales Chart - Full Width */}
-          <div className="mt-6">
-            <MonthlySalesChart orders={orders} />
-          </div>
-        </>
-      )}
+      {/* Monthly Sales Chart - Full Width */}
+      <div className="mt-6">
+        <MonthlySalesChart orders={orders} />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-2">
@@ -317,8 +313,8 @@ const Dashboard = () => {
                           )}
                           <div className="relative flex space-x-3">
                             <div>
-                              <span className={`h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white bg-gray-100`}>
-                                <Icon className={`h-4 w-4 ${colorClass}`} />
+                              <span className={`h - 8 w - 8 rounded - full flex items - center justify - center ring - 8 ring - white bg - gray - 100`}>
+                                <Icon className={`h - 4 w - 4 ${colorClass} `} />
                               </span>
                             </div>
                             <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
@@ -360,11 +356,11 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Rol:</span>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user?.role === 'admin' ? 'bg-red-100 text-red-800' :
+                  <span className={`inline - flex items - center px - 2.5 py - 0.5 rounded - full text - xs font - medium ${user?.role === 'admin' ? 'bg-red-100 text-red-800' :
                     user?.role === 'manager' ? 'bg-blue-100 text-blue-800' :
                       user?.role === 'designer' ? 'bg-green-100 text-green-800' :
                         'bg-gray-100 text-gray-800'
-                    }`}>
+                    } `}>
                     {user?.role === 'admin' ? 'Administrador' :
                       user?.role === 'manager' ? 'Gerente' :
                         user?.role === 'designer' ? 'Diseñador' :

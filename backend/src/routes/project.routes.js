@@ -45,8 +45,9 @@ router
     isAnyUser,
     getProject
   )
+  // CU-04: Admin, Manager y Designer pueden editar proyectos
   .patch("/:id",
-    isAdminOrManager,
+    isDesignerOrAbove,
     createBodyValidation(projectUpdateValidation),
     updateProject
   )
