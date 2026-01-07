@@ -32,7 +32,7 @@ const ProjectsTable = ({ projects, isManager, isAdmin, onEdit, onDelete, getStat
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                 {getStatusLabel(project.status)}
               </span>
-              {(isManager || isAdmin) && (
+              {(isManager || isAdmin || isDesigner) && (
                 <div className="flex space-x-1">
                   <button
                     onClick={() => onEdit(project)}

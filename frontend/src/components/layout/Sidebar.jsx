@@ -22,7 +22,7 @@ import {
 
 const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
-    const { isAdmin } = useAuth();
+    const { isAdmin, isManager } = useAuth();
     const [expandedGroups, setExpandedGroups] = useState({
         'e-commerce': true,
         'gestion-interna': true,
@@ -49,8 +49,11 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
             name: 'Dashboard',
             href: '/intranet/dashboard',
             icon: Home
-        },
-        {
+        }
+    ];
+
+    if (isManager) {
+        navigationGroups.push({
             type: 'group',
             id: 'e-commerce',
             name: 'E-Commerce',
@@ -60,20 +63,24 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
                 { name: 'Productos', href: '/intranet/products', icon: Package },
                 { name: 'Datos Tienda', href: '/intranet/settings', icon: Settings }
             ]
-        },
-        {
-            type: 'group',
-            id: 'gestion-interna',
-            name: 'Gestión Interna',
-            icon: FileText,
-            items: [
-                { name: 'Cotizaciones', href: '/intranet/quotes', icon: Quote },
-                { name: 'Inventario', href: '/intranet/inventory', icon: Boxes },
-                { name: 'Proyectos', href: '/intranet/projects', icon: FileText },
-                { name: 'Servicios', href: '/intranet/services', icon: Settings }
-            ]
-        },
-        {
+        });
+    }
+
+    navigationGroups.push({
+        type: 'group',
+        id: 'gestion-interna',
+        name: 'Gestión Interna',
+        icon: FileText,
+        items: [
+            { name: 'Cotizaciones', href: '/intranet/quotes', icon: Quote },
+            { name: 'Inventario', href: '/intranet/inventory', icon: Boxes },
+            { name: 'Proyectos', href: '/intranet/projects', icon: FileText },
+            { name: 'Servicios', href: '/intranet/services', icon: Settings }
+        ]
+    });
+
+    if (isManager) {
+        navigationGroups.push({
             type: 'group',
             id: 'configuracion',
             name: 'Configuración',
@@ -82,8 +89,8 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
                 { name: 'Categorías', href: '/intranet/categories', icon: Tag },
                 { name: 'Divisiones', href: '/intranet/divisions', icon: Layers }
             ]
-        }
-    ];
+        });
+    }
 
     // Agregar grupo de administración si el usuario es admin
     if (isAdmin) {

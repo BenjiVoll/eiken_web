@@ -2,7 +2,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import axios from 'axios';
+import { ordersAPI } from '@/services/apiService';
 
 const PaymentSuccess = () => {
     const [searchParams] = useSearchParams();
@@ -28,10 +28,7 @@ const PaymentSuccess = () => {
 
                 // Si tenemos external_reference (order ID), confirmar la orden
                 if (externalReference) {
-                    const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:3000/api';
-
-                    const response = await axios.post(`${baseUrl}/orders/${externalReference}/confirm`);
-
+                    await ordersAPI.confirm(externalReference);
                 } else {
                     console.warn('No se recibió external_reference - la orden no se confirmará automáticamente');
                 }

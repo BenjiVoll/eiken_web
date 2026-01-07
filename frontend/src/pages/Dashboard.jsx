@@ -275,16 +275,20 @@ const Dashboard = () => {
         })}
       </div>
 
-      {/* Charts Section */}
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <OrderStatusChart orders={orders} />
-        <TopProductsChart orders={orders} />
-      </div>
+      {/* Charts Section - Solo Admin/Manager */}
+      {(isAdmin || isManager) && (
+        <>
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <OrderStatusChart orders={orders} />
+            <TopProductsChart orders={orders} />
+          </div>
 
-      {/* Monthly Sales Chart - Full Width */}
-      <div className="mt-6">
-        <MonthlySalesChart orders={orders} />
-      </div>
+          {/* Monthly Sales Chart - Full Width */}
+          <div className="mt-6">
+            <MonthlySalesChart orders={orders} />
+          </div>
+        </>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-2">

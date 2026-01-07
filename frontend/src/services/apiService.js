@@ -35,7 +35,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Emitir un evento personalizado para que el AuthContext maneje la redirección
       window.dispatchEvent(new CustomEvent('auth:logout'));
     }
     return Promise.reject(error);
@@ -91,10 +90,15 @@ export const ordersAPI = {
   getByEmail: (email) => api.get(`/orders/email/${email}`),
   updateStatus: (id, status) => api.patch(`/orders/${id}/status`, { status }),
   delete: (id) => api.delete(`/orders/${id}`),
+  confirm: (externalReference) => publicApi.post(`/orders/${externalReference}/confirm`),
   // Material usage
   getMaterials: (orderId) => api.get(`/orders/${orderId}/materials`),
   registerMaterials: (orderId, materials) => api.post(`/orders/${orderId}/materials`, { materials }),
   deleteMaterial: (usageId) => api.delete(`/orders/materials/${usageId}`),
+};
+
+export const paymentsAPI = {
+  createPreference: (orderData) => publicApi.post('/payments/create-preference', orderData),
 };
 
 export const publicAPI = {
