@@ -394,7 +394,7 @@ const Quotes = () => {
                   min="0"
                   value={replyAmount}
                   onChange={(e) => setReplyAmount(e.target.value)}
-                  className="w-full rounded-lg border-slate-300 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full border border-slate-300 bg-slate-50 rounded-lg focus:ring-orange-500 focus:border-orange-500 p-2.5"
                 />
               </div>
               <div className="mb-6">
@@ -404,7 +404,7 @@ const Quotes = () => {
                   required
                   value={replyMessage}
                   onChange={(e) => setReplyMessage(e.target.value)}
-                  className="w-full rounded-lg border-slate-300 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  className="w-full border border-slate-300 bg-slate-50 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-sm p-3"
                   placeholder="Describe tu propuesta aquí..."
                 />
               </div>

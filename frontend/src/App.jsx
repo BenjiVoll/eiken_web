@@ -18,6 +18,7 @@ import Quotes from '@/pages/Quotes';
 import Users from '@/pages/Users';
 import Store from '@/pages/Store';
 import Products from '@/pages/Products';
+import Clients from '@/pages/Clients';
 import Orders from '@/pages/Orders';
 import Checkout from '@/pages/Checkout';
 import PaymentSuccess from '@/pages/PaymentSuccess';
@@ -262,6 +263,17 @@ function AppContent() {
             <ProtectedRoute requiredRole="admin">
               <AppLayout>
                 <Users />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/intranet/clients"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AppLayout>
+                <Clients />
               </AppLayout>
             </ProtectedRoute>
           }

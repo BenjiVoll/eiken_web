@@ -72,6 +72,7 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
         icon: FileText,
         items: [
             { name: 'Cotizaciones', href: '/intranet/quotes', icon: Quote },
+            ...(isAdmin ? [{ name: 'Clientes', href: '/intranet/clients', icon: Users }] : []),
             { name: 'Inventario', href: '/intranet/inventory', icon: Boxes },
             { name: 'Proyectos', href: '/intranet/projects', icon: FileText },
             { name: 'Servicios', href: '/intranet/services', icon: Settings }
