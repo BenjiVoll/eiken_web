@@ -107,8 +107,24 @@ export const deleteProduct = async (id) => {
         throw new Error("Producto no encontrado");
     }
 
-    await productRepository.remove(product);
-    return { mensaje: "Producto eliminado exitosamente" };
+    try {
+        await productRepository.remove(product);
+        return { mensaje: "Producto eliminado exitosamente" };
+    } catch (error) {
+        // Código de error Postgres para violación de llave foránea
+        if (error.code === '23503') {
+            console.log(`Soft-deleting product ${id} due to dependencies.`);
+            // Restaurar el objeto (remove lo puede haber modificado en memoria)
+            // Realizar update directo para "archivar"
+            await productRepository.update(id, { isActive: false });
+
+            return {
+                mensaje: "Producto archivado correctamente (tenía ventas asociadas). Podrás encontrarlo en los filtros de 'Inactivos'.",
+                softDeleted: true
+            };
+        }
+        throw error;
+    }
 };
 
 export const deleteProductImage = async (id) => {

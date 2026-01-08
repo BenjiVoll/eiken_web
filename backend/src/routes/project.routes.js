@@ -38,7 +38,7 @@ router
   )
   .get("/portfolio",
     isAnyUser,
-    // TODO: Si es publico, quizás quitar isAnyUser o usar un middleware 'optionalAuth'
+    // Pendiente: Si es público, quizás quitar isAnyUser o usar un middleware 'optionalAuth'
     getFeaturedProjects
   )
   .get("/:id",

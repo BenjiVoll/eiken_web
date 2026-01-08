@@ -93,7 +93,7 @@ export const createPaymentPreference = async (orderData) => {
             title: item.name || "Producto",
             description: item.description || "",
             quantity: parseInt(item.quantity || 1),
-            unit_price: Math.round(parseFloat(item.unitPrice || item.price || 0)), // Ensure integer for CLP
+            unit_price: Math.round(parseFloat(item.unitPrice || item.price || 0)), // Asegurar entero para CLP
             currency_id: "CLP",
         }));
 

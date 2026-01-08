@@ -21,21 +21,25 @@ class MailService {
     });
   }
 
+  getFrontendUrl() {
+    const url = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return url.replace(/\/$/, '');
+  }
+
   async getAdminEmails() {
     try {
       const admins = await userRepository.find({ where: { role: 'admin' } });
       const adminEmails = admins.map(admin => admin.email).filter(email => email);
 
-      const envEmail = process.env.ADMIN_EMAIL;
-      if (envEmail && !adminEmails.includes(envEmail)) {
-        adminEmails.push(envEmail);
+      if (adminEmails.length === 0) {
+        console.warn('⚠️ ADVERTENCIA: No hay administrador registrado para recibir notificaciones.');
+        return [];
       }
 
-      // Si no hay nadie, usar el default
-      return adminEmails.length > 0 ? adminEmails : ['admin@eiken.com'];
+      return adminEmails;
     } catch (error) {
-      console.error('Error fetching admin emails:', error);
-      return [process.env.ADMIN_EMAIL || 'admin@eiken.com'];
+      console.error('Error obteniendo emails de administrador:', error);
+      return [];
     }
   }
 
@@ -123,7 +127,7 @@ class MailService {
 
               <!-- Botón CTA con colores Eiken -->
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" 
+                <a href="${this.getFrontendUrl()}" 
                    style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
                   Visitar Nuestro Sitio
                 </a>
@@ -146,16 +150,18 @@ class MailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Client notification sent: %s', info.messageId);
+      console.log('Notificación enviada al cliente: %s', info.messageId);
       return info;
     } catch (error) {
-      console.error('Error sending email to client:', error);
+      console.error('Error enviando correo al cliente:', error);
     }
   }
 
   async sendNewQuoteAlert(quote) {
     try {
       const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) return;
+
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
         to: adminEmails,
@@ -272,7 +278,7 @@ class MailService {
 
               <!-- Botón CTA con colores Eiken -->
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/quotes" 
+                <a href="${this.getFrontendUrl()}/intranet/quotes" 
                    style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
                   Ver en Intranet
                 </a>
@@ -295,10 +301,10 @@ class MailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Admin alert sent: %s', info.messageId);
+      console.log('Alerta enviada al administrador: %s', info.messageId);
       return info;
     } catch (error) {
-      console.error('Error sending email to admin:', error);
+      console.error('Error enviando correo al administrador:', error);
     }
   }
 
@@ -330,7 +336,7 @@ class MailService {
               </div>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/quote/accept/${quote.acceptanceToken}" 
+                <a href="${this.getFrontendUrl()}/quote/accept/${quote.acceptanceToken}" 
                    style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
                   Aceptar Presupuesto
                 </a>
@@ -347,10 +353,10 @@ class MailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Proposal sent: %s', info.messageId);
+      console.log('Propuesta enviada: %s', info.messageId);
       return info;
     } catch (error) {
-      console.error('Error sending proposal email:', error);
+      console.error('Error enviando correo de propuesta:', error);
     }
   }
 
@@ -361,6 +367,9 @@ class MailService {
       }
 
       const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) {
+        return { success: false, message: 'No hay administradores para notificar' };
+      }
 
       // Generar HTML de la tabla de items
       const itemsHTML = lowStockItems.map(item => `
@@ -438,7 +447,7 @@ class MailService {
 
               <!-- Botón CTA -->
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/inventory" 
+                <a href="${this.getFrontendUrl()}/intranet/inventory" 
                    style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
                   Ver Inventario Completo
                 </a>
@@ -667,6 +676,8 @@ class MailService {
   async sendNewOrderAlert(order) {
     try {
       const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) return;
+
       const itemsHTML = order.items?.map(item => `
         <tr>
           <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product?.name || item.service?.name || 'Producto'}</td>
@@ -725,7 +736,7 @@ class MailService {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/orders" 
+                <a href="${this.getFrontendUrl()}/intranet/orders" 
                    style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
                   Ver en Intranet
                 </a>
@@ -749,6 +760,8 @@ class MailService {
   async sendQuoteAcceptedAlert(quote) {
     try {
       const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) return;
+
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
         to: adminEmails,
@@ -770,7 +783,7 @@ class MailService {
                       ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(quote.quotedAmount)}
                   </span>
               </div>
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/quotes" style="background: #2b2b2b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+              <a href="${this.getFrontendUrl()}/intranet/quotes" style="background: #2b2b2b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
                   Gestionar Cotización
               </a>
             </td>

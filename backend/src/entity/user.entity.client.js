@@ -37,10 +37,6 @@ export const ClientSchema = new EntitySchema({
       nullable: true,
       unique: true,
     },
-    address: {
-      type: "text",
-      nullable: true,
-    },
     clientType: {
       type: "enum",
       enum: ["individual", "company"],

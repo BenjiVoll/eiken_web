@@ -6,20 +6,20 @@ import confetti from 'canvas-confetti';
 
 const QuoteAccept = () => {
     const { token } = useParams();
-    const [status, setStatus] = useState('loading'); // loading, success, error
+    const [status, setStatus] = useState('loading');
     const [message, setMessage] = useState('');
     const [quote, setQuote] = useState(null);
+
+    const effectRan = React.useRef(false);
 
     useEffect(() => {
         const acceptQuote = async () => {
             try {
                 const response = await publicAPI.quotes.accept(token);
-                // Si llegamos aquí sin error, todo salió bien
                 setStatus('success');
                 setMessage(response.message || 'Presupuesto aceptado correctamente.');
                 setQuote(response.data?.quote || response.data);
 
-                // Lanzar confeti
                 confetti({
                     particleCount: 150,
                     spread: 70,
@@ -28,14 +28,23 @@ const QuoteAccept = () => {
                 });
             } catch (error) {
                 console.error("Error aceptando presupuesto:", error);
+
+                // Si el error es un 400/404 pero es porque ya estaba aprobado (manejo adicional por robustez)
+                if (error.response && error.response.status === 400 && error.response.data.message.includes("aprobada")) {
+                    setStatus('success');
+                    setMessage(error.response.data.message);
+                    return;
+                }
+
                 setStatus('error');
                 setMessage(error.response?.data?.message || 'Hubo un error al procesar tu solicitud. El enlace puede haber expirado.');
             }
         };
 
-        if (token) {
+        if (token && !effectRan.current) {
+            effectRan.current = true;
             acceptQuote();
-        } else {
+        } else if (!token) {
             setStatus('error');
             setMessage('Token no proporcionado.');
         }

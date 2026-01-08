@@ -90,10 +90,20 @@ export const getClientsWithProjectsController = async (req, res) => {
 };
 
 // Eliminar un cliente
+// Eliminar un cliente
 export const deleteClientController = async (req, res) => {
     try {
-        await deleteClient(req.params.id);
-        res.status(204).send();
+        const result = await deleteClient(req.params.id);
+
+        // Si hay un mensaje o flag de softDeleted, devolver 200 con el body
+        if (result && (result.mensaje || result.softDeleted)) {
+            return res.status(200).json(result);
+        }
+
+        // Si es borrado físico puro sin mensaje (aunque el servicio siempre devuelve mensaje), 204
+        // Pero nuestro servicio modificado SIEMPRE devuelve { mensaje }.
+        // Así que mejor devolvemos 200 siempre para que el frontend pueda mostrar el alert.
+        res.status(200).json(result);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
