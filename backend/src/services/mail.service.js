@@ -21,6 +21,11 @@ class MailService {
     });
   }
 
+  getFrontendUrl() {
+    const url = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return url.replace(/\/$/, '');
+  }
+
   async getAdminEmails() {
     try {
       const admins = await userRepository.find({ where: { role: 'admin' } });
@@ -122,7 +127,7 @@ class MailService {
 
               <!-- Botón CTA con colores Eiken -->
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}" 
+                <a href="${this.getFrontendUrl()}" 
                    style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
                   Visitar Nuestro Sitio
                 </a>
@@ -273,7 +278,7 @@ class MailService {
 
               <!-- Botón CTA con colores Eiken -->
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/quotes" 
+                <a href="${this.getFrontendUrl()}/intranet/quotes" 
                    style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
                   Ver en Intranet
                 </a>
@@ -331,7 +336,7 @@ class MailService {
               </div>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/quote/accept/${quote.acceptanceToken}" 
+                <a href="${this.getFrontendUrl()}/quote/accept/${quote.acceptanceToken}" 
                    style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
                   Aceptar Presupuesto
                 </a>
@@ -442,7 +447,7 @@ class MailService {
 
               <!-- Botón CTA -->
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/inventory" 
+                <a href="${this.getFrontendUrl()}/intranet/inventory" 
                    style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
                   Ver Inventario Completo
                 </a>
@@ -731,7 +736,7 @@ class MailService {
               </div>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/orders" 
+                <a href="${this.getFrontendUrl()}/intranet/orders" 
                    style="display: inline-block; background: linear-gradient(135deg, #FF6600 0%, #ff8533 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);">
                   Ver en Intranet
                 </a>
@@ -778,7 +783,7 @@ class MailService {
                       ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(quote.quotedAmount)}
                   </span>
               </div>
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/intranet/quotes" style="background: #2b2b2b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+              <a href="${this.getFrontendUrl()}/intranet/quotes" style="background: #2b2b2b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
                   Gestionar Cotización
               </a>
             </td>

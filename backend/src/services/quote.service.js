@@ -189,7 +189,7 @@ export const acceptQuoteByToken = async (token) => {
   }
 
   quote.status = "Aprobado";
-  quote.acceptanceToken = null;
+  // quote.acceptanceToken = null; // Mantenemos el token para permitir verificar si ya fue aprobado (idempotencia)
   await quoteRepository.save(quote);
 
   mailService.sendQuoteAcceptedAlert(quote);
