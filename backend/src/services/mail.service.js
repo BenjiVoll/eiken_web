@@ -26,16 +26,15 @@ class MailService {
       const admins = await userRepository.find({ where: { role: 'admin' } });
       const adminEmails = admins.map(admin => admin.email).filter(email => email);
 
-      const envEmail = process.env.ADMIN_EMAIL;
-      if (envEmail && !adminEmails.includes(envEmail)) {
-        adminEmails.push(envEmail);
+      if (adminEmails.length === 0) {
+        console.warn('⚠️ ADVERTENCIA: No hay administrador registrado para recibir notificaciones.');
+        return [];
       }
 
-      // Si no hay nadie, usar el default
-      return adminEmails.length > 0 ? adminEmails : ['admin@eiken.com'];
+      return adminEmails;
     } catch (error) {
-      console.error('Error fetching admin emails:', error);
-      return [process.env.ADMIN_EMAIL || 'admin@eiken.com'];
+      console.error('Error obteniendo emails de administrador:', error);
+      return [];
     }
   }
 
@@ -146,16 +145,18 @@ class MailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Client notification sent: %s', info.messageId);
+      console.log('Notificación enviada al cliente: %s', info.messageId);
       return info;
     } catch (error) {
-      console.error('Error sending email to client:', error);
+      console.error('Error enviando correo al cliente:', error);
     }
   }
 
   async sendNewQuoteAlert(quote) {
     try {
       const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) return;
+
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
         to: adminEmails,
@@ -295,10 +296,10 @@ class MailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Admin alert sent: %s', info.messageId);
+      console.log('Alerta enviada al administrador: %s', info.messageId);
       return info;
     } catch (error) {
-      console.error('Error sending email to admin:', error);
+      console.error('Error enviando correo al administrador:', error);
     }
   }
 
@@ -347,10 +348,10 @@ class MailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Proposal sent: %s', info.messageId);
+      console.log('Propuesta enviada: %s', info.messageId);
       return info;
     } catch (error) {
-      console.error('Error sending proposal email:', error);
+      console.error('Error enviando correo de propuesta:', error);
     }
   }
 
@@ -361,6 +362,9 @@ class MailService {
       }
 
       const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) {
+        return { success: false, message: 'No hay administradores para notificar' };
+      }
 
       // Generar HTML de la tabla de items
       const itemsHTML = lowStockItems.map(item => `
@@ -667,6 +671,8 @@ class MailService {
   async sendNewOrderAlert(order) {
     try {
       const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) return;
+
       const itemsHTML = order.items?.map(item => `
         <tr>
           <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product?.name || item.service?.name || 'Producto'}</td>
@@ -749,6 +755,8 @@ class MailService {
   async sendQuoteAcceptedAlert(quote) {
     try {
       const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) return;
+
       const mailOptions = {
         from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
         to: adminEmails,

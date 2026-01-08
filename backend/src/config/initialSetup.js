@@ -12,6 +12,7 @@ import { AppDataSource } from "./configDb.js";
 import { encryptPassword } from "../helpers/bcrypt.helper.js";
 import { CategorySchema } from "../entity/category.entity.js";
 import { DivisionSchema } from "../entity/division.entity.js";
+import { ProductSchema } from "../entity/product.entity.js";
 
 async function createInitialData() {
   try {
@@ -24,6 +25,7 @@ async function createInitialData() {
     const projectRepository = AppDataSource.getRepository(ProjectSchema);
     const quoteRepository = AppDataSource.getRepository(QuoteSchema);
     const clientRepository = AppDataSource.getRepository(ClientSchema);
+    const productRepository = AppDataSource.getRepository(ProductSchema);
 
     console.log("Iniciando poblamiento de datos iniciales para Eiken Design Chile...");
 
@@ -298,6 +300,161 @@ async function createInitialData() {
       console.log("Inventario ya existe, omitiendo creación.");
     }
 
+    // Crear productos para la tienda
+    const productCount = await productRepository.count();
+    if (productCount === 0) {
+      await Promise.all([
+        // Poleras (Textil)
+        productRepository.save(
+          productRepository.create({
+            name: "Polera Racing Team",
+            description: "Polera 100% algodón con diseño exclusivo Racing Team",
+            price: 15990,
+            stock: 25,
+            categoryId: textilCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Polera Eiken Design Logo",
+            description: "Polera oficial Eiken Design con logo bordado",
+            price: 18990,
+            stock: 30,
+            categoryId: textilCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Polera Rally Mobil Chile",
+            description: "Polera conmemorativa Rally Mobil temporada 2024",
+            price: 19990,
+            stock: 15,
+            categoryId: textilCategory.id,
+            isActive: true,
+          })
+        ),
+
+        // Calcos de marcas de autos
+        productRepository.save(
+          productRepository.create({
+            name: "Calco Toyota Racing Development",
+            description: "Calcomanía TRD premium resistente al agua",
+            price: 4990,
+            stock: 50,
+            categoryId: racingCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Calco Subaru WRC",
+            description: "Calcomanía oficial estilo WRC Subaru",
+            price: 5490,
+            stock: 40,
+            categoryId: racingCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Calco Ford Performance",
+            description: "Calcomanía Ford Performance vinilo premium",
+            price: 4990,
+            stock: 35,
+            categoryId: racingCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Calco Mitsubishi Ralliart",
+            description: "Calcomanía Ralliart estilo rally",
+            price: 5990,
+            stock: 30,
+            categoryId: racingCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Calco Honda Type R",
+            description: "Calcomanía Honda Type R roja premium",
+            price: 4490,
+            stock: 45,
+            categoryId: racingCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Calco Nissan NISMO",
+            description: "Calcomanía NISMO oficial resistente UV",
+            price: 5490,
+            stock: 30,
+            categoryId: racingCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Calco BMW M Power",
+            description: "Calcomanía BMW M Performance tricolor",
+            price: 6990,
+            stock: 25,
+            categoryId: racingCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Calco Mercedes AMG",
+            description: "Calcomanía AMG estilo oficial",
+            price: 6990,
+            stock: 20,
+            categoryId: racingCategory.id,
+            isActive: true,
+          })
+        ),
+
+        // Jockeys
+        productRepository.save(
+          productRepository.create({
+            name: "Jockey Racing Team Negro",
+            description: "Jockey bordado Racing Team color negro",
+            price: 12990,
+            stock: 20,
+            categoryId: textilCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Jockey Eiken Design Naranja",
+            description: "Jockey oficial Eiken Design color corporativo",
+            price: 14990,
+            stock: 15,
+            categoryId: textilCategory.id,
+            isActive: true,
+          })
+        ),
+        productRepository.save(
+          productRepository.create({
+            name: "Jockey Rally Mobil Snapback",
+            description: "Jockey snapback Rally Mobil edición limitada",
+            price: 16990,
+            stock: 10,
+            categoryId: textilCategory.id,
+            isActive: true,
+          })
+        ),
+      ]);
+      console.log("✅ Productos creados exitosamente.");
+    } else {
+      console.log("ℹ️  Productos ya existen, omitiendo creación.");
+    }
+
     // Crear clientes
     const clientCount = await clientRepository.count();
     if (clientCount === 0) {
@@ -307,7 +464,6 @@ async function createInitialData() {
             name: "Transportes Bio-Bío S.A.",
             email: "contacto@transportesbiobio.cl",
             phone: "+56 41 274-5830",
-            address: "Av. Pedro Aguirre Cerda 1245, Concepción",
             company: "Transportes Bio-Bío S.A.",
             rut: "96.789.123-4",
             clientType: "company",
@@ -320,7 +476,6 @@ async function createInitialData() {
             name: "Team Chile Rally",
             email: "info@teamchilerally.com",
             phone: "+56 9 8765-4321",
-            address: "Parque Industrial Los Aromos, Santiago",
             company: "Team Chile Rally SpA",
             rut: "77.456.789-0",
             clientType: "company",
@@ -333,7 +488,6 @@ async function createInitialData() {
             name: "Grupo Arauco",
             email: "marketing@arauco.cl",
             phone: "+56 2 2461-7000",
-            address: "Av. El Bosque Norte 0123, Las Condes, Santiago",
             company: "Empresas Arauco S.A.",
             rut: "93.458.000-1",
             clientType: "company",
@@ -346,7 +500,6 @@ async function createInitialData() {
             name: "Cuerpo de Bomberos Concepción",
             email: "admin@bomberosconcepcion.cl",
             phone: "+56 41 241-3132",
-            address: "Calle Barros Arana 457, Concepción",
             company: "Cuerpo de Bomberos de Concepción",
             rut: "71.234.567-8",
             clientType: "company",
