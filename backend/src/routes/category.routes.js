@@ -6,7 +6,7 @@ import {
   deleteCategoryController,
 } from "../controllers/category.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { isAdminOrManager, isAnyUser } from "../middlewares/authorization.middleware.js";
+import { isAdmin, isAnyUser } from "../middlewares/authorization.middleware.js";
 import { createBodyValidation } from "../middlewares/validations.middleware.js";
 import { categoryBodyValidation, categoryUpdateValidation } from "../validations/category.validation.js";
 
@@ -17,8 +17,8 @@ router.use(authenticateJwt);
 
 router
   .get("/", isAnyUser, getCategories)
-  .post("/", isAdminOrManager, createBodyValidation(categoryBodyValidation), createCategoryController)
-  .put("/:id", isAdminOrManager, createBodyValidation(categoryUpdateValidation), updateCategoryController)
-  .delete("/:id", isAdminOrManager, deleteCategoryController);
+  .post("/", isAdmin, createBodyValidation(categoryBodyValidation), createCategoryController)
+  .put("/:id", isAdmin, createBodyValidation(categoryUpdateValidation), updateCategoryController)
+  .delete("/:id", isAdmin, deleteCategoryController);
 
 export default router;

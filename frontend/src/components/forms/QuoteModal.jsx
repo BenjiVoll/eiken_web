@@ -261,7 +261,7 @@ const QuoteModal = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes de Referencia (Máx 3)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes de Referencia (Máx 5)</label>
                   <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <p className="text-sm text-gray-500"><span className="font-semibold">Click para subir</span> o arrastra</p>

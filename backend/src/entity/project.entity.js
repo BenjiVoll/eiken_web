@@ -72,12 +72,6 @@ export const ProjectSchema = new EntitySchema({
       nullable: true,
     },
 
-    quoteId: {
-      type: "int",
-      nullable: true,
-      name: "quote_id",
-    },
-
     createdAt: {
       type: "timestamp",
       createDate: true,

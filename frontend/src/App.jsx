@@ -25,6 +25,7 @@ import PaymentSuccess from '@/pages/PaymentSuccess';
 import PaymentFailure from '@/pages/PaymentFailure';
 import PaymentPending from '@/pages/PaymentPending';
 import QuoteAccept from '@/pages/QuoteAccept';
+import QuoteReject from '@/pages/QuoteReject';
 import Settings from '@/pages/Settings';
 
 
@@ -146,6 +147,11 @@ function AppContent() {
         <Route
           path="/quote/accept/:token"
           element={<QuoteAccept />}
+        />
+
+        <Route
+          path="/quote/reject/:token"
+          element={<QuoteReject />}
         />
 
         <Route

@@ -1,7 +1,7 @@
 "use strict";
 import { Router } from "express";
 import {
-    isAdminOrManager,
+    isAdmin,
     isAnyUser
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
@@ -38,7 +38,7 @@ router.use(authenticateJwt);
 
 router
     .post("/",
-        isAdminOrManager,
+        isAdmin,
         createBodyValidation(productBodyValidation),
         createProduct
     )
@@ -56,30 +56,30 @@ router
         getProduct
     )
     .patch("/:id",
-        isAdminOrManager,
+        isAdmin,
         createParamsValidation(idParamValidation),
         createBodyValidation(productUpdateValidation),
         updateProduct
     )
     .delete("/:id",
-        isAdminOrManager,
+        isAdmin,
         createParamsValidation(idParamValidation),
         deleteProduct
     )
     .post("/:id/image",
-        isAdminOrManager,
+        isAdmin,
         createParamsValidation(idParamValidation),
         upload.single("image"),
         uploadProductImage
     )
     .delete("/:id/image",
-        isAdminOrManager,
+        isAdmin,
         createParamsValidation(idParamValidation),
         deleteProductImage
     )
     // Rutas para materiales de productos
     .post("/:productId/materials",
-        isAdminOrManager,
+        isAdmin,
         addMaterialController
     )
     .get("/:productId/materials",
@@ -87,11 +87,11 @@ router
         getProductMaterialsController
     )
     .put("/materials/:materialId",
-        isAdminOrManager,
+        isAdmin,
         updateMaterialController
     )
     .delete("/materials/:materialId",
-        isAdminOrManager,
+        isAdmin,
         removeMaterialController
     );
 

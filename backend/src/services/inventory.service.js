@@ -5,7 +5,7 @@ import { InventorySchema } from "../entity/inventory.entity.js";
 const inventoryRepository = AppDataSource.getRepository(InventorySchema);
 
 export const createInventoryItem = async (data) => {
-  const { name, type, color, quantity, unit, width, brand, model, minStock, unitCost } = data;
+  const { name, type, color, quantity, unit, brand, model, minStock } = data;
 
   const item = inventoryRepository.create({
     name,
@@ -13,11 +13,9 @@ export const createInventoryItem = async (data) => {
     color,
     quantity: quantity || 0,
     unit: unit || "metros",
-    width,
     brand,
     model,
     minStock: minStock || 5,
-    unitCost,
     isActive: true
   });
 
@@ -107,6 +105,16 @@ export const deleteInventoryItem = async (id) => {
     throw new Error("Item de inventario no encontrado");
   }
 
+  // Verificar si hay productos que usan este material
+  const productMaterialsCount = await AppDataSource.getRepository("ProductMaterial")
+    .createQueryBuilder("pm")
+    .where("pm.inventoryId = :id", { id })
+    .getCount();
+
+  if (productMaterialsCount > 0) {
+    throw new Error("No se puede eliminar este material porque está asignado a uno o más productos. Primero desvincúlalo de los productos.");
+  }
+
   // Verificar movimientos en el último año
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
@@ -118,10 +126,10 @@ export const deleteInventoryItem = async (id) => {
     .getCount();
 
   if (movementsCount > 0) {
-    throw new Error("No se puede eliminar el material porque tiene movimientos registrados en el último año");
+    throw new Error("No se puede eliminar este material porque tiene movimientos registrados en el último año.");
   }
 
-  // Hard delete - eliminar el registro de la base de datos
+  // Hard delete - sin dependencias
   await inventoryRepository.remove(item);
   return { mensaje: "Item de inventario eliminado exitosamente" };
 };

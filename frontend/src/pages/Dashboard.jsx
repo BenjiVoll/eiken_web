@@ -281,10 +281,12 @@ const Dashboard = () => {
         <TopProductsChart orders={orders} />
       </div>
 
-      {/* Monthly Sales Chart - Full Width */}
-      <div className="mt-6">
-        <MonthlySalesChart orders={orders} />
-      </div>
+      {/* Monthly Sales Chart - Visible only for Admin/Manager (RF_09) */}
+      {(isAdmin || isManager) && (
+        <div className="mt-6">
+          <MonthlySalesChart orders={orders} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <div className="lg:col-span-2">

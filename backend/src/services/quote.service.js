@@ -197,6 +197,31 @@ export const acceptQuoteByToken = async (token) => {
   return { success: true, message: "Cotización aprobada correctamente", quote };
 };
 
+export const rejectQuoteByToken = async (token) => {
+  const quote = await quoteRepository.findOne({
+    where: { acceptanceToken: token },
+    relations: ["client", "service"]
+  });
+
+  if (!quote) throw new Error("Token de cotización inválido o expirado");
+
+  // Si ya estaba rechazado o en otro estado final
+  if (quote.status === "Rechazado") {
+    return { success: true, message: "La cotización ya fue rechazada anteriormente", quote };
+  }
+
+  if (quote.status === "Aprobado" || quote.status === "Convertido") {
+    throw new Error("La cotización ya fue aprobada y no puede ser rechazada");
+  }
+
+  quote.status = "Rechazado";
+  await quoteRepository.save(quote);
+
+  mailService.sendQuoteRejectedAlert(quote);
+
+  return { success: true, message: "Cotización rechazada correctamente", quote };
+};
+
 export const convertQuoteToProject = async (id) => {
   const quote = await quoteRepository.findOne({
     where: { id },
@@ -219,7 +244,6 @@ export const convertQuoteToProject = async (id) => {
     priority: "Medio",
     budgetAmount: quote.quotedAmount || 0,
     notes: quote.notes,
-    quoteId: quote.id,
     isFeatured: false,
     image: (quote.referenceImages && quote.referenceImages.length > 0) ? quote.referenceImages[0] : null
   });

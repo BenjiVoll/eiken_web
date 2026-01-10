@@ -19,8 +19,6 @@ import {
 } from "../controllers/service.controller.js";
 
 const router = Router();
-// Eliminar imagen de servicio
-router.delete("/:id/image", deleteServiceImage);
 
 // Todas las rutas requieren autenticación
 router.use(authenticateJwt);
@@ -31,27 +29,31 @@ router
     upload.single("image"),
     uploadServiceImage
   )
-  .post("/", 
+  .post("/",
     isAdminOrManager,
-    createBodyValidation(serviceBodyValidation), 
+    createBodyValidation(serviceBodyValidation),
     createService
   )
-  .get("/", 
+  .get("/",
     isAnyUser,
     getServices
   )
-  .get("/:id", 
+  .get("/:id",
     isAnyUser,
     getService
   )
-  .patch("/:id", 
+  .patch("/:id",
     isAdminOrManager,
-    createBodyValidation(serviceBodyValidation), 
+    createBodyValidation(serviceBodyValidation),
     updateService
   )
-  .delete("/:id", 
+  .delete("/:id",
     isAdminOrManager,
     deleteService
+  )
+  .delete("/:id/image",
+    isAdminOrManager,
+    deleteServiceImage
   );
 
 export default router;

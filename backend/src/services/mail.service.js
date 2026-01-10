@@ -337,10 +337,14 @@ class MailService {
 
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${this.getFrontendUrl()}/quote/accept/${quote.acceptanceToken}" 
-                   style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
-                  Aceptar Presupuesto
+                   style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); margin-right: 15px;">
+                  ✓ Aceptar Presupuesto
                 </a>
-                <p style="margin-top: 10px; font-size: 0.9em; color: #718096;">Al hacer clic, confirmarás la aceptación de este presupuesto.</p>
+                <a href="${this.getFrontendUrl()}/quote/reject/${quote.acceptanceToken}" 
+                   style="display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                  ✗ Rechazar
+                </a>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #718096;">Al hacer clic, confirmarás tu decisión sobre este presupuesto.</p>
               </div>
 
               <p>Si tienes dudas sobre esta propuesta, por favor responde a este correo.</p>
@@ -793,6 +797,49 @@ class MailService {
       await this.transporter.sendMail(mailOptions);
     } catch (error) {
       console.error('Error sending quote accepted alert:', error);
+    }
+  }
+
+  /**
+   * Alerta al admin cuando un cliente rechaza presupuesto
+   */
+  async sendQuoteRejectedAlert(quote) {
+    try {
+      const adminEmails = await this.getAdminEmails();
+      if (!adminEmails || adminEmails.length === 0) return;
+
+      const mailOptions = {
+        from: process.env.SMTP_FROM || '"Eiken Design" <no-reply@eiken.com>',
+        to: adminEmails,
+        subject: `❌ Presupuesto Rechazado - Cotización #${quote.id}`,
+        html: this.getHtmlTemplate('Presupuesto Rechazado', `
+          <tr>
+            <td style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px; text-align: center;">
+              <img src="https://www.eikendesign.cl/fondo.jpg" alt="Eiken Design" style="max-width: 180px; max-height: 80px; width: auto; height: auto; display: block; margin: 0 auto;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 50px 40px; text-align: center;">
+              <h2 style="color: #2b2b2b;">Presupuesto Rechazado</h2>
+              <p style="font-size: 16px; color: #4a5568;">
+                  El cliente <strong>${quote.client?.name}</strong> ha rechazado el presupuesto para la cotización #${quote.id}.
+              </p>
+              <div style="background: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #fca5a5;">
+                  <span style="font-size: 24px; font-weight: bold; color: #dc2626;">
+                      ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(quote.quotedAmount)}
+                  </span>
+              </div>
+              <p style="color: #718096; font-size: 14px;">Puedes contactar al cliente para negociar o ajustar la propuesta.</p>
+              <a href="${this.getFrontendUrl()}/intranet/quotes" style="background: #2b2b2b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                  Ver Cotización
+              </a>
+            </td>
+          </tr>
+        `)
+      };
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Error enviando alerta de cotización rechazada:', error);
     }
   }
 }

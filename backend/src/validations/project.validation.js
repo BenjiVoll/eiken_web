@@ -130,15 +130,6 @@ export const projectBodyValidation = Joi.object({
       "string.base": "Las notas deben ser de tipo string.",
       "string.max": "Las notas deben tener como máximo 1000 caracteres.",
     }),
-  quoteId: Joi.number()
-    .integer()
-    .positive()
-    .allow(null)
-    .messages({
-      "number.base": "El id de la cotización debe ser un número.",
-      "number.integer": "El id de la cotización debe ser un número entero.",
-      "number.positive": "El id de la cotización debe ser un número positivo.",
-    }),
 })
   .unknown(false)
   .messages({
@@ -213,15 +204,6 @@ export const projectUpdateValidation = Joi.object({
     .messages({
       "string.base": "Las notas deben ser de tipo string.",
       "string.max": "Las notas deben tener como máximo 1000 caracteres.",
-    }),
-  quoteId: Joi.number()
-    .integer()
-    .positive()
-    .allow(null)
-    .messages({
-      "number.base": "El id de la cotización debe ser un número.",
-      "number.integer": "El id de la cotización debe ser un número entero.",
-      "number.positive": "El id de la cotización debe ser un número positivo.",
     }),
   isFeatured: Joi.boolean()
     .messages({
