@@ -18,6 +18,7 @@ const Inventory = () => {
 
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTypeFilter, setActiveTypeFilter] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({
@@ -127,11 +128,31 @@ const Inventory = () => {
     setShowModal(false);
   };
 
-  const filteredInventory = Array.isArray(inventory) ? inventory.filter(item =>
-    item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.brand?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) : [];
+  // Obtener tipos únicos para referencia
+  const uniqueTypes = [...new Set(inventory.map(item => item.type).filter(Boolean))];
+
+  const filteredInventory = Array.isArray(inventory) ? inventory.filter(item => {
+    const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.brand?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Filtro por estado de stock
+    const quantity = parseFloat(item.quantity);
+    const minStock = parseFloat(item.minStock);
+
+    let matchesStockFilter = true;
+    if (activeTypeFilter === 'low') {
+      matchesStockFilter = quantity <= minStock;
+    } else if (activeTypeFilter === 'medium') {
+      matchesStockFilter = quantity > minStock && quantity <= minStock * 2;
+    } else if (activeTypeFilter === 'good') {
+      matchesStockFilter = quantity > minStock * 2;
+    } else if (activeTypeFilter === 'all') {
+      matchesStockFilter = true; // Sin filtro de stock si se selecciona 'todos'
+    }
+
+    return matchesSearch && matchesStockFilter;
+  }) : [];
 
 
   const getStockStatus = (item) => {
@@ -193,6 +214,55 @@ const Inventory = () => {
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500"
             />
           </div>
+        </div>
+
+        {/* Tabs de filtro por estado de stock */}
+        <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 pb-1">
+          <button
+            onClick={() => setActiveTypeFilter('all')}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative
+              ${activeTypeFilter === 'all'
+                ? 'text-green-600 bg-green-50 after:absolute after:bottom-[-5px] after:left-0 after:w-full after:h-[2px] after:bg-green-500'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+          >
+            Todos ({inventory.length})
+          </button>
+          <button
+            onClick={() => setActiveTypeFilter('low')}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative flex items-center gap-1
+              ${activeTypeFilter === 'low'
+                ? 'text-red-600 bg-red-50 after:absolute after:bottom-[-5px] after:left-0 after:w-full after:h-[2px] after:bg-red-500'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+          >
+            <AlertTriangle className="h-4 w-4" />
+            Stock Bajo ({inventory.filter(i => parseFloat(i.quantity) <= parseFloat(i.minStock)).length})
+          </button>
+          <button
+            onClick={() => setActiveTypeFilter('medium')}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative
+              ${activeTypeFilter === 'medium'
+                ? 'text-yellow-600 bg-yellow-50 after:absolute after:bottom-[-5px] after:left-0 after:w-full after:h-[2px] after:bg-yellow-500'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+          >
+            Stock Medio ({inventory.filter(i => {
+              const q = parseFloat(i.quantity);
+              const min = parseFloat(i.minStock);
+              return q > min && q <= min * 2;
+            }).length})
+          </button>
+          <button
+            onClick={() => setActiveTypeFilter('good')}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors relative
+              ${activeTypeFilter === 'good'
+                ? 'text-green-600 bg-green-50 after:absolute after:bottom-[-5px] after:left-0 after:w-full after:h-[2px] after:bg-green-500'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+          >
+            Stock OK ({inventory.filter(i => parseFloat(i.quantity) > parseFloat(i.minStock) * 2).length})
+          </button>
         </div>
 
         <div className="bg-white shadow overflow-hidden sm:rounded-md">

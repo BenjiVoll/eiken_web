@@ -78,10 +78,12 @@ export const clientBodyValidation = Joi.object({
     }),
   rut: Joi.string()
     .max(50)
+    .pattern(/^(\d{1,2}\.?\d{3}\.?\d{3}[-][0-9kK])$/)
     .allow(null, '')
     .messages({
       "string.base": "El RUT debe ser de tipo string.",
       "string.max": "El RUT debe tener como máximo 50 caracteres.",
+      "string.pattern.base": "El RUT debe tener un formato válido (ej: 12.345.678-9 o 12345678-9).",
     }),
   address: Joi.string()
     .allow(null, '')
@@ -145,10 +147,12 @@ export const clientUpdateValidation = Joi.object({
     }),
   rut: Joi.string()
     .max(50)
+    .pattern(/^(\d{1,2}\.?\d{3}\.?\d{3}[-][0-9kK])$/)
     .allow(null, '')
     .messages({
       "string.base": "El RUT debe ser de tipo string.",
       "string.max": "El RUT debe tener como máximo 50 caracteres.",
+      "string.pattern.base": "El RUT debe tener un formato válido (ej: 12.345.678-9 o 12345678-9).",
     }),
   address: Joi.string()
     .allow(null, '')

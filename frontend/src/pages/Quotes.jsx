@@ -266,7 +266,7 @@ const Quotes = () => {
                       {getServiceTitle(quote)}
                     </h3>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      ID: #{quote.id.toString().padStart(4, '0')} • {new Date(quote.createdAt).toLocaleDateString()}
+                      N° Cotización #{quote.id.toString().padStart(4, '0')} • {new Date(quote.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>

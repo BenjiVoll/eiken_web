@@ -39,11 +39,18 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
       } else if (typeof service.category === 'number') {
         categoryId = service.category;
       }
+      // Obtener el ID de la división correctamente
+      let divisionId = '';
+      if (service.division && typeof service.division === 'object' && service.division.id) {
+        divisionId = service.division.id;
+      } else if (typeof service.division === 'number') {
+        divisionId = service.division;
+      }
       setFormData({
         name: service.name || '',
         description: service.description || '',
         categoryId,
-        division: service.division || '',
+        division: divisionId,
         price: service.price ? Math.floor(Number(service.price)).toString() : ''
       });
       setImagePreview(service.image ? getImageUrl(service.image) : null);
@@ -145,7 +152,13 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
         showErrorAlert('Error', 'No se pudo eliminar la imagen');
       }
     }
-    await onSave(formData, imageFile);
+    const submitData = {
+      ...formData,
+      categoryId: formData.categoryId ? parseInt(formData.categoryId, 10) : null,
+      division: formData.division ? parseInt(formData.division, 10) : null,
+      price: formData.price ? parseInt(formData.price, 10) : null
+    };
+    await onSave(submitData, imageFile);
   };
 
   if (!isOpen) return null;
@@ -277,7 +290,7 @@ const ServiceModal = ({ isOpen, onClose, onSave, service, loading }) => {
                   >
                     <option value="">Selecciona una división</option>
                     {divisions.map(div => (
-                      <option key={div.id} value={div.name}>{div.name}</option>
+                      <option key={div.id} value={div.id}>{div.name}</option>
                     ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
