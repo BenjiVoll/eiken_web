@@ -17,7 +17,12 @@ export const getErrorMessage = (error, defaultMessage = 'Ocurrió un error inesp
                 return data.details.message;
             }
 
-            // 2. Check for top-level message
+            // 2. Check for 'error' field (common in some controllers)
+            if (data.error) {
+                return data.error;
+            }
+
+            // 3. Check for top-level message
             if (data.message) {
                 return data.message;
             }

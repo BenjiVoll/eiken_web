@@ -150,6 +150,10 @@ export const publicAPI = {
     accept: async (token) => {
       const response = await publicApi.get(`/public/quotes/accept/${token}`);
       return response.data;
+    },
+    reject: async (token) => {
+      const response = await publicApi.get(`/public/quotes/reject/${token}`);
+      return response.data;
     }
   },
 
@@ -211,6 +215,16 @@ export const inventoryAPI = {
 
   getById: async (id) => {
     const response = await api.get(`/inventory/${id}`);
+    return response.data;
+  },
+
+  create: async (data) => {
+    const response = await api.post('/inventory', data);
+    return response.data;
+  },
+
+  update: async (id, data) => {
+    const response = await api.patch(`/inventory/${id}`, data);
     return response.data;
   },
 

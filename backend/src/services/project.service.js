@@ -9,7 +9,7 @@ const projectRepository = AppDataSource.getRepository(ProjectSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
-  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, quoteId, isFeatured } = data;
+  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, isFeatured } = data;
 
   // Verificar que el cliente existe
   const client = await clientRepository.findOneBy({ id: clientId });
@@ -37,7 +37,6 @@ export const createProject = async (data) => {
     budgetAmount,
     budgetAmount,
     notes,
-    quoteId,
     isFeatured: isFeatured || false
   });
 
@@ -145,10 +144,6 @@ export const deleteProject = async (id) => {
   const project = await projectRepository.findOneBy({ id });
   if (!project) {
     throw new Error("Proyecto no encontrado");
-  }
-
-  if (project.quoteId) {
-    throw new Error("No se puede eliminar un proyecto asociado a una cotización");
   }
 
   if (project.status === "Completado") {

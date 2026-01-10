@@ -28,7 +28,7 @@ router.use(authenticateJwt);
 // Rutas para gestión de proyectos
 router
   .post("/",
-    isAdminOrManager,
+    isDesignerOrAbove,
     createBodyValidation(projectBodyValidation),
     createProject
   )
@@ -52,7 +52,7 @@ router
     updateProject
   )
   .delete("/:id",
-    isAdminOrManager,
+    isDesignerOrAbove,
     deleteProject
   )
   .post("/:id/image",

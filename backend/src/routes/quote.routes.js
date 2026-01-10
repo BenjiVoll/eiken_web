@@ -34,7 +34,7 @@ router.post("/public",
 // Ruta pública para subir imágenes de referencia
 router.post("/:id/images",
   createParamsValidation(idParamValidation),
-  upload.array("images", 3),
+  upload.array("images", 5),
   uploadQuoteImages
 );
 

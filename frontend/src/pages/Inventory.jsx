@@ -47,8 +47,7 @@ const Inventory = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (formDataFromModal) => {
 
     try {
       // Confirmar la acción
@@ -59,10 +58,10 @@ const Inventory = () => {
       if (!confirmed.isConfirmed) return;
 
       const inventoryData = {
-        ...formData,
+        ...formDataFromModal,
         unit: 'metros',
-        quantity: parseInt(formData.quantity),
-        minStock: parseInt(formData.minStock)
+        quantity: parseInt(formDataFromModal.quantity),
+        minStock: parseInt(formDataFromModal.minStock)
       };
 
       if (editingItem) {

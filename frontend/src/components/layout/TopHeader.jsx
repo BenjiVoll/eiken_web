@@ -17,7 +17,7 @@ const TopHeader = ({ onMenuClick }) => {
         const fetchNotifications = async () => {
             try {
                 const response = await dashboardAPI.getData();
-                const data = response?.data?.summary;
+                const data = response?.data?.data?.summary;
 
                 const newNotifications = [];
 
