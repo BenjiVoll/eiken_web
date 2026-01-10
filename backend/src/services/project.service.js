@@ -9,17 +9,43 @@ const projectRepository = AppDataSource.getRepository(ProjectSchema);
 const clientRepository = AppDataSource.getRepository(ClientSchema);
 
 export const createProject = async (data) => {
-  const { title, description, clientId, categoryId, division, status, priority, budgetAmount, notes, isFeatured } = data;
+  const { title, description, clientId, clientName, categoryId, division, status, priority, budgetAmount, notes, isFeatured } = data;
+
+  let finalClientId = clientId;
+
+  // Si no hay clientId pero hay clientName, crear un nuevo cliente
+  if (!clientId && clientName) {
+    // Verificar si ya existe un cliente con ese nombre
+    let existingClient = await clientRepository.findOne({
+      where: { name: clientName }
+    });
+
+    if (existingClient) {
+      // Usar el cliente existente
+      finalClientId = existingClient.id;
+    } else {
+      // Crear nuevo cliente
+      const newClient = clientRepository.create({
+        name: clientName,
+        email: `${clientName.toLowerCase().replace(/\s+/g, '.')}@pendiente.com`,
+        clientType: 'individual',
+        source: 'manual',
+        isActive: true
+      });
+      await clientRepository.save(newClient);
+      finalClientId = newClient.id;
+    }
+  }
 
   // Verificar que el cliente existe
-  const client = await clientRepository.findOneBy({ id: clientId });
+  const client = await clientRepository.findOneBy({ id: finalClientId });
   if (!client) {
     throw new Error("Cliente no encontrado");
   }
 
   // Verificar si ya existe un proyecto con el mismo título para el mismo cliente
   const existingProject = await projectRepository.findOneBy({
-    clientId,
+    clientId: finalClientId,
     title
   });
   if (existingProject) {
@@ -29,7 +55,7 @@ export const createProject = async (data) => {
   const project = projectRepository.create({
     title,
     description,
-    clientId,
+    clientId: finalClientId,
     category: categoryId,
     division,
     status,

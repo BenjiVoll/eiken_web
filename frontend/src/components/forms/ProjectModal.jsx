@@ -26,6 +26,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
     title: '',
     description: '',
     clientId: '',
+    clientName: '',
     categoryId: '',
     division: '',
     status: 'Pendiente',
@@ -62,6 +63,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
         title: '',
         description: '',
         clientId: '',
+        clientName: '',
         categoryId: '',
         division: '',
         status: 'Pendiente',
@@ -103,8 +105,9 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
     }
 
     // Solo validar clientId si estamos creando un nuevo proyecto
-    if (!project && !formData.clientId) {
-      newErrors.clientId = 'Debe seleccionar un cliente';
+    // Ahora acepta clientId O clientName (para crear nuevo cliente)
+    if (!project && !formData.clientId && !formData.clientName?.trim()) {
+      newErrors.clientId = 'Debe seleccionar o ingresar un cliente';
     }
 
     if (formData.budgetAmount && isNaN(formData.budgetAmount)) {
@@ -124,8 +127,13 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
     if (!validateForm()) return;
     const submitData = {
       ...formData,
-      budgetAmount: formData.budgetAmount ? parseFloat(formData.budgetAmount) : null
+      clientId: formData.clientId && formData.clientId !== '' ? parseInt(formData.clientId, 10) : undefined,
+      categoryId: formData.categoryId && formData.categoryId !== '' ? parseInt(formData.categoryId, 10) : undefined,
+      division: formData.division && formData.division !== '' ? parseInt(formData.division, 10) : undefined,
+      budgetAmount: formData.budgetAmount && formData.budgetAmount !== '' ? parseFloat(formData.budgetAmount) : null
     };
+    // Limpiar campos undefined para que no se envíen
+    Object.keys(submitData).forEach(key => submitData[key] === undefined && delete submitData[key]);
     // Eliminar imagen si está marcada para borrar y existe el proyecto
     if (imageToDelete && project && project.id) {
       try {
@@ -293,7 +301,7 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   {project ? (
-                    // Modo edición
+                    // Modo edición - mostrar cliente actual con opción de cambiar
                     <div>
                       <div className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
                         {clients.find(c => c.id == formData.clientId)?.name || 'Cliente no encontrado'}
@@ -317,20 +325,52 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
                       </details>
                     </div>
                   ) : (
-                    // Modo creación
-                    <select
-                      name="clientId"
-                      value={formData.clientId}
-                      onChange={handleChange}
-                      className={`block w-full pl-10 pr-10 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-50 transition-all appearance-none cursor-pointer ${errors.clientId ? 'border-red-500' : 'border-gray-200'}`}
-                      disabled={loading || clients.length === 0}
-                      required
-                    >
-                      <option value="">Seleccionar cliente</option>
-                      {clients.map(client => (
-                        <option key={client.id} value={client.id}>{client.name}</option>
-                      ))}
-                    </select>
+                    // Modo creación - campo híbrido: escribir o seleccionar
+                    <div>
+                      <input
+                        type="text"
+                        name="clientName"
+                        value={formData.clientName || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Buscar si coincide con un cliente existente
+                          const matchingClient = clients.find(c =>
+                            c.name.toLowerCase() === value.toLowerCase()
+                          );
+                          setFormData(prev => ({
+                            ...prev,
+                            clientName: value,
+                            clientId: matchingClient ? matchingClient.id : ''
+                          }));
+                          if (errors.clientId) {
+                            setErrors(prev => ({ ...prev, clientId: '' }));
+                          }
+                        }}
+                        list="client-suggestions"
+                        className={`block w-full pl-10 pr-3 py-2.5 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-50 transition-all ${errors.clientId ? 'border-red-500' : 'border-gray-200'}`}
+                        disabled={loading}
+                        placeholder="Escribir nombre o seleccionar de la lista"
+                        required
+                        autoComplete="off"
+                      />
+                      <datalist id="client-suggestions">
+                        {clients.map(client => (
+                          <option key={client.id} value={client.name} />
+                        ))}
+                      </datalist>
+                      {formData.clientName && !formData.clientId && (
+                        <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                          <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                          Se creará un nuevo cliente con este nombre
+                        </p>
+                      )}
+                      {formData.clientId && (
+                        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                          Cliente existente seleccionado
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
                 {errors.clientId && <p className="text-red-500 text-xs mt-1">{errors.clientId}</p>}

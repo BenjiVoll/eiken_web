@@ -76,12 +76,18 @@ export const projectBodyValidation = Joi.object({
   clientId: Joi.number()
     .integer()
     .positive()
-    .required()
+    .allow('', null)
     .messages({
       "number.base": "El id del cliente debe ser un número.",
       "number.integer": "El id del cliente debe ser un número entero.",
       "number.positive": "El id del cliente debe ser un número positivo.",
-      "any.required": "El id del cliente es obligatorio.",
+    }),
+  clientName: Joi.string()
+    .max(255)
+    .allow('')
+    .messages({
+      "string.base": "El nombre del cliente debe ser de tipo string.",
+      "string.max": "El nombre del cliente debe tener como máximo 255 caracteres.",
     }),
   categoryId: Joi.number()
     .integer()
@@ -130,10 +136,21 @@ export const projectBodyValidation = Joi.object({
       "string.base": "Las notas deben ser de tipo string.",
       "string.max": "Las notas deben tener como máximo 1000 caracteres.",
     }),
+  isFeatured: Joi.boolean()
+    .messages({
+      "boolean.base": "El campo isFeatured debe ser un valor booleano.",
+    }),
+  quoteId: Joi.number()
+    .integer()
+    .positive()
+    .allow(null)
+    .messages({
+      "number.base": "El id de cotización debe ser un número.",
+    }),
 })
-  .unknown(false)
+  .or('clientId', 'clientName')
   .messages({
-    "object.unknown": "No se permiten propiedades adicionales.",
+    "object.missing": "Debe proporcionar un cliente (clientId o clientName).",
   });
 
 // Validación específica para actualizaciones de proyectos (campos opcionales)
