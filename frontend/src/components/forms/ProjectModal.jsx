@@ -497,13 +497,25 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
               {/* Destacado (solo si completado) */}
               {formData.status === 'Completado' && (
                 <div className="md:col-span-2">
-                  <label className="flex items-center p-4 bg-orange-50 border border-orange-200 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
+                  {/* Mostrar advertencia si no hay imagen */}
+                  {!imagePreview && !imageFile && (
+                    <div className="mb-2 p-3 bg-yellow-50 text-yellow-800 rounded-lg text-sm border border-yellow-200 flex items-center gap-2">
+                      <svg className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span>Para destacar este proyecto, primero debes subir una imagen de portada.</span>
+                    </div>
+                  )}
+                  <label className={`flex items-center p-4 border rounded-xl transition-colors ${imagePreview || imageFile
+                      ? 'bg-orange-50 border-orange-200 cursor-pointer hover:bg-orange-100'
+                      : 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60'
+                    }`}>
                     <input
                       type="checkbox"
                       name="isFeatured"
                       checked={formData.isFeatured}
                       onChange={handleChange}
-                      disabled={loading}
+                      disabled={loading || (!imagePreview && !imageFile)}
                       className="h-5 w-5 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                     />
                     <span className="ml-3 flex items-center font-medium text-orange-900">
@@ -511,6 +523,12 @@ const ProjectModal = ({ isOpen, onClose, onSave, project = null, loading = false
                       Destacar en Portafolio (visible en el sitio público)
                     </span>
                   </label>
+                  {imageFile && !imagePreview && formData.isFeatured && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                      La imagen se subirá al guardar y el proyecto quedará destacado.
+                    </p>
+                  )}
                 </div>
               )}
 
