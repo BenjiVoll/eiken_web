@@ -226,6 +226,20 @@ export const projectUpdateValidation = Joi.object({
     .messages({
       "boolean.base": "El campo isFeatured debe ser un valor booleano.",
     }),
+  clientName: Joi.string()
+    .max(255)
+    .allow('')
+    .messages({
+      "string.base": "El nombre del cliente debe ser de tipo string.",
+      "string.max": "El nombre del cliente debe tener como máximo 255 caracteres.",
+    }),
+  quoteId: Joi.number()
+    .integer()
+    .positive()
+    .allow(null)
+    .messages({
+      "number.base": "El id de cotización debe ser un número.",
+    }),
 })
   .unknown(false)
   .messages({

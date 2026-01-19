@@ -96,3 +96,58 @@ export const serviceBodyValidation = Joi.object({
   .messages({
     "object.unknown": "No se permiten propiedades adicionales.",
   });
+
+// Validación para actualización de servicios (campos opcionales)
+export const serviceUpdateValidation = Joi.object({
+  name: Joi.string()
+    .min(2)
+    .max(255)
+    .messages({
+      "string.empty": "El nombre no puede estar vacío.",
+      "string.base": "El nombre debe ser de tipo string.",
+      "string.min": "El nombre debe tener como mínimo 2 caracteres.",
+      "string.max": "El nombre debe tener como máximo 255 caracteres.",
+    }),
+  description: Joi.string()
+    .min(10)
+    .max(1000)
+    .allow(null, '')
+    .messages({
+      "string.base": "La descripción debe ser de tipo string.",
+      "string.min": "La descripción debe tener como mínimo 10 caracteres.",
+      "string.max": "La descripción debe tener como máximo 1000 caracteres.",
+    }),
+  category: Joi.number()
+    .integer()
+    .positive()
+    .messages({
+      "number.base": "La categoría debe ser un número.",
+      "number.integer": "La categoría debe ser un número entero.",
+      "number.positive": "La categoría debe ser un número positivo.",
+    }),
+  division: Joi.number()
+    .integer()
+    .positive()
+    .messages({
+      "number.base": "La división debe ser un número.",
+      "number.integer": "La división debe ser un número entero.",
+      "number.positive": "La división debe ser un número positivo.",
+    }),
+  price: Joi.number()
+    .positive()
+    .precision(2)
+    .messages({
+      "number.base": "El precio debe ser un número.",
+      "number.positive": "El precio debe ser un número positivo.",
+    }),
+  isActive: Joi.boolean()
+    .messages({
+      "boolean.base": "isActive debe ser un valor booleano.",
+    }),
+})
+  .min(1)
+  .unknown(false)
+  .messages({
+    "object.unknown": "No se permiten propiedades adicionales.",
+    "object.min": "Debes proporcionar al menos un campo válido para actualizar.",
+  });

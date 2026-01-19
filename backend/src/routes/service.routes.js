@@ -7,7 +7,7 @@ import {
 } from "../middlewares/authorization.middleware.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { createBodyValidation, createQueryValidation } from "../middlewares/validations.middleware.js";
-import { serviceQueryValidation, serviceBodyValidation } from "../validations/service.validation.js";
+import { serviceQueryValidation, serviceBodyValidation, serviceUpdateValidation } from "../validations/service.validation.js";
 import { deleteServiceImage } from "../controllers/service.controller.js";
 import {
   createService,
@@ -44,7 +44,7 @@ router
   )
   .patch("/:id",
     isAdminOrManager,
-    createBodyValidation(serviceBodyValidation),
+    createBodyValidation(serviceUpdateValidation),
     updateService
   )
   .delete("/:id",
