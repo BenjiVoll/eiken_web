@@ -1,5 +1,6 @@
 ﻿import React from 'react';
 import ServiceInfoAlert from '@/components/alerts/ServiceInfoAlert';
+import { showWarningAlert } from '@/helpers/sweetAlert';
 import { X } from 'lucide-react';
 
 const QuoteModal = ({
@@ -275,7 +276,13 @@ const QuoteModal = ({
                       onChange={(e) => {
                         const newFiles = Array.from(e.target.files);
                         const existingFiles = formData.selectedImages || [];
-                        const combinedFiles = [...existingFiles, ...newFiles].slice(0, 3);
+                        const totalFiles = existingFiles.length + newFiles.length;
+
+                        if (totalFiles > 5) {
+                          showWarningAlert('Límite de imágenes', `Solo puedes subir máximo 5 imágenes. Ya tienes ${existingFiles.length} y estás intentando agregar ${newFiles.length}.`);
+                        }
+
+                        const combinedFiles = [...existingFiles, ...newFiles].slice(0, 5);
                         setFormData({ ...formData, selectedImages: combinedFiles });
                       }}
                     />

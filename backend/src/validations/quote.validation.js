@@ -34,7 +34,14 @@ export const quoteBodyValidation = Joi.object({
     "string.min": "La descripción debe tener como mínimo 10 caracteres.",
     "any.required": "La descripción es obligatoria."
   }),
-  requestedDeliveryDate: Joi.date().optional().allow(null, ''),
+  requestedDeliveryDate: Joi.date()
+    .min('now')
+    .optional()
+    .allow(null, '')
+    .messages({
+      "date.base": "La fecha de entrega debe ser una fecha válida.",
+      "date.min": "La fecha de entrega no puede ser anterior a hoy."
+    }),
   status: Joi.string().valid('Pendiente', 'Revisando', 'En Revisión', 'Cotizado', 'Aprobado', 'Rechazado', 'Convertido').required().messages({
     "string.base": "El estado debe ser de tipo string.",
     "any.only": "El estado debe ser uno de: Pendiente, Revisando, En Revisión, Cotizado, Aprobado, Rechazado, Convertido."
@@ -112,9 +119,11 @@ export const quoteUpdateValidation = Joi.object({
       "number.positive": "El id de la categoría debe ser un número positivo.",
     }),
   requestedDeliveryDate: Joi.date()
+    .min('now')
     .allow(null, '')
     .messages({
       "date.base": "La fecha de entrega debe ser una fecha válida.",
+      "date.min": "La fecha de entrega no puede ser anterior a hoy."
     }),
   description: Joi.string()
     .min(10)
