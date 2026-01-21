@@ -382,6 +382,17 @@ export const deleteOrder = async (id) => {
   if (!order) {
     throw new Error("Orden no encontrada");
   }
+
+  // Eliminar registros de materiales usados asociados a la orden
+  try {
+    await AppDataSource.query(
+      "DELETE FROM order_inventory_usage WHERE order_id = $1",
+      [id]
+    );
+  } catch (error) {
+    console.error("Error eliminando materiales de la orden:", error);
+  }
+
   await orderRepository.remove(order);
   return { mensaje: "Orden eliminada exitosamente" };
 };
