@@ -21,7 +21,7 @@ export const updateCategory = async (id, name) => {
 
 export const deleteCategory = async (id) => {
   const categoryId = parseInt(id);
-  
+
   // Verificar si la categoría existe
   const category = await categoryRepo.findOneBy({ id: categoryId });
   if (!category) {
@@ -41,7 +41,7 @@ export const deleteCategory = async (id) => {
 
   // Verificar si tiene proyectos asociados
   const projectsResult = await AppDataSource.query(
-    "SELECT COUNT(*) as count FROM projects WHERE category_id = $1",
+    "SELECT COUNT(*) as count FROM projects WHERE category = $1",
     [categoryId]
   );
 
