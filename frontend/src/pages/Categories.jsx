@@ -104,15 +104,23 @@ const Categories = () => {
         onClose={() => { setShowCategoryModal(false); setEditingCategory(null); }}
         onSave={async (data) => {
           setModalLoading(true);
-          if (editingCategory) {
-            await categoriesAPI.update(editingCategory.id, data);
-          } else {
-            await categoriesAPI.create(data);
+          try {
+            if (editingCategory) {
+              await categoriesAPI.update(editingCategory.id, data);
+              showSuccessAlert('¡Actualizado!', 'La categoría ha sido actualizada correctamente');
+            } else {
+              await categoriesAPI.create(data);
+              showSuccessAlert('¡Creado!', 'La categoría ha sido creada correctamente');
+            }
+            setShowCategoryModal(false);
+            setEditingCategory(null);
+            loadCategories();
+          } catch (error) {
+            const errorMessage = error.response?.data?.message || 'No se pudo guardar la categoría';
+            showErrorAlert('Error', errorMessage);
+          } finally {
+            setModalLoading(false);
           }
-          setShowCategoryModal(false);
-          setEditingCategory(null);
-          setModalLoading(false);
-          loadCategories();
         }}
         category={editingCategory}
         loading={modalLoading}

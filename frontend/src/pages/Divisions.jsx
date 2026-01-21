@@ -104,15 +104,23 @@ const Divisions = () => {
         onClose={() => { setShowDivisionModal(false); setEditingDivision(null); }}
         onSave={async (data) => {
           setModalLoading(true);
-          if (editingDivision) {
-            await divisionsAPI.update(editingDivision.id, data);
-          } else {
-            await divisionsAPI.create(data);
+          try {
+            if (editingDivision) {
+              await divisionsAPI.update(editingDivision.id, data);
+              showSuccessAlert('¡Actualizado!', 'La división ha sido actualizada correctamente');
+            } else {
+              await divisionsAPI.create(data);
+              showSuccessAlert('¡Creado!', 'La división ha sido creada correctamente');
+            }
+            setShowDivisionModal(false);
+            setEditingDivision(null);
+            loadDivisions();
+          } catch (error) {
+            const errorMessage = error.response?.data?.message || 'No se pudo guardar la división';
+            showErrorAlert('Error', errorMessage);
+          } finally {
+            setModalLoading(false);
           }
-          setShowDivisionModal(false);
-          setEditingDivision(null);
-          setModalLoading(false);
-          loadDivisions();
         }}
         division={editingDivision}
         loading={modalLoading}

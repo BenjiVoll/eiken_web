@@ -22,7 +22,8 @@ const MaterialUsageModal = ({ isOpen, onClose, orderId, onSuccess }) => {
     const loadInventory = async () => {
         try {
             const response = await inventoryAPI.getAll();
-            setAvailableInventory(response.data.data || []);
+            // La API devuelve response.data, no response.data.data
+            setAvailableInventory(response.data || response || []);
         } catch (error) {
             console.error('Error loading inventory:', error);
             setError('Error al cargar inventario');
