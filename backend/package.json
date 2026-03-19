@@ -27,11 +27,11 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.0",
     "typeorm": "^0.3.24",
-    "xss": "^1.0.15"
+    "xss": "^1.0.15",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
     "eslint": "^9.28.0",
-    "morgan": "^1.10.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.5.3"
   }
