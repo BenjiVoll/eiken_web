@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import eikenLogo from '../../../public/logo.png';
+
 import {
   Home,
   Settings,
@@ -128,7 +128,7 @@ const Navbar = () => {
             <div className="flex w-full items-center">
               <div className="flex-shrink-0 flex items-center mr-8">
                 <Link to="/dashboard" className="flex items-center">
-                  <img src={eikenLogo} alt="Eiken Design Logo" className="h-10 w-auto rounded shadow" />
+                  <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Eiken Design Logo" className="h-10 w-auto rounded shadow" />
                 </Link>
               </div>
               <div className="relative hidden md:flex md:space-x-6 overflow-x-auto flex-nowrap navbar-scroll flex-1">
