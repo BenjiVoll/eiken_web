@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  wordpress:
+    image: wordpress:latest
+    container_name: eiken_wp_test
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db_wp
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_password
+      WORDPRESS_DB_NAME: wp_db
+    depends_on:
+      - db_wp
+
+  db_wp:
+    image: mysql:8.0
+    container_name: eiken_mysql_test
+    environment:
+      MYSQL_DATABASE: wp_db
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3306:3306"
