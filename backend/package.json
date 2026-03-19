@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
@@ -21,14 +22,15 @@
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mercadopago": "^2.11.0",
+    "morgan": "^1.10.0",
     "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.11",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.0",
     "typeorm": "^0.3.24",
-    "xss": "^1.0.15",
-    "morgan": "^1.10.0"
+    "xss": "^1.0.15"
   },
   "devDependencies": {
     "eslint": "^9.28.0",
