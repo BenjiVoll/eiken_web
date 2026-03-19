@@ -1,4 +1,3 @@
-import eikenLogo from '../../../public/logo.png';
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Palette, Menu, X } from 'lucide-react';
@@ -49,7 +48,7 @@ const ClientNavbar = () => {
           <Link to="/" className="flex items-center space-x-3 flex-1">
             <div className="flex items-center">
               <img
-                src={eikenLogo}
+                src={`${import.meta.env.BASE_URL}logo.png`}
                 alt="Eiken Design Logo"
                 className="h-10 w-auto"
               />

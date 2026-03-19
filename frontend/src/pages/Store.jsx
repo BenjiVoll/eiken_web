@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import eikenLogo from '../public/logo.png';
 import { Link } from 'react-router-dom';
 import { productsAPI } from '@/services/apiService';
 import { ShoppingCart, ArrowLeft, Package, Sparkles } from 'lucide-react';
@@ -113,7 +112,7 @@ const Store = () => {
                         {/* Logo Link */}
                         <Link to="/" className="flex items-center space-x-3 group">
                             <div className="relative">
-                                <img src={eikenLogo} alt="Eiken Design" className="h-10 w-auto transition-transform group-hover:scale-105" />
+                                <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Eiken Design" className="h-10 w-auto transition-transform group-hover:scale-105" />
                             </div>
                             <div className="hidden md:block">
                                 <h1 className="text-xl font-bold text-gray-900 tracking-tight">EIKEN DESIGN</h1>
